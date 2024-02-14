@@ -1,0 +1,6 @@
+C:\Windows\system32\wsl.exe --distribution Ubuntu-22.04 --exec /bin/bash -c "export CMAKE_COLOR_DIAGNOSTICS=ON && export CLION_IDE=TRUE && export JETBRAINS_IDE=TRUE && cd '/mnt/c/Users/Guilherme Barbosa/Desktop/UM/3Ano2Semestre/CG/Repo/CG/cmake-build-debug' && /usr/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G 'CodeBlocks - Unix Makefiles' -S '/mnt/c/Users/Guilherme Barbosa/Desktop/UM/3Ano2Semestre/CG/Repo/CG' -B '/mnt/c/Users/Guilherme Barbosa/Desktop/UM/3Ano2Semestre/CG/Repo/CG/cmake-build-debug'"
+-- Checking for module 'glut'
+--   No package 'glut' found
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /mnt/c/Users/Guilherme Barbosa/Desktop/UM/3Ano2Semestre/CG/Repo/CG/cmake-build-debug
