@@ -46,7 +46,7 @@ void setWindow(int width, int height) {
     glViewport(0, 0, width, height);
 }
 
-void renderScene(){
+void renderScene() {
     // Clear buffers
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -64,11 +64,11 @@ void renderScene(){
 
     glutWireTeapot(counter);
 
-    if(increment && counter >= COUNTER_STOP) increment = false;
+    if (increment && counter >= COUNTER_STOP) increment = false;
 
-    if(!increment && counter <= COUNTER_START) increment = true;
+    if (!increment && counter <= COUNTER_START) increment = true;
 
-    counter = increment ? counter + 0.005: counter - 0.005;
+    counter = increment ? counter + 0.005 : counter - 0.005;
     /* Test's end */
 
     // End of frame
@@ -152,6 +152,9 @@ int main(int argc, char **argv) {
     glutCreateWindow("Test");
 
     /* Callback registry */
+
+    /* Function responsible rendering the scene when the window is created */
+    glutDisplayFunc(renderScene);
 
     /* Function responsible for continuously rendering the scene */
     glutIdleFunc(renderScene);
