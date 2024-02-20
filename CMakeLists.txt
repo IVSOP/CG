@@ -83,7 +83,8 @@ add_executable(Generator
         src/generator/Box.cpp
         src/generator/Sphere.cpp
         src/generator/Cone.cpp
-        src/common/Vertex.cpp)
+        src/common/Vertex.cpp
+        src/common/Consts.cpp)
 
 target_include_directories(Generator
         PUBLIC includes/generator
