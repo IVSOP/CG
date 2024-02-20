@@ -146,6 +146,10 @@ void renderScene() {
               cameraXUp, cameraYUp, cameraZUp);
 
     // Drawing instructions
+    // TODO Check with teacher
+
+    glPolygonMode(GL_FRONT, GL_LINES);
+
     glBegin(GL_TRIANGLES);
 
     for(int i = 0; i < points.size(); i++){
