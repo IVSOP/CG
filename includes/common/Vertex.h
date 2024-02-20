@@ -6,7 +6,7 @@
 
 class Vertex {
 private:
-    glm::vec4 coords;
+	glm::vec4 coords;
 
     friend std::ostream &operator<<(std::ostream &os, const Vertex &p) {
         os << "Vertex: { x: " << p.coords.x << ", y: " << p.coords.y << ", z: " << p.coords.z << " }";
