@@ -15,6 +15,7 @@ private:
 
 public:
     Vertex(float x, float y, float z) : coords(x, y, z, 1.0f) {}
+    Vertex() : coords(0.0f, 0.0f, 0.0f, 1.0f) {}
 };
 
 #endif //CG_VERTEX_H

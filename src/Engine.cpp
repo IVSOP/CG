@@ -47,7 +47,7 @@ int parseXML(char * xmlFile) {
     if (xmlDoc.LoadFile(xmlFile) != tinyxml2::XML_SUCCESS) {
         perror("There has been an error reading the given file.");
 
-        return -1;
+        return 1;
     }
 
     tinyxml2::XMLElement *root = xmlDoc.RootElement();
@@ -56,7 +56,7 @@ int parseXML(char * xmlFile) {
     if (root == nullptr) {
         perror("The given XML file has no root element to read.");
 
-        return -1;
+        return 1;
     }
 
     /* Acquire all needed elements from the XML file */
@@ -91,14 +91,18 @@ int parseXML(char * xmlFile) {
     // TODO Process group element
 
     for (tinyxml2::XMLElement* model = models->FirstChildElement("model"); model != nullptr; model = model->NextSiblingElement("model")){
-        std::vector<Vertex> points = std::vector<Vertex>();
+
 
         std::cout << model->Attribute("file") << std::endl;
         FILE* f = std::fopen(model->Attribute("file"), "rb");
         int size;
 
         std::fread(&size, sizeof(int), 1, f);
-        fread(points.data(), sizeof(Vertex), size, f);
+
+        Vertex pts[size];
+        fread(pts, sizeof(Vertex), size, f);
+
+        std::vector<Vertex> points = std::vector<Vertex>(pts, pts + size);
 
         for(const Vertex& v : points){
             std::cout << v << std::endl;
@@ -166,7 +170,7 @@ int main(int argc, char **argv) {
     if (argc != 2) {
         perror("Not enough arguments");
 
-        return -1;
+        return 1;
     }
 
     parseXML(argv[1]);
