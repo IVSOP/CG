@@ -9,7 +9,8 @@ std::vector<Vertex> Box::createBoxPoints(int length, int divisions) {
     std::vector<Vertex> ans2 = std::vector<Vertex>();
     
     glm::vec4 currPoint;
-    float shiftValue = float(length)/2;
+    const float shiftValue = static_cast<float>(length)/2.0f;
+    
     glm::vec4 shift(shiftValue,shiftValue,shiftValue,0.0f);
     //plano base
     ans2.insert(ans2.end(), ans.begin(), ans.end());
