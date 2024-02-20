@@ -5,11 +5,12 @@
 std::vector<Vertex> Plane::createPlanePoints(int length, int divisions) {
     std::vector<Vertex> ans = std::vector<Vertex>();
     std::vector<Vertex> ans2 = std::vector<Vertex>();
-    const int step = length / divisions;
+
+    const float step = (float) length / (float) divisions;
 
     for(int i=0;i<divisions;i++) { // linhas (x)
         for(int j=0;j<divisions;j++) { // colunas (z)
-            ans.emplace_back(i*step - length/2.0f,0.0f,j*step - length/2.0f);
+            ans.emplace_back((float) i*step - (float) length/2.0f,0.0f,(float) j*step - (float) length/2.0f);
 
         }
     }
