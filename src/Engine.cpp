@@ -157,6 +157,7 @@ void renderScene() {
     glEnd();
 
     /* Test -> swap for loaded file instructions */
+    /*
     glRotated(30 * (counter - COUNTER_START), 0, 0, 1);
 
     glutWireTeapot(counter);
@@ -166,6 +167,7 @@ void renderScene() {
     if (!increment && counter <= COUNTER_START) increment = true;
 
     counter = increment ? counter + 0.005 : counter - 0.005;
+    */
     /* Test's end */
 
     // End of frame
