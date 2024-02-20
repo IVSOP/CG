@@ -3,11 +3,11 @@
 
 #include <vector>
 
-#include "Point.h"
+#include "Vertex.h"
 
 class Plane {
 public:
-    static std::vector<Point> createPlanePoints(int length, int divisions);
+    static std::vector<Vertex> createPlanePoints(int length, int divisions);
 };
 
 

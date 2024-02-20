@@ -2,9 +2,9 @@
 
 #include "Plane.h"
 
-std::vector<Point> Plane::createPlanePoints(int length, int divisions) {
-    std::vector<Point> ans = std::vector<Point>();
-    std::vector<Point> ans2 = std::vector<Point>();
+std::vector<Vertex> Plane::createPlanePoints(int length, int divisions) {
+    std::vector<Vertex> ans = std::vector<Vertex>();
+    std::vector<Vertex> ans2 = std::vector<Vertex>();
     const int step = length / divisions;
 
     for(int i=0;i<divisions;i++) { // linhas (x)

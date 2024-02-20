@@ -2,8 +2,9 @@
 #include <map>
 #include <functional>
 #include <string>
+#include <cstdio>
 
-#include "Point.h"
+#include "Vertex.h"
 #include "Plane.h"
 #include "Box.h"
 #include "Sphere.h"
@@ -18,11 +19,11 @@ int main(int argc, char **argv) {
 
     std::string storageFile = std::string();
     std::string primitive = std::string(argv[1]);
-    std::vector<Point> points = std::vector<Point>();
+    std::vector<Vertex> points = std::vector<Vertex>();
 
     // TODO Check length, division radius, slices stacks and height arguments type
 
-    std::map<std::string, std::function<std::vector<Point>()>> primitiveMap;
+    std::map<std::string, std::function<std::vector<Vertex>()>> primitiveMap;
     primitiveMap.insert({"plane", [&]() {
         if (argc != 5) {
             perror("Wrong number of arguments given to Plane primitive. Make sure you provide the length of the plan and the number of divisions along the axis. Also, don't forget to provide the name of the storage file.");
@@ -94,11 +95,13 @@ int main(int argc, char **argv) {
 
     points = primitiveMap[primitive].operator()();
 
-    for (const Point &p: points) {
-        std::cout << p << std::endl;
-    }
+    FILE* f = std::fopen(storageFile.c_str(), "wb");
+    int size = static_cast<int>(points.size());
 
-    // TODO Write points to storageFile
+    std::fwrite(&size, sizeof(int), 1, f);
+    std::fwrite(points.data(), sizeof(Vertex), size, f);
+
+    std::fclose(f);
 
     return 0;
 }

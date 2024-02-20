@@ -3,11 +3,11 @@
 
 #include <vector>
 
-#include "Point.h"
+#include "Vertex.h"
 
 class Sphere {
 public:
-    static std::vector<Point> createSpherePoints(int radius, int slices, int stacks);
+    static std::vector<Vertex> createSpherePoints(int radius, int slices, int stacks);
 };
 
 

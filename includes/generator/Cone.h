@@ -3,11 +3,11 @@
 
 #include <vector>
 
-#include "Point.h"
+#include "Vertex.h"
 
 class Cone {
 public:
-    static std::vector<Point> createConePoints(int radius, int height, int slices, int stacks);
+    static std::vector<Vertex> createConePoints(int radius, int height, int slices, int stacks);
 };
 
 

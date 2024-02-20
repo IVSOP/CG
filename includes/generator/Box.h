@@ -3,11 +3,11 @@
 
 #include <vector>
 
-#include "Point.h"
+#include "Vertex.h"
 
 class Box {
 public:
-    static std::vector<Point> createBoxPoints(int length, int divisions);
+    static std::vector<Vertex> createBoxPoints(int length, int divisions);
 };
 
 

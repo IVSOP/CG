@@ -31,7 +31,7 @@ endif(NOT OPENGL_FOUND)
 
 if  (WIN32)
 
-    message(STATUS "Toolkits_DIR set to: " ${TOOLKITS_FOLDER})
+    #[[message(STATUS "Toolkits_DIR set to: " ${TOOLKITS_FOLDER})
     set(TOOLKITS_FOLDER "" CACHE PATH "Path to Toolkits folder")
 
     if (NOT EXISTS "${TOOLKITS_FOLDER}/glut/GL/glut.h" OR NOT EXISTS "${TOOLKITS_FOLDER}/glut/glut32.lib")
@@ -47,7 +47,7 @@ if  (WIN32)
         file(COPY ${TOOLKITS_FOLDER}/glut/glut32.dll DESTINATION ${CMAKE_BINARY_DIR})
     endif(EXISTS "${TOOLKITS_FOLDER}/glut/glut32.dll" )
 
-    set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
+    set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})]]
 
 else (WIN32) #Linux and Mac
 
@@ -80,7 +80,7 @@ add_executable(Generator
         src/generator/Box.cpp
         src/generator/Sphere.cpp
         src/generator/Cone.cpp
-        src/generator/Point.cpp)
+        src/generator/Vertex.cpp)
 
 target_include_directories(Generator
         PUBLIC includes/generator)
