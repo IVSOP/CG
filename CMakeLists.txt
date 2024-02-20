@@ -69,10 +69,12 @@ include_directories(external/glm)
 
 add_executable(Engine
         src/Engine.cpp
-        src/TinyXML2/tinyxml2.cpp)
+        src/TinyXML2/tinyxml2.cpp
+        src/common/Vertex.cpp)
 
 target_include_directories(Engine
-        PUBLIC includes/TinyXML2)
+        PUBLIC includes/TinyXML2
+        PUBLIC includes/common)
 
 add_executable(Generator
         src/Generator.cpp
@@ -80,8 +82,9 @@ add_executable(Generator
         src/generator/Box.cpp
         src/generator/Sphere.cpp
         src/generator/Cone.cpp
-        src/generator/Vertex.cpp)
+        src/common/Vertex.cpp)
 
 target_include_directories(Generator
-        PUBLIC includes/generator)
+        PUBLIC includes/generator
+        PUBLIC includes/common)
 

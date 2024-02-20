@@ -4,7 +4,7 @@
 #include <string>
 #include <cstdio>
 
-#include "Vertex.h"
+#include "../includes/common/Vertex.h"
 #include "Plane.h"
 #include "Box.h"
 #include "Sphere.h"

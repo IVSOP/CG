@@ -3,7 +3,7 @@
 
 #include <vector>
 
-#include "Vertex.h"
+#include "../common/Vertex.h"
 
 class Cone {
 public:

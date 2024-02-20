@@ -1,7 +1,13 @@
 #include <glm/glm.hpp>
 
-#include "tinyxml2.h"
 #include <iostream>
+#include <vector>
+#include <cstdio>
+#include <filesystem>
+
+#include "tinyxml2.h"
+#include "Vertex.h"
+
 #ifdef __APPLE__
 #include <GLUT/glut.h>
 #else
@@ -17,8 +23,8 @@ bool increment = true;
 /* End of test variables */
 
 GLdouble windowFov = 45.0f;
-GLdouble windowWidth = 512;
-GLdouble windowHeight = 512;
+int windowWidth = 512;
+int windowHeight = 512;
 GLdouble windowZNear = 1.0f;
 GLdouble windowZFar = 1000.0f;
 GLdouble cameraXPos = 0.0f;
@@ -64,6 +70,7 @@ int parseXML(char * xmlFile) {
     tinyxml2::XMLElement *up = camera->FirstChildElement("up");
     tinyxml2::XMLElement *projection = camera->FirstChildElement("projection");
 
+    tinyxml2::XMLElement *models = group->FirstChildElement("models");
 
     /* Acquire all needed values to draw the window */
     windowWidth = window->IntAttribute("width");
@@ -82,6 +89,21 @@ int parseXML(char * xmlFile) {
     cameraZUp = up->DoubleAttribute("z");
 
     // TODO Process group element
+
+    for (tinyxml2::XMLElement* model = models->FirstChildElement("model"); model != nullptr; model = model->NextSiblingElement("model")){
+        std::vector<Vertex> points = std::vector<Vertex>();
+
+        std::cout << model->Attribute("file") << std::endl;
+        FILE* f = std::fopen(model->Attribute("file"), "rb");
+        int size;
+
+        std::fread(&size, sizeof(int), 1, f);
+        fread(points.data(), sizeof(Vertex), size, f);
+
+        for(const Vertex& v : points){
+            std::cout << v << std::endl;
+        }
+    }
 
     return 0;
 }
@@ -139,6 +161,8 @@ void renderScene() {
 }
 
 int main(int argc, char **argv) {
+    std::cout << std::filesystem::current_path() << std::endl;
+
     if (argc != 2) {
         perror("Not enough arguments");
 
