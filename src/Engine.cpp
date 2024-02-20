@@ -100,10 +100,11 @@ int parseXML(char * xmlFile) {
 
         std::fread(&size, sizeof(int), 1, f);
 
-        Vertex pts[size];
+        Vertex* pts = new Vertex[size];
         fread(pts, sizeof(Vertex), size, f);
 
         points = std::vector<Vertex>(pts, pts + size);
+        delete[] pts;
     }
 
     return 0;

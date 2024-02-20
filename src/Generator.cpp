@@ -4,9 +4,8 @@
 #include <string>
 #include <cstdio>
 #include <stdlib.h>
-#include <unistd.h>
 
-#include "../includes/common/Vertex.h"
+#include "Vertex.h"
 #include "Plane.h"
 #include "Box.h"
 #include "Sphere.h"
