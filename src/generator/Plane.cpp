@@ -6,12 +6,14 @@ std::vector<Vertex> Plane::createPlanePoints(int length, int divisions) {
     std::vector<Vertex> ans = std::vector<Vertex>();
     std::vector<Vertex> ans2 = std::vector<Vertex>();
 
-    const float step = (float) length / (float) divisions;
+	const float flength = static_cast<float>(length);
+	const float fdivisions = static_cast<float>(divisions);
 
-    for(int i=0;i<divisions;i++) { // linhas (x)
-        for(int j=0;j<divisions;j++) { // colunas (z)
-            ans.emplace_back((float) i*step - (float) length/2.0f,0.0f,(float) j*step - (float) length/2.0f);
+    const float step = flength / fdivisions;
 
+    for(int i = 0; i < divisions; i++) { // linhas (x)
+        for(int j = 0; j < divisions; j++) { // colunas (z)
+            ans.emplace_back(static_cast<float>(i) * step - flength / 2.0f, 0.0f, static_cast<float>(j) * step - flength / 2.0f);
         }
     }
     int size = ans.size();
