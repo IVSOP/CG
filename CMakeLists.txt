@@ -15,7 +15,8 @@ if (WIN32)
     set(CMAKE_PREFIX_PATH "C:/Program Files (x86)/freeglut")
 
 else (WIN32)
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS} -Wno-deprecated")
+	set(CMAKE_CXX_FLAGS_DEBUG "${GCC_COVERAGE_COMPILE_FLAGS} -Wno-deprecated ${CMAKE_CXX_FLAGS_DEBUG} -O0 -g3")
+	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS} -Wno-deprecated -O2 -Wall -Wextra -pedantic")
 endif(WIN32)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
@@ -82,7 +83,8 @@ add_executable(Generator
         src/generator/Box.cpp
         src/generator/Sphere.cpp
         src/generator/Cone.cpp
-        src/common/Vertex.cpp)
+        src/common/Vertex.cpp
+        src/common/Consts.cpp)
 
 target_include_directories(Generator
         PUBLIC includes/generator

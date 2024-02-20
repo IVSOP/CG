@@ -3,6 +3,8 @@
 #include <functional>
 #include <string>
 #include <cstdio>
+#include <stdlib.h>
+#include <unistd.h>
 
 #include "../includes/common/Vertex.h"
 #include "Plane.h"
@@ -30,7 +32,6 @@ int main(int argc, char **argv) {
 
             exit(-1);
         }
-
         storageFile = std::string(argv[4]);
 
         int length = std::stoi(std::string(argv[2]));
@@ -95,7 +96,7 @@ int main(int argc, char **argv) {
 
     points = primitiveMap[primitive].operator()();
 
-    FILE* f = std::fopen(storageFile.c_str(), "wb");
+    FILE* f = std::fopen(storageFile.c_str(), "w");
     int size = static_cast<int>(points.size());
 
     std::fwrite(&size, sizeof(int), 1, f);
