@@ -18,5 +18,4 @@ public:
     Point(int x, int y, int z) : x(x), y(y), z(z) {}
 };
 
-
 #endif //CG_POINT_H

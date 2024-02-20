@@ -1,6 +1,10 @@
 #include "tinyxml2.h"
 #include <iostream>
+#ifdef __APPLE__
+#include <GLUT/glut.h>
+#else
 #include <GL/glut.h>
+#endif
 
 /* Test variables */
 #define COUNTER_START 0.65
@@ -11,6 +15,8 @@ bool increment = true;
 /* End of test variables */
 
 GLdouble windowFov = 45.0f;
+GLdouble windowWidth = 512;
+GLdouble windowHeight = 512;
 GLdouble windowZNear = 1.0f;
 GLdouble windowZFar = 1000.0f;
 GLdouble cameraXPos = 0.0f;
@@ -22,6 +28,59 @@ GLdouble cameraZLook = -1.0f;
 GLdouble cameraXUp = 0.0f;
 GLdouble cameraYUp = 0.0f;
 GLdouble cameraZUp = -1.0f;
+
+int parseXML(char * xmlFile) {
+    tinyxml2::XMLDocument xmlDoc;
+
+    /*
+     * There has been an error loading the given file
+     * Either file doesn't exist (wrong path) or there has been another error
+     */
+    if (xmlDoc.LoadFile(xmlFile) != tinyxml2::XML_SUCCESS) {
+        perror("There has been an error reading the given file.");
+
+        return -1;
+    }
+
+    tinyxml2::XMLElement *root = xmlDoc.RootElement();
+
+    /* The given file doesn't have any root element */
+    if (root == nullptr) {
+        perror("The given XML file has no root element to read.");
+
+        return -1;
+    }
+
+    /* Acquire all needed elements from the XML file */
+    tinyxml2::XMLElement *window = root->FirstChildElement("window");
+    tinyxml2::XMLElement *camera = root->FirstChildElement("camera");
+    tinyxml2::XMLElement *group = root->FirstChildElement("group");
+
+    /* Acquire all needed sub-elements from the camera element */
+    tinyxml2::XMLElement *position = camera->FirstChildElement("position");
+    tinyxml2::XMLElement *lookAt = camera->FirstChildElement("lookAt");
+    tinyxml2::XMLElement *up = camera->FirstChildElement("up");
+    tinyxml2::XMLElement *projection = camera->FirstChildElement("projection");
+
+
+    /* Acquire all needed values to draw the window */
+    windowWidth = window->IntAttribute("width");
+    windowHeight = window->IntAttribute("height");
+    windowFov = projection->DoubleAttribute("fov");
+    windowZNear = projection->DoubleAttribute("near");
+    windowZFar = projection->DoubleAttribute("far");
+    cameraXPos = position->DoubleAttribute("x");
+    cameraYPos = position->DoubleAttribute("y");
+    cameraZPos = position->DoubleAttribute("z");
+    cameraXLook = lookAt->DoubleAttribute("x");
+    cameraYLook = lookAt->DoubleAttribute("y");
+    cameraZLook = lookAt->DoubleAttribute("z");
+    cameraXUp = up->DoubleAttribute("x");
+    cameraYUp = up->DoubleAttribute("y");
+    cameraZUp = up->DoubleAttribute("z");
+
+    // TODO Process group element
+}
 
 void setWindow(int width, int height) {
     width = std::max(1, width);
@@ -82,54 +141,7 @@ int main(int argc, char **argv) {
         return -1;
     }
 
-    tinyxml2::XMLDocument xmlDoc;
-
-    /*
-     * There has been an error loading the given file
-     * Either file doesn't exist (wrong path) or there has been another error
-     */
-    if (xmlDoc.LoadFile(argv[1]) != tinyxml2::XML_SUCCESS) {
-        perror("There has been an error reading the given file.");
-
-        return -1;
-    }
-
-    tinyxml2::XMLElement *root = xmlDoc.RootElement();
-
-    /* The given file doesn't have any root element */
-    if (root == nullptr) {
-        perror("The given XML file has no root element to read.");
-
-        return -1;
-    }
-
-    /* Acquire all needed elements from the XML file */
-    tinyxml2::XMLElement *window = root->FirstChildElement("window");
-    tinyxml2::XMLElement *camera = root->FirstChildElement("camera");
-    tinyxml2::XMLElement *group = root->FirstChildElement("group");
-
-    /* Acquire all needed sub-elements from the camera element */
-    tinyxml2::XMLElement *position = camera->FirstChildElement("position");
-    tinyxml2::XMLElement *lookAt = camera->FirstChildElement("lookAt");
-    tinyxml2::XMLElement *up = camera->FirstChildElement("up");
-    tinyxml2::XMLElement *projection = camera->FirstChildElement("projection");
-
-
-    /* Acquire all needed values to draw the window */
-    windowFov = projection->DoubleAttribute("fov");
-    windowZNear = projection->DoubleAttribute("near");
-    windowZFar = projection->DoubleAttribute("far");
-    cameraXPos = position->DoubleAttribute("x");
-    cameraYPos = position->DoubleAttribute("y");
-    cameraZPos = position->DoubleAttribute("z");
-    cameraXLook = lookAt->DoubleAttribute("x");
-    cameraYLook = lookAt->DoubleAttribute("y");
-    cameraZLook = lookAt->DoubleAttribute("z");
-    cameraXUp = up->DoubleAttribute("x");
-    cameraYUp = up->DoubleAttribute("y");
-    cameraZUp = up->DoubleAttribute("z");
-
-    // TODO Process group element
+    parseXML(argv[1]);
 
     /* GLUT init */
     glutInit(&argc, argv); // Initialize glut
@@ -147,7 +159,7 @@ int main(int argc, char **argv) {
      * The values passed here are only an indication, they may not be used as passed
      * Currently passing the values read on the XML file
      */
-    glutInitWindowSize(window->IntAttribute("width"), window->IntAttribute("height")); //
+    glutInitWindowSize(windowWidth, windowHeight);
 
     glutCreateWindow("Test");
 
