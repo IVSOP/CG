@@ -1,3 +1,5 @@
+#include <glm/glm.hpp>
+
 #include "tinyxml2.h"
 #include <iostream>
 #ifdef __APPLE__

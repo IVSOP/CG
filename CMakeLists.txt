@@ -58,6 +58,10 @@ else (WIN32) #Linux and Mac
 
 endif(WIN32)
 
+add_subdirectory(external/glm)
+include_directories(external/glm)
+# link_libraries(glm::glm)
+
 add_executable(Engine
         src/Engine.cpp
         src/TinyXML2/tinyxml2.cpp)
