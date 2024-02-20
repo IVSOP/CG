@@ -82,6 +82,8 @@ int parseXML(char * xmlFile) {
     cameraZUp = up->DoubleAttribute("z");
 
     // TODO Process group element
+
+    return 0;
 }
 
 void setWindow(int width, int height) {

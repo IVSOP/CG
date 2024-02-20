@@ -4,8 +4,33 @@
 
 std::vector<Point> Plane::createPlanePoints(int length, int divisions) {
     std::vector<Point> ans = std::vector<Point>();
+    std::vector<Point> ans2 = std::vector<Point>();
+    const int step = length / divisions;
 
-    ans.emplace_back(3, 4, 5);
+    for(int i=0;i<divisions;i++) { // linhas (x)
+        for(int j=0;j<divisions;j++) { // colunas (z)
+            ans.emplace_back(i*step - length/2.0f,0.0f,j*step - length/2.0f);
 
-    return ans;
+        }
+    }
+    int size = ans.size();
+
+    for(int i = 0; i < size; i++) {
+        int right = i + divisions + 1;
+        int down = i + 1;
+        int right_down = i + divisions + 2;
+
+        if (right < size && down < size && right_down < size) {
+             // triangulo que desce
+            ans2.emplace_back(ans.at(i));
+            ans2.emplace_back(ans.at(down));
+            ans2.emplace_back(ans.at(right_down));
+            // triangulo que sobe um bocado
+            ans2.emplace_back(ans.at(i));
+            ans2.emplace_back(ans.at(right_down));
+            ans2.emplace_back(ans.at(right));
+        }
+    }
+
+    return ans2;
 }
