@@ -36,6 +36,7 @@ GLdouble cameraZLook = -1.0f;
 GLdouble cameraXUp = 0.0f;
 GLdouble cameraYUp = 0.0f;
 GLdouble cameraZUp = -1.0f;
+std::vector<Vertex> points = std::vector<Vertex>();
 
 int parseXML(char * xmlFile) {
     tinyxml2::XMLDocument xmlDoc;
@@ -102,11 +103,7 @@ int parseXML(char * xmlFile) {
         Vertex pts[size];
         fread(pts, sizeof(Vertex), size, f);
 
-        std::vector<Vertex> points = std::vector<Vertex>(pts, pts + size);
-
-        for(const Vertex& v : points){
-            std::cout << v << std::endl;
-        }
+        points = std::vector<Vertex>(pts, pts + size);
     }
 
     return 0;
@@ -148,6 +145,16 @@ void renderScene() {
               cameraXUp, cameraYUp, cameraZUp);
 
     // Drawing instructions
+    glBegin(GL_TRIANGLES);
+
+    for(int i = 0; i < points.size(); i++){
+        Vertex v = points[i];
+
+        glVertex3f(v.getX(), v.getY(), v.getZ());
+    }
+
+    glEnd();
+
     /* Test -> swap for loaded file instructions */
     glRotated(30 * (counter - COUNTER_START), 0, 0, 1);
 
