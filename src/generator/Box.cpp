@@ -41,7 +41,6 @@ std::vector<Vertex> Box::createBoxPoints(int length, int divisions) {
     }
 
     //plano frente
-    glm::mat4 rotXMatrix = Consts::rotZMatrix(270.0f);
 
     for (auto point: ans) {
         currPoint = rotXMatrix * point.getCoords();
