@@ -127,6 +127,8 @@ int parseXML(char * xmlFile) {
         points = std::vector<Vertex>(pts, pts + size);
         delete[] pts;
     }
+    printf("Got final number of points: %lu\n", points.size());
+
 
     return 0;
 }
@@ -178,8 +180,9 @@ void renderScene() {
 
     for(int i = 0; i < points.size(); i++){
         Vertex v = points[i];
-
-        glVertex3f(v.getX(), v.getY(), v.getZ());
+        
+            glColor3f(0.01f * i, 1.0f - 0.01f * i, 0.0f);
+            glVertex3f(v.getX(), v.getY(), v.getZ());
     }
 
     glEnd();
