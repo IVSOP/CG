@@ -38,6 +38,27 @@ GLdouble cameraYUp = 0.0f;
 GLdouble cameraZUp = -1.0f;
 std::vector<Vertex> points = std::vector<Vertex>();
 
+//mover câmera
+float angleY = 0.0f;
+
+void drawAxis() {
+        glBegin(GL_LINES);
+// X axis in red
+    glColor3f(1.0f, 0.0f, 0.0f);
+    glVertex3f(-100.0f, 0.0f, 0.0f);
+    glVertex3f( 100.0f, 0.0f, 0.0f);
+// Y Axis in Green
+    glColor3f(0.0f, 1.0f, 0.0f);
+    glVertex3f(0.0f, -100.0f, 0.0f);
+    glVertex3f(0.0f, 100.0f, 0.0f);
+// Z Axis in Blue
+    glColor3f(0.0f, 0.0f, 1.0f);
+    glVertex3f(0.0f, 0.0f, -100.0f);
+    glVertex3f(0.0f, 0.0f, 100.0f);
+    glColor3f(1.0f, 1.0f, 1.0f);
+    glEnd();
+}
+
 int parseXML(char * xmlFile) {
     tinyxml2::XMLDocument xmlDoc;
 
@@ -145,10 +166,13 @@ void renderScene() {
               cameraXLook, cameraYLook, cameraZLook, // Place to where the camera is looking at
               cameraXUp, cameraYUp, cameraZUp);
 
+    drawAxis();
+
     // Drawing instructions
     // TODO Check with teacher
+    glRotatef(angleY, 0, 1, 0);
 
-    glPolygonMode(GL_FRONT, GL_LINES);
+    glPolygonMode(GL_FRONT, GL_LINE);
 
     glBegin(GL_TRIANGLES);
 
@@ -176,6 +200,15 @@ void renderScene() {
 
     // End of frame
     glutSwapBuffers();
+}
+
+//DEBUG
+void rotateCenter(int key, int x, int y) {
+    switch(key) {
+        case GLUT_KEY_LEFT: angleY -= 10.0f; break;
+        case GLUT_KEY_RIGHT: angleY += 10.0f; break;
+    }
+    glutPostRedisplay();
 }
 
 int main(int argc, char **argv) {
@@ -215,10 +248,13 @@ int main(int argc, char **argv) {
     glutDisplayFunc(renderScene);
 
     /* Function responsible for continuously rendering the scene */
-    glutIdleFunc(renderScene);
+    // glutIdleFunc(renderScene);
 
     /* Function responsible for resizing the window */
     glutReshapeFunc(setWindow);
+
+    //DEBUG
+    glutSpecialFunc(rotateCenter);
 
     /* OpenGL settings */
     glEnable(GL_DEPTH_TEST);
