@@ -1,5 +1,6 @@
 #include "Consts.h"
-#include <math.h>
+
+#define M_PI 3.1416f
 
 glm::mat4 Consts::rotYMatrix(float angle) {
     float rad_angle = angle * (M_PI / 180);
