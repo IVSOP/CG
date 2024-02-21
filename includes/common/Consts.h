@@ -9,6 +9,7 @@ public:
     static glm::mat4 rotYMatrix(float angle);
     static glm::mat4 rotXMatrix(float angle);
     static glm::mat4 rotZMatrix(float angle);
+    static glm::mat4 translateMatrix(float x, float y, float z);
 };
 
 #endif //CG_CONSTS_H

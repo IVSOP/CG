@@ -31,4 +31,10 @@ glm::mat4 Consts::rotZMatrix(float angle) {
     return rotZMatrix;
 }
 
-
+glm::mat4 Consts::translateMatrix(float x, float y, float z) {
+    glm::mat4 translateYMatrix = glm::mat4(1.0f);
+    translateYMatrix[3][0] = x;
+    translateYMatrix[3][1] = y;
+    translateYMatrix[3][2] = z;
+    return translateYMatrix;
+}
