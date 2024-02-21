@@ -114,8 +114,6 @@ int parseXML(char * xmlFile) {
 
     for (tinyxml2::XMLElement* model = models->FirstChildElement("model"); model != nullptr; model = model->NextSiblingElement("model")){
 
-
-        std::cout << model->Attribute("file") << std::endl;
         FILE* f = std::fopen(model->Attribute("file"), "rb");
         int size;
 
@@ -127,8 +125,6 @@ int parseXML(char * xmlFile) {
         points = std::vector<Vertex>(pts, pts + size);
         delete[] pts;
     }
-    printf("Got final number of points: %lu\n", points.size());
-
 
     return 0;
 }
@@ -170,7 +166,6 @@ void renderScene() {
 
     drawAxis();
 
-    // Drawing instructions
     // TODO Check with teacher
     glRotatef(angleY, 0, 1, 0);
 
@@ -180,9 +175,7 @@ void renderScene() {
 
     for(int i = 0; i < points.size(); i++){
         Vertex v = points[i];
-        
-            glColor3f(0.01f * i, 1.0f - 0.01f * i, 0.0f);
-            glVertex3f(v.getX(), v.getY(), v.getZ());
+        glVertex3f(v.getX(), v.getY(), v.getZ());
     }
 
     glEnd();
@@ -202,6 +195,7 @@ void renderScene() {
     /* Test's end */
 
     // End of frame
+
     glutSwapBuffers();
 }
 
@@ -215,7 +209,6 @@ void rotateCenter(int key, int x, int y) {
 }
 
 int main(int argc, char **argv) {
-    std::cout << std::filesystem::current_path() << std::endl;
 
     if (argc != 2) {
         perror("Not enough arguments");

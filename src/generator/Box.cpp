@@ -44,7 +44,7 @@ std::vector<Vertex> Box::createBoxPoints(int length, int divisions) {
         res.emplace_back(currPoint.x + float(length), currPoint.y, currPoint.z);
     }
 
-    //plano trás
+    // //plano trás
     glm::mat4 rotXMatrix = Consts::rotXMatrix(-90.0f);
 
     for (auto point: planeFacingUp) {
@@ -54,7 +54,6 @@ std::vector<Vertex> Box::createBoxPoints(int length, int divisions) {
     }
 
     //plano frente
-
     for (auto point: planeFacingDown) {
         currPoint = rotXMatrix * point.getCoords();
         currPoint -= shift;
