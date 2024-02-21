@@ -36,7 +36,7 @@ int main(int argc, char **argv) {
         int length = std::stoi(std::string(argv[2]));
         int divisions = std::stoi(std::string(argv[3]));
 
-        return Plane::createPlanePoints(length, divisions);
+        return Plane::createPlane(length, divisions);
     }});
 
     primitiveMap.insert({"box", [&]() {

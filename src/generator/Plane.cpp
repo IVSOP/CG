@@ -2,7 +2,53 @@
 
 #include "Plane.h"
 
-std::vector<Vertex> Plane::createPlanePoints(int length, int divisions) {
+std::vector<Vertex> Plane::createPlanePoints(int length, int divisions){
+    std::vector<Vertex> ans = std::vector<Vertex>();
+
+	const float flength = static_cast<float>(length);
+	const float fdivisions = static_cast<float>(divisions+1);
+
+    const float step = flength / fdivisions;
+
+    for(int i = 0; i <= divisions; i++) { // linhas (x)
+        for(int j = 0; j <= divisions; j++) { // colunas (z)
+            ans.emplace_back(static_cast<float>(i) * step - flength / 2.0f, 0.0f, static_cast<float>(j) * step - flength / 2.0f);
+        }
+    }
+
+    return ans;
+}
+
+std::vector<Vertex> Plane::createPlaneTriangles(std::vector<Vertex> &points, int divisions) {
+    int size = points.size();
+    std::vector<Vertex> ans = std::vector<Vertex>();
+
+    for(int i = 0; i < size; i++) {
+        int right = i + divisions + 1;
+        int down = i + 1;
+        int right_down = i + divisions + 2;
+
+        if (right < size && down < size && right_down < size) {
+             // triangulo que desce
+            ans.emplace_back(points.at(i));
+            ans.emplace_back(points.at(down));
+            ans.emplace_back(points.at(right_down));
+            // triangulo que sobe um bocado
+            ans.emplace_back(points.at(i));
+            ans.emplace_back(points.at(right_down));
+            ans.emplace_back(points.at(right));
+        }
+    }
+
+    return ans;
+}
+
+std::vector<Vertex> Plane::createPlane(int length, int divisions){
+    std::vector<Vertex> points = createPlanePoints(length, divisions);
+    return createPlaneTriangles(points, divisions);
+}
+
+std::vector<Vertex> Plane::createPlanePointsNoTranslate(int length, int divisions) {
     std::vector<Vertex> ans = std::vector<Vertex>();
     std::vector<Vertex> ans2 = std::vector<Vertex>();
 
@@ -13,7 +59,7 @@ std::vector<Vertex> Plane::createPlanePoints(int length, int divisions) {
 
     for(int i = 0; i <= divisions; i++) { // linhas (x)
         for(int j = 0; j <= divisions; j++) { // colunas (z)
-            ans.emplace_back(static_cast<float>(i) * step - flength / 2.0f, 0.0f, static_cast<float>(j) * step - flength / 2.0f);
+            ans.emplace_back(static_cast<float>(i) * step, 0.0f, static_cast<float>(j) * step);
         }
     }
 

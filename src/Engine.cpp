@@ -148,7 +148,7 @@ void renderScene() {
     // Drawing instructions
     // TODO Check with teacher
 
-    glPolygonMode(GL_FRONT, GL_LINES);
+    glPolygonMode(GL_FRONT, GL_LINE);
 
     glBegin(GL_TRIANGLES);
 
