@@ -69,11 +69,14 @@ include_directories(external/glm)
 # link_libraries(glm::glm)
 
 add_executable(Engine
-        src/Engine.cpp
+        src/Engine/Engine.cpp
+		src/Engine/Renderer.cpp
+		src/Engine/Camera.cpp
         src/TinyXML2/tinyxml2.cpp
         src/common/Vertex.cpp)
 
 target_include_directories(Engine
+		PUBLIC includes/Engine
         PUBLIC includes/TinyXML2
         PUBLIC includes/common)
 

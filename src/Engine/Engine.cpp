@@ -10,9 +10,21 @@
 
 #ifdef __APPLE__
 #include <GLUT/glut.h>
+#include <GLUT/freeglut_ext.h>
 #else
 #include <GL/glut.h>
+#include <GL/freeglut_ext.h>
 #endif
+
+#include "Renderer.h"
+#include "Camera.h"
+
+
+
+#define FPS 60.0f
+#define PHYS_STEP 1.0f / FPS
+
+
 
 /* Test variables */
 #define COUNTER_START 0.65
@@ -38,26 +50,8 @@ GLdouble cameraYUp = 0.0f;
 GLdouble cameraZUp = -1.0f;
 std::vector<Vertex> points = std::vector<Vertex>();
 
-//mover câmera
-float angleY = 0.0f;
-
-void drawAxis() {
-        glBegin(GL_LINES);
-// X axis in red
-    glColor3f(1.0f, 0.0f, 0.0f);
-    glVertex3f(-100.0f, 0.0f, 0.0f);
-    glVertex3f( 100.0f, 0.0f, 0.0f);
-// Y Axis in Green
-    glColor3f(0.0f, 1.0f, 0.0f);
-    glVertex3f(0.0f, -100.0f, 0.0f);
-    glVertex3f(0.0f, 100.0f, 0.0f);
-// Z Axis in Blue
-    glColor3f(0.0f, 0.0f, 1.0f);
-    glVertex3f(0.0f, 0.0f, -100.0f);
-    glVertex3f(0.0f, 0.0f, 100.0f);
-    glColor3f(1.0f, 1.0f, 1.0f);
-    glEnd();
-}
+Renderer renderer;
+Camera camera;
 
 int parseXML(char * xmlFile) {
     tinyxml2::XMLDocument xmlDoc;
@@ -156,62 +150,50 @@ void setWindow(int width, int height) {
     glViewport(0, 0, width, height);
 }
 
-void renderScene() {
-    // Clear buffers
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+//DEBUG
+// void rotateCenter(int key, int x, int y) {
+//     switch(key) {
+//         case GLUT_KEY_LEFT: angleY -= 10.0f; break;
+//         case GLUT_KEY_RIGHT: angleY += 10.0f; break;
+//     }
+//     glutPostRedisplay();
+// }
 
-    // Load identity matrix
-    glLoadIdentity();
-
-    // Set camera position an angle
-    gluLookAt(cameraXPos, cameraYPos, cameraZPos, // Camera position
-              cameraXLook, cameraYLook, cameraZLook, // Place to where the camera is looking at
-              cameraXUp, cameraYUp, cameraZUp);
-
-    drawAxis();
-
-    // Drawing instructions
-    // TODO Check with teacher
-    glRotatef(angleY, 0, 1, 0);
-
-    glPolygonMode(GL_FRONT, GL_LINE);
-
-    glBegin(GL_TRIANGLES);
-
-    for(int i = 0; i < points.size(); i++){
-        Vertex v = points[i];
-        
-            glColor3f(0.01f * i, 1.0f - 0.01f * i, 0.0f);
-            glVertex3f(v.getX(), v.getY(), v.getZ());
-    }
-
-    glEnd();
-
-    /* Test -> swap for loaded file instructions */
-    /*
-    glRotated(30 * (counter - COUNTER_START), 0, 0, 1);
-
-    glutWireTeapot(counter);
-
-    if (increment && counter >= COUNTER_STOP) increment = false;
-
-    if (!increment && counter <= COUNTER_START) increment = true;
-
-    counter = increment ? counter + 0.005 : counter - 0.005;
-    */
-    /* Test's end */
-
-    // End of frame
-    glutSwapBuffers();
+void handleKey(unsigned char key, int x, int y) {
+	switch (key) {
+		case 'w':
+			camera.ProcessKeyboard(FRONT, PHYS_STEP);
+			break;
+		case 'a':
+			camera.ProcessKeyboard(LEFT, PHYS_STEP);
+			break;
+		case 's':
+			camera.ProcessKeyboard(BACK, PHYS_STEP);
+			break;
+		case 'd':
+			camera.ProcessKeyboard(RIGHT, PHYS_STEP);
+			break;
+		case ' ':
+			camera.ProcessKeyboard(UP, PHYS_STEP);
+			break;
+		default:
+			break;
+	}
 }
 
-//DEBUG
-void rotateCenter(int key, int x, int y) {
-    switch(key) {
-        case GLUT_KEY_LEFT: angleY -= 10.0f; break;
-        case GLUT_KEY_RIGHT: angleY += 10.0f; break;
-    }
-    glutPostRedisplay();
+void handleSpecialKey(int key, int x, int y) {
+	switch (key) {
+		case GLUT_KEY_ALT_L:
+			camera.ProcessKeyboard(DOWN, PHYS_STEP);
+			break;
+		default:
+			break;
+	}
+}
+
+
+void renderScene() {
+	renderer.draw(points, camera);
 }
 
 int main(int argc, char **argv) {
@@ -224,6 +206,8 @@ int main(int argc, char **argv) {
     }
 
     parseXML(argv[1]);
+
+	camera = Camera(glm::vec3(cameraXPos, cameraYPos, cameraZPos), glm::vec3(cameraXLook, cameraYLook, cameraZLook), glm::vec3(cameraXUp, cameraYUp, cameraZUp));
 
     /* GLUT init */
     glutInit(&argc, argv); // Initialize glut
@@ -251,18 +235,26 @@ int main(int argc, char **argv) {
     glutDisplayFunc(renderScene);
 
     /* Function responsible for continuously rendering the scene */
-    // glutIdleFunc(renderScene);
+    glutIdleFunc(renderScene);
 
     /* Function responsible for resizing the window */
     glutReshapeFunc(setWindow);
 
     //DEBUG
-    glutSpecialFunc(rotateCenter);
+    glutSpecialFunc(handleSpecialKey);
+	glutKeyboardFunc(handleKey);
 
     /* OpenGL settings */
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+
+	
+
+	// porque e que isto nao funciona sem a idle??????????????????????????????????????????????????
+	// while(true) {
+	// 	glutMainLoopEvent();
+	// }
 
     /* GLUTS main cycle */
     glutMainLoop();
