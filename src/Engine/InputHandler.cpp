@@ -31,6 +31,7 @@ void InputHandler::pressKey(unsigned char key, int x, int y) {
 			if (inMenu) {
 				glutSetCursor(GLUT_CURSOR_NONE);
 				inMenu = false;
+				glutWarpPointer(curX, curY);
 			} else {
 				glutSetCursor(GLUT_CURSOR_INHERIT);
 				inMenu = true;
