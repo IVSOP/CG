@@ -133,6 +133,8 @@ void setWindow(int width, int height) {
 
     // Set viewport to be the entire window
     glViewport(0, 0, windowWidth, windowHeight);
+
+	inputHandler.setMouse(windowWidth / 2, windowHeight / 2);
 }
 
 //DEBUG
@@ -231,6 +233,7 @@ int main(int argc, char **argv) {
 	// hide mouse
 	glutSetCursor(GLUT_CURSOR_NONE);
 
+	inputHandler.setMouse(windowWidth / 2, windowHeight / 2);
 	while(true) {
 		glutMainLoopEvent();
 		inputHandler.applyToCamera(camera, windowWidth, windowHeight);

@@ -1,9 +1,15 @@
 #include "InputHandler.h"
 
 InputHandler::InputHandler()
-: keyInfo(std::make_unique<KeyInfo []>(MAX_KEYS_ID + 1)), lastX(0.0f), lastY(0.0f), curX(0.0f), curY(0.0f)
+: keyInfo(std::make_unique<KeyInfo []>(MAX_KEYS_ID + 1)), curX(0.0f), curY(0.0f)
 {
 
+}
+
+void InputHandler::setMouse(int x, int y) {
+	curX = x;
+	curY = y;
+	glutWarpPointer(x, y);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////// e preciso reformular isto tudo completamente para usar os codigos ASCII
@@ -81,10 +87,6 @@ void InputHandler::releaseSpecialKey(int key, int x, int y) {
 }
 
 void InputHandler::moveMouseTo(int x, int y) {
-	// ??????????????????????????? sem isto nao da mas isto nao devia fazer diferenca wtf
-	this->lastX = this->curX;
-	this->lastY = this->curY;
-
 	this->curX = static_cast<float>(x);
 	this->curY = static_cast<float>(y);
 }
@@ -128,14 +130,11 @@ void InputHandler::applyToCamera(Camera &camera, int windowWidth, int windowHeig
 		camera.ProcessKeyboard(DOWN, PHYS_STEP);
 	}
 
-	const float xoffset = curX - lastX;
-	const float yoffset = lastY - curY; // reversed since y-coordinates go from bottom to top
-
-	this->lastX = this->curX;
-	this->lastY = this->curY;
-
 	const int center_x = windowWidth / 2;
 	const int center_y = windowHeight / 2;
+
+	const float xoffset = curX - center_x;
+	const float yoffset = center_y - curY; // reversed since y-coordinates go from bottom to top
 
 	if (curX != center_x || curY != center_y) {
 		glutWarpPointer(center_x, center_y);

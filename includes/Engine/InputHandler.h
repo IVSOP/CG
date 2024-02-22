@@ -172,13 +172,12 @@ public:
 	std::unique_ptr<KeyInfo []> keyInfo; // [MAX_KEYS_ID + 1]
 
 	// mouse
-	float lastX;
-	float lastY;
 	float curX;
 	float curY;
 
 
 	InputHandler();
+	void setMouse(int x, int y); // para nao dar cabo de tudo, importante meter isto logo que possivel a width / 2 e height / 2. obrigado pela compreensao
 	~InputHandler() = default;
 
 	void pressKey(unsigned char key, int x, int y);
