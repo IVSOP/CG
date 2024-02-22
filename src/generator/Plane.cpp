@@ -17,30 +17,7 @@ std::vector<Vertex> Plane::createPlanePoints(const int length, const int divisio
         }
     }
 
-    // for (auto point: ans) {
-    //     std::cout << point << std::endl;
-    // }
-
     int size = ans.size();
-
-    printf("Intial points count: %d\n",size);
-
-    // for(int i = 0; i < size; i++) {
-    //     int right = i + divisions + 1;
-    //     int down = i + 1;
-    //     int right_down = i + divisions + 2;
-
-    //     if (right < size && down < size && right_down < size) {
-    //          // triangulo que desce
-    //         ans2.emplace_back(ans.at(i));
-    //         ans2.emplace_back(ans.at(down));
-    //         ans2.emplace_back(ans.at(right_down));
-    //         // triangulo que sobe um bocado
-    //         ans2.emplace_back(ans.at(i));
-    //         ans2.emplace_back(ans.at(right_down));
-    //         ans2.emplace_back(ans.at(right));
-    //     }
-    // }
 
     for(int i = 0; i < divisions * (divisions +1) ; i += (divisions + 1)) {
         for (int j = i; j < i + divisions; j += 1) {
@@ -58,7 +35,6 @@ std::vector<Vertex> Plane::createPlanePoints(const int length, const int divisio
         }
     }
 
-    printf("Final points count: %lu\n", ans2.size());
     return ans2;
 }
 
@@ -79,18 +55,17 @@ std::vector<Vertex> Plane::createPlanePointsNoTranslate(const int length, const 
 
     int size = ans.size();
 
-    for(int i = 0; i < size; i++) {
-        int right = i + divisions + 1;
-        int down = i + 1;
-        int right_down = i + divisions + 2;
-
-        if (right < size && down < size && right_down < size) {
-             // triangulo que desce
-            ans2.emplace_back(ans.at(i));
+    for(int i = 0; i < divisions * (divisions +1) ; i += (divisions + 1)) {
+        for (int j = i; j < i + divisions; j += 1) {
+            int right = j + divisions + 1;
+            int down = j + 1;
+            int right_down = j + divisions + 2;
+            // triangulo que desce
+            ans2.emplace_back(ans.at(j));
             ans2.emplace_back(ans.at(down));
             ans2.emplace_back(ans.at(right_down));
             // triangulo que sobe um bocado
-            ans2.emplace_back(ans.at(i));
+            ans2.emplace_back(ans.at(j));
             ans2.emplace_back(ans.at(right_down));
             ans2.emplace_back(ans.at(right));
         }

@@ -108,8 +108,6 @@ int parseXML(char * xmlFile) {
 
     for (tinyxml2::XMLElement* model = models->FirstChildElement("model"); model != nullptr; model = model->NextSiblingElement("model")){
 
-
-        std::cout << model->Attribute("file") << std::endl;
         FILE* f = std::fopen(model->Attribute("file"), "rb");
         int size;
 
@@ -121,8 +119,6 @@ int parseXML(char * xmlFile) {
         points = std::vector<Vertex>(pts, pts + size);
         delete[] pts;
     }
-    printf("Got final number of points: %lu\n", points.size());
-
 
     return 0;
 }
@@ -197,7 +193,6 @@ void renderScene() {
 }
 
 int main(int argc, char **argv) {
-    std::cout << std::filesystem::current_path() << std::endl;
 
     if (argc != 2) {
         perror("Not enough arguments");
