@@ -245,16 +245,8 @@ int main(int argc, char **argv) {
 	// hide mouse
 	glutSetCursor(GLUT_CURSOR_NONE);
 
-	inputHandler.moveMouseTo(windowWidth / 2, windowHeight / 2);
-	while(true) {
-#ifdef __APPLE__
-		glutCheckLoop();
-#else
-        glutMainLoopEvent();
-#endif
-		inputHandler.applyToCamera(camera, windowWidth, windowHeight);
-		renderScene();
-	}
+	glutTimerFunc(PHYS_STEP * 1000.0f, loopFunc, 0);
+	glutMainLoop();
 
     return 0;
 }
