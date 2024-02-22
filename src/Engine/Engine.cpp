@@ -6,11 +6,17 @@
 #include "tinyxml2.h"
 #include "Vertex.h"
 
+#ifdef __APPLE__
+#include <GLUT/glut.h>
+// #include <GLUT/freeglut_ext.h>
+#else
+#include <GL/glut.h>
+#include <GL/freeglut_ext.h>
+#endif
+
 #include "Renderer.h"
 #include "Camera.h"
 #include "InputHandler.h"
-
-
 
 /* Test variables */
 #define COUNTER_START 0.65
@@ -235,7 +241,11 @@ int main(int argc, char **argv) {
 
 	inputHandler.moveMouseTo(windowWidth / 2, windowHeight / 2);
 	while(true) {
-		glutMainLoopEvent();
+#ifdef __APPLE__
+		glutCheckLoop();
+#else
+        glutMainLoopEvent();
+#endif
 		inputHandler.applyToCamera(camera, windowWidth, windowHeight);
 		renderScene();
 	}
