@@ -6,12 +6,6 @@ InputHandler::InputHandler()
 
 }
 
-void InputHandler::setMouse(int x, int y) {
-	curX = x;
-	curY = y;
-	glutWarpPointer(x, y);
-}
-
 ////////////////////////////////////////////////////////////////////////////////////////// e preciso reformular isto tudo completamente para usar os codigos ASCII
 ////////////////////////////////////////////////////////////////////////////////////////// tive um total de 0 paciencia deixei so WASD+espaco
 void InputHandler::pressKey(unsigned char key, int x, int y) {
@@ -32,6 +26,15 @@ void InputHandler::pressKey(unsigned char key, int x, int y) {
 		case ' ':
 			keys[ENGINE_KEY_SPACE].press();
 			break;
+		case 27: // codigo ascii do ESC, cursed mas nao encontrei macro no glut
+			keys[ENGINE_KEY_ESCAPE].press();
+			if (inMenu) {
+				glutSetCursor(GLUT_CURSOR_NONE);
+				inMenu = false;
+			} else {
+				glutSetCursor(GLUT_CURSOR_INHERIT);
+				inMenu = true;
+			}
 		default:
 			break;
 	}
@@ -57,6 +60,8 @@ void InputHandler::releaseKey(unsigned char key, int x, int y) {
 		case ' ':
 			keys[ENGINE_KEY_SPACE].release();
 			break;
+		case 27: // codigo ascii do ESC, cursed mas nao encontrei macro no glut
+			keys[ENGINE_KEY_ESCAPE].release();
 		default:
 			break;
 	}
@@ -87,8 +92,10 @@ void InputHandler::releaseSpecialKey(int key, int x, int y) {
 }
 
 void InputHandler::moveMouseTo(int x, int y) {
-	this->curX = static_cast<float>(x);
-	this->curY = static_cast<float>(y);
+	if (!inMenu) {
+		this->curX = static_cast<float>(x);
+		this->curY = static_cast<float>(y);
+	}
 }
 
 std::vector<KeyInfo> InputHandler::getKeysPressedOrHeld() const {
@@ -130,15 +137,16 @@ void InputHandler::applyToCamera(Camera &camera, int windowWidth, int windowHeig
 		camera.ProcessKeyboard(DOWN, PHYS_STEP);
 	}
 
-	const int center_x = windowWidth / 2;
-	const int center_y = windowHeight / 2;
+	if (!inMenu) {
+		const int center_x = windowWidth / 2;
+		const int center_y = windowHeight / 2;
 
-	const float xoffset = curX - center_x;
-	const float yoffset = center_y - curY; // reversed since y-coordinates go from bottom to top
+		const float xoffset = curX - center_x;
+		const float yoffset = center_y - curY; // reversed since y-coordinates go from bottom to top
 
-	if (curX != center_x || curY != center_y) {
-		glutWarpPointer(center_x, center_y);
-		camera.ProcessMouseMovement(xoffset, yoffset);
+		if (curX != center_x || curY != center_y) {
+			glutWarpPointer(center_x, center_y);
+			camera.ProcessMouseMovement(xoffset, yoffset);
+		}
 	}
-
 }

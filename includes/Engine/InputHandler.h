@@ -175,16 +175,17 @@ public:
 	float curX;
 	float curY;
 
+	bool inMenu; // faz o rato nao virar a camera
+
 
 	InputHandler();
-	void setMouse(int x, int y); // para nao dar cabo de tudo, importante meter isto logo que possivel a width / 2 e height / 2. obrigado pela compreensao
 	~InputHandler() = default;
 
 	void pressKey(unsigned char key, int x, int y);
 	void releaseKey(unsigned char key, int x, int y);
 	void pressSpecialKey(int key, int x, int y);
 	void releaseSpecialKey(int key, int x, int y);
-	void moveMouseTo(int x, int y);
+	void moveMouseTo(int x, int y); // para nao dar cabo de tudo, importante meter isto logo que possivel a width / 2 e height / 2. obrigado pela compreensao
 
 	// devolve teclas com estado diferente de RELEASE
 	std::vector<KeyInfo> getKeysPressedOrHeld() const;
