@@ -57,7 +57,7 @@ void Renderer::draw(std::vector<Vertex> &verts, Camera &camera) const {
     for(int i = 0; i < verts.size(); i++){
         Vertex &v = verts[i];
         
-		glColor3f(0.01f * i, 1.0f - 0.01f * i, 0.0f);
+		// glColor3f(0.01f * i, 1.0f - 0.01f * i, 0.0f);
 		glVertex3fv(glm::value_ptr(v.getCoords()));
     }
 

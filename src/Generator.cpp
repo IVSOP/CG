@@ -33,7 +33,7 @@ int main(int argc, char **argv) {
         }
         storageFile = std::string(argv[4]);
 
-        int length = std::stoi(std::string(argv[2]));
+        float length = std::stof(std::string(argv[2]));
         int divisions = std::stoi(std::string(argv[3]));
 
         return Plane::createPlanePoints(length, divisions);
@@ -48,7 +48,7 @@ int main(int argc, char **argv) {
 
         storageFile = std::string(argv[4]);
 
-        int length = std::stoi(std::string(argv[2]));
+        float length = std::stof(std::string(argv[2]));
         int divisions = std::stoi(std::string(argv[3]));
 
         return Box::createBoxPoints(length, divisions);
@@ -79,8 +79,8 @@ int main(int argc, char **argv) {
 
         storageFile = std::string(argv[6]);
 
-        int radius = std::stoi(std::string(argv[2]));
-        int height = std::stoi(std::string(argv[3]));
+        float radius = std::stof(std::string(argv[2]));
+        float height = std::stof(std::string(argv[3]));
         int slices = std::stoi(std::string(argv[4]));
         int stacks = std::stoi(std::string(argv[5]));
 

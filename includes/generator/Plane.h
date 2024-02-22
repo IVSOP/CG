@@ -7,8 +7,8 @@
 
 class Plane {
 public:
-    static std::vector<Vertex> createPlanePoints(const int length, const int divisions);
-    static std::vector<Vertex> createPlanePointsNoTranslate(const int length, const int divisions);
+    static std::vector<Vertex> createPlanePoints(const float length, const int divisions);
+    static std::vector<Vertex> createPlanePointsNoTranslate(const float length, const int divisions);
 };
 
 

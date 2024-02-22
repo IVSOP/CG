@@ -7,7 +7,7 @@
 
 class Box {
 public:
-    static std::vector<Vertex> createBoxPoints(int length, int divisions);
+    static std::vector<Vertex> createBoxPoints(float length, int divisions);
 };
 
 

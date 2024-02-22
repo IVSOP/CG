@@ -7,7 +7,7 @@
 
 class Cone {
 public:
-    static std::vector<Vertex> createConePoints(int radius, int height, int slices, int stacks);
+    static std::vector<Vertex> createConePoints(float radius, float height, int slices, int stacks);
 };
 
 
