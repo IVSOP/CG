@@ -43,36 +43,53 @@ std::vector<Vertex> Sphere::createSpherePoints(const float radius, const int sli
     }
 
     for (auto point: ans) {
-        std::cout << point << std::endl;
         std::cout << glm::length(point.getCoords()) << std::endl;
+        std::cout << point << std::endl;
     }
     printf("Total points:%lu",ans.size());
 
     int currLinePoints, nextLinePoints;
 
-    // Criar triângulos
-    // for (int i=0; i < (stacks -1); i += 1) { // iterar sobre todas as stacks
-    //     currLinePoints = i * (slices +1); // início da linha de pontos atual
-    //     nextLinePoints = (i+1) * (slices+1); // início da próxima linha de pontos
-        
-    //     for (int j=0; i < slices; i++) {
-    //         // para cada quadrado do círculo fazem-se dois triangulos:
-    //         // |.
-    //         // |_.
-    //         ans2.emplace_back(ans[currLinePoints + j]);
-    //         ans2.emplace_back(ans[nextLinePoints + j]);
-    //         ans2.emplace_back(ans[nextLinePoints + j + 1]);
-    //         //  .|
-    //         // ._|
-    //         ans2.emplace_back(ans[currLinePoints + j]);
-    //         ans2.emplace_back(ans[nextLinePoints + j + 1]);
-    //         ans2.emplace_back(ans[currLinePoints + j + 1]);
-    //     }
-    // }
-
-    for(auto point: ans) {
-        std::cout << point << std::endl;
+    for (int i=0; i < slices; i++) { // ligar o ponto no topo da esfera aos pontos da primeira camada
+        ans2.emplace_back(0,0,radius);
+        ans2.emplace_back(ans[i]);
+        ans2.emplace_back(ans[(i+1) % slices]);
     }
 
-    return ans;
+    // Criar triângulos
+    for (int i=0; i < (stacks -2); i += 1) { // iterar sobre todas as stacks
+        currLinePoints = i * slices; // início da linha de pontos atual
+        nextLinePoints = (i+1) * slices; // início da próxima linha de pontos
+        
+        for (int j=0; j < slices; j++) {
+            printf("%d %d\n",currLinePoints, nextLinePoints);
+            // para cada quadrado do círculo fazem-se dois triangulos:
+            // |.
+            // |_.
+            ans2.emplace_back(ans[currLinePoints + j]);
+            ans2.emplace_back(ans[nextLinePoints + j]);
+            ans2.emplace_back(ans[nextLinePoints + ((j + 1) % slices)]);
+            //  .|
+            // ._|
+            ans2.emplace_back(ans[currLinePoints + j]);
+            ans2.emplace_back(ans[nextLinePoints + j + 1]);
+            ans2.emplace_back(ans[currLinePoints + ((j + 1) % slices)]);
+        }
+    }
+
+    int lastPos = ans.size() - 1;
+    for (int i=0; i < slices; i++) { // ligar o ponto no topo da esfera aos pontos da primeira camada
+        ans2.emplace_back(ans[lastPos - i]);
+        ans2.emplace_back(ans[lastPos - ((i+1) % slices)]);
+        ans2.emplace_back(0,0,-radius);
+        printf("iter: %d\n",i);
+        std::cout << ans[lastPos - ((i+1) % slices)] << std::endl;
+        std::cout << ans[lastPos - i] << std::endl;
+    }
+
+    // for(auto point: ans) {
+    //     std::cout << point << std::endl;
+    // }
+
+    return ans2;
 }
