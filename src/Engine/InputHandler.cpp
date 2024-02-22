@@ -81,9 +81,9 @@ void InputHandler::releaseSpecialKey(int key, int x, int y) {
 }
 
 void InputHandler::moveMouseTo(int x, int y) {
-	// ficou feito como o ultimo passo ao mexer na camera
-	// this->lastX = this->curX;
-	// this->lastY = this->curY;
+	// ??????????????????????????? sem isto nao da mas isto nao devia fazer diferenca wtf
+	this->lastX = this->curX;
+	this->lastY = this->curY;
 
 	this->curX = static_cast<float>(x);
 	this->curY = static_cast<float>(y);
@@ -134,11 +134,11 @@ void InputHandler::applyToCamera(Camera &camera, int windowWidth, int windowHeig
 	this->lastX = this->curX;
 	this->lastY = this->curY;
 
-	const float center_x = windowWidth / 2;
-	const float center_y = windowHeight / 2;
+	const int center_x = windowWidth / 2;
+	const int center_y = windowHeight / 2;
 
 	if (curX != center_x || curY != center_y) {
-		// glutWarpPointer(center_x, center_y);
+		glutWarpPointer(center_x, center_y);
 		camera.ProcessMouseMovement(xoffset, yoffset);
 	}
 
