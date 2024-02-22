@@ -72,6 +72,7 @@ add_executable(Engine
         src/Engine/Engine.cpp
 		src/Engine/Renderer.cpp
 		src/Engine/Camera.cpp
+		src/Engine/InputHandler.cpp
         src/TinyXML2/tinyxml2.cpp
         src/common/Vertex.cpp)
 

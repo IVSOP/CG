@@ -1,5 +1,3 @@
-#include <glm/glm.hpp>
-
 #include <iostream>
 #include <vector>
 #include <cstdio>
@@ -8,21 +6,9 @@
 #include "tinyxml2.h"
 #include "Vertex.h"
 
-#ifdef __APPLE__
-#include <GLUT/glut.h>
-#include <GLUT/freeglut_ext.h>
-#else
-#include <GL/glut.h>
-#include <GL/freeglut_ext.h>
-#endif
-
 #include "Renderer.h"
 #include "Camera.h"
-
-
-
-#define FPS 60.0f
-#define PHYS_STEP 1.0f / FPS
+#include "InputHandler.h"
 
 
 
@@ -50,8 +36,11 @@ GLdouble cameraYUp = 0.0f;
 GLdouble cameraZUp = -1.0f;
 std::vector<Vertex> points = std::vector<Vertex>();
 
+
+///////////////////////////////////////////////////////// main objects
 Renderer renderer;
 Camera camera;
+InputHandler inputHandler;
 
 int parseXML(char * xmlFile) {
     tinyxml2::XMLDocument xmlDoc;
@@ -124,11 +113,11 @@ int parseXML(char * xmlFile) {
 }
 
 void setWindow(int width, int height) {
-    width = std::max(1, width);
-    height = std::max(1, height);
+    windowWidth = std::max(1, width);
+    windowHeight = std::max(1, height);
 
     // Compute window's ration
-    float aspectRatio = (float) (width) * 1.0f / (float) height;
+    float aspectRatio = (float) (windowWidth) * 1.0f / (float) windowHeight;
 
     // Set projection matrix
     glMatrixMode(GL_PROJECTION);
@@ -143,7 +132,7 @@ void setWindow(int width, int height) {
     glMatrixMode(GL_MODELVIEW);
 
     // Set viewport to be the entire window
-    glViewport(0, 0, width, height);
+    glViewport(0, 0, windowWidth, windowHeight);
 }
 
 //DEBUG
@@ -156,37 +145,28 @@ void setWindow(int width, int height) {
 // }
 
 void handleKey(unsigned char key, int x, int y) {
-	switch (key) {
-		case 'w':
-			camera.ProcessKeyboard(FRONT, PHYS_STEP);
-			break;
-		case 'a':
-			camera.ProcessKeyboard(LEFT, PHYS_STEP);
-			break;
-		case 's':
-			camera.ProcessKeyboard(BACK, PHYS_STEP);
-			break;
-		case 'd':
-			camera.ProcessKeyboard(RIGHT, PHYS_STEP);
-			break;
-		case ' ':
-			camera.ProcessKeyboard(UP, PHYS_STEP);
-			break;
-		default:
-			break;
-	}
+	inputHandler.pressKey(key, x, y);
+}
+
+void handleKeyUp(unsigned char key, int x, int y) {
+	inputHandler.releaseKey(key, x, y);
 }
 
 void handleSpecialKey(int key, int x, int y) {
-	switch (key) {
-		case GLUT_KEY_ALT_L:
-			camera.ProcessKeyboard(DOWN, PHYS_STEP);
-			break;
-		default:
-			break;
-	}
+	inputHandler.pressSpecialKey(key, x, y);
 }
 
+void handleSpecialKeyUp(int key, int x, int y) {
+	inputHandler.releaseSpecialKey(key, x, y);
+}
+
+// void handleMouseButtons(int button, int state, int x, int y) {
+
+// }
+
+void handleMouseMov(int x, int y) {
+	inputHandler.moveMouseTo(x, y);
+}
 
 void renderScene() {
 	renderer.draw(points, camera);
@@ -230,29 +210,32 @@ int main(int argc, char **argv) {
     glutDisplayFunc(renderScene);
 
     /* Function responsible for continuously rendering the scene */
-    glutIdleFunc(renderScene);
+    // glutIdleFunc(renderScene);
 
     /* Function responsible for resizing the window */
     glutReshapeFunc(setWindow);
 
-    //DEBUG
     glutSpecialFunc(handleSpecialKey);
+	glutSpecialUpFunc(handleSpecialKeyUp);
 	glutKeyboardFunc(handleKey);
+	glutKeyboardUpFunc(handleKeyUp);
+	// glutMouseFunc(handleMouseButtons);
+	glutPassiveMotionFunc(handleMouseMov);
+
 
     /* OpenGL settings */
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
-	
+	// hide mouse
+	glutSetCursor(GLUT_CURSOR_NONE);
 
-	// porque e que isto nao funciona sem a idle??????????????????????????????????????????????????
-	// while(true) {
-	// 	glutMainLoopEvent();
-	// }
-
-    /* GLUTS main cycle */
-    glutMainLoop();
+	while(true) {
+		glutMainLoopEvent();
+		inputHandler.applyToCamera(camera, windowWidth, windowHeight);
+		renderScene();
+	}
 
     return 0;
 }

@@ -1,6 +1,7 @@
 #ifndef RENDERER_H
 #define RENDERER_H
 
+#include "common.h"
 #include "Vertex.h"
 #include "Camera.h"
 

@@ -22,8 +22,8 @@ std::vector<Vertex> Plane::createPlanePoints(const float length, const int divis
             int down = j + 1;
             int right_down = j + divisions + 2;
 
-            // Triangle |\
-            //          |_\
+            /* Triangle |\
+                        |_\ */
 
             ans2.emplace_back(ans.at(j));
             ans2.emplace_back(ans.at(down));
@@ -61,8 +61,8 @@ std::vector<Vertex> Plane::createPlanePointsNoTranslate(const float length, cons
             int down = j + 1;
             int right_down = j + divisions + 2;
 
-            // Triangle |\
-            //          |_\
+            /* Triangle |\
+                        |_\ */
 
             ans2.emplace_back(ans.at(j));
             ans2.emplace_back(ans.at(down));
