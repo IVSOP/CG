@@ -174,6 +174,12 @@ void renderScene() {
 	renderer.draw(points, camera);
 }
 
+void loopFunc(int blabla) {
+	inputHandler.applyToCamera(camera, windowWidth, windowHeight);
+	renderScene();
+	glutTimerFunc(PHYS_STEP * 1000.0f, loopFunc, 0);
+}
+
 int main(int argc, char **argv) {
 
     if (argc != 2) {
@@ -234,11 +240,15 @@ int main(int argc, char **argv) {
 	glutSetCursor(GLUT_CURSOR_NONE);
 
 	inputHandler.moveMouseTo(windowWidth / 2, windowHeight / 2);
-	while(true) {
-		glutMainLoopEvent();
-		inputHandler.applyToCamera(camera, windowWidth, windowHeight);
-		renderScene();
-	}
+	// while(true) {
+	// 	glutMainLoopEvent();
+	// 	inputHandler.applyToCamera(camera, windowWidth, windowHeight);
+	// 	renderScene();
+	// }
+
+	glutTimerFunc(PHYS_STEP * 1000.0f, loopFunc, 0);
+
+	glutMainLoop();
 
     return 0;
 }
