@@ -77,7 +77,7 @@ public:
 		// temos de calcular pitch e yaw manualmente
 		glm::vec3 tempVec = glm::normalize(lookAtPoint - position);
 		Yaw = glm::degrees(atan2(tempVec.z, tempVec.x));
-		Pitch = glm::degrees(asin(tempVec.x));
+		Pitch = glm::degrees(atan2(tempVec.y, sqrt((tempVec.z * tempVec.z) + (tempVec.x * tempVec.x))));
 		updateCameraVectors();
 	}
 
