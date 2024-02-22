@@ -72,7 +72,11 @@ void InputHandler::pressSpecialKey(int key, int x, int y) {
 	KeyInfo *keys = this->keyInfo.get();
 
 	switch (key) {
+#ifdef __APPLE__
+		case GLUT_KEY_DOWN:
+#else
 		case GLUT_KEY_ALT_L:
+#endif
 			keys[ENGINE_KEY_LEFT_ALT].press();
 			break;
 		default:
@@ -84,7 +88,11 @@ void InputHandler::releaseSpecialKey(int key, int x, int y) {
 	KeyInfo *keys = this->keyInfo.get();
 
 	switch (key) {
+#ifdef __APPLE__
+		case GLUT_KEY_DOWN:
+#else
 		case GLUT_KEY_ALT_L:
+#endif
 			keys[ENGINE_KEY_LEFT_ALT].release();
 			break;
 		default:

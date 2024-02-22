@@ -6,11 +6,17 @@
 #include "tinyxml2.h"
 #include "Vertex.h"
 
+#ifdef __APPLE__
+#include <GLUT/glut.h>
+// #include <GLUT/freeglut_ext.h>
+#else
+#include <GL/glut.h>
+#include <GL/freeglut_ext.h>
+#endif
+
 #include "Renderer.h"
 #include "Camera.h"
 #include "InputHandler.h"
-
-
 
 /* Test variables */
 #define COUNTER_START 0.65
@@ -240,15 +246,15 @@ int main(int argc, char **argv) {
 	glutSetCursor(GLUT_CURSOR_NONE);
 
 	inputHandler.moveMouseTo(windowWidth / 2, windowHeight / 2);
-	// while(true) {
-	// 	glutMainLoopEvent();
-	// 	inputHandler.applyToCamera(camera, windowWidth, windowHeight);
-	// 	renderScene();
-	// }
-
-	glutTimerFunc(PHYS_STEP * 1000.0f, loopFunc, 0);
-
-	glutMainLoop();
+	while(true) {
+#ifdef __APPLE__
+		glutCheckLoop();
+#else
+        glutMainLoopEvent();
+#endif
+		inputHandler.applyToCamera(camera, windowWidth, windowHeight);
+		renderScene();
+	}
 
     return 0;
 }

@@ -7,7 +7,7 @@
 
 class Sphere {
 public:
-    static std::vector<Vertex> createSpherePoints(int radius, int slices, int stacks);
+    static std::vector<Vertex> createSpherePoints(const float radius, const int slices, const int stacks);
 };
 
 
