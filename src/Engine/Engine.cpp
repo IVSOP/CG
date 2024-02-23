@@ -48,7 +48,9 @@ Renderer renderer;
 Camera camera;
 InputHandler inputHandler;
 GLFWwindow *window;
-void handleMouseMov(GLFWwindow *window, double xpos, double ypos);
+bool resize = false; // sempre que dou resize, ele manda um mouse callback que lixa tudo, tive de fazer isto para esse callback ser ignorado
+// isto e extremamente roto, mas nas docs basicamente diz que sou burro se tentar fazer como no glut e meter GLFW_CURSOR_HIDDEN e estar sempre a centra-lo, diz para usar GLFW_CURSOR_DISABLED
+// ou seja acho que vai ter de ficar assim
 
 int parseXML(char * xmlFile) {
     tinyxml2::XMLDocument xmlDoc;
@@ -154,6 +156,7 @@ void setWindow(GLFWwindow* window, int width, int height) {
 
 	// printf("window set to %d %d. half is %d %d\n", windowWidth, windowHeight, windowWidth / 2, windowHeight / 2);
 	inputHandler.centerMouseTo(static_cast<GLdouble>(windowWidth / 2), static_cast<GLdouble>(windowHeight / 2));
+	resize = true;
 }
 
 void handleKey(GLFWwindow *window, int key, int scancode, int action, int mods) {
@@ -161,8 +164,12 @@ void handleKey(GLFWwindow *window, int key, int scancode, int action, int mods) 
 }
 
 void handleMouseMov(GLFWwindow *window, double xpos, double ypos) {
-	// printf("mouse callback is at %f %f\n", static_cast<GLfloat>(xpos), static_cast<GLfloat>(ypos));
-	inputHandler.moveMouseTo(xpos, ypos);
+	if (!resize) {
+		// printf("mouse callback is at %f %f\n", static_cast<GLfloat>(xpos), static_cast<GLfloat>(ypos));
+		inputHandler.moveMouseTo(xpos, ypos);
+	} else {
+		resize = false;
+	}
 }
 
 int main(int argc, char **argv) {
