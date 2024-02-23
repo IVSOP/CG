@@ -2,6 +2,8 @@
 #include "Cone.h"
 #include "Consts.h"
 
+#include <math.h>
+
 std::vector<Vertex> Cone::createConePoints(float radius, float height, int slices, int stacks) {
     std::vector<Vertex> basePoints = std::vector<Vertex>();
     std::vector<Vertex> prevBasePoints = std::vector<Vertex>();
@@ -11,51 +13,49 @@ std::vector<Vertex> Cone::createConePoints(float radius, float height, int slice
     float stackStep = height / static_cast<float>(stacks);
     float radiusStep = radius / static_cast<float>(stacks);
 
-    glm::vec4 currPoint;
-    glm::vec4 prevPoint;
-    glm::vec4 basePoint;
-    glm::mat4 rotYMatrix = Consts::rotYMatrix(angle);
+    glm::vec4 currCoords;
+    glm::vec4 prevCoords;
+    glm::vec4 baseCoords;
 
+    glm::mat4 rotYMatrix = Consts::rotYMatrix(-angle);
 
     for(int i = 0; i < stacks; i++) {
-        basePoints.emplace_back(0.0f, static_cast<float>(i) * stackStep, 0.0f);
-        basePoints.emplace_back(radius - (static_cast<float>(i) * radiusStep), static_cast<float>(i) * stackStep, 0.0f);
+        basePoints.emplace_back(0.0f , static_cast<float>(i) * stackStep, 0.0f);
+        basePoints.emplace_back(radius - (static_cast<float>(i) * radiusStep) , static_cast<float>(i) * stackStep, 0.0f);
 
         for (int j = 1; j <= slices; j++) {
-            glm::vec4 baseCoords = basePoints[0].getCoords();
-            basePoint = glm::vec4(baseCoords.x, baseCoords.y, baseCoords.z, 1.0f);
+            baseCoords = basePoints[0].getCoords();
+            prevCoords = basePoints[j].getCoords();
 
-            glm::vec4 prevCoords = basePoints[j].getCoords();
-            prevPoint = glm::vec4(prevCoords.x, prevCoords.y, prevCoords.z, 1.0f);
+            currCoords = rotYMatrix * prevCoords;
 
-            glm::vec4 currCoords = rotYMatrix * prevCoords;
-            currPoint = glm::vec4(currCoords.x, currCoords.y, currCoords.z, 1.0f);
+            if(i == 0){
+                ans.emplace_back(baseCoords.x, baseCoords.y, baseCoords.z);
+                ans.emplace_back(prevCoords.x, prevCoords.y, prevCoords.z);
+                ans.emplace_back(currCoords.x, currCoords.y, currCoords.z);
+            }
 
-            basePoints.emplace_back(currPoint.x, currPoint.y, currPoint.z);
-
-            ans.emplace_back(basePoint.x, basePoint.y, basePoint.z);
-            ans.emplace_back(currPoint.x, currPoint.y, currPoint.z);
-            ans.emplace_back(prevPoint.x, prevPoint.y, prevPoint.z);
-
-            if(i > 0){
+            if(i > 0) {
                 glm::vec4 rightCoords = basePoints[j].getCoords();
                 glm::vec4 rightDownCoords = prevBasePoints[j].getCoords();
                 glm::vec4 downCoords = prevBasePoints[j+1].getCoords();
 
-                // Triangle |\
-                //          |_\
+                // Triangle  |‾/
+                //           |/
 
                 ans.emplace_back(rightDownCoords.x, rightDownCoords.y, rightDownCoords.z);
                 ans.emplace_back(rightCoords.x, rightCoords.y, rightCoords.z);
-                ans.emplace_back(currPoint.x, currPoint.y, currPoint.z);
+                ans.emplace_back(currCoords.x, currCoords.y, currCoords.z);
 
-                // Triangle \‾|
-                //           \|
+                // Triangle  /|
+                //          /_|
 
-                ans.emplace_back(rightDownCoords.x, rightDownCoords.y, rightDownCoords.z);
-                ans.emplace_back(currPoint.x, currPoint.y, currPoint.z);
+                ans.emplace_back(currCoords.x, currCoords.y, currCoords.z);
                 ans.emplace_back(downCoords.x, downCoords.y, downCoords.z);
+                ans.emplace_back(rightDownCoords.x, rightDownCoords.y, rightDownCoords.z);
             }
+
+            basePoints.emplace_back(currCoords.x, currCoords.y, currCoords.z);
         }
 
         prevBasePoints.clear();
@@ -65,14 +65,22 @@ std::vector<Vertex> Cone::createConePoints(float radius, float height, int slice
     }
 
 
-    for(int i = 2; i < prevBasePoints.size(); i++){
+    for(int i = 1; i < prevBasePoints.size(); i++){
         glm::vec4 leftCoords = prevBasePoints[i].getCoords();
         glm::vec4 rightCoords = prevBasePoints[i-1].getCoords();
 
-        ans.emplace_back(leftCoords.x, leftCoords.y, leftCoords.z);
         ans.emplace_back(rightCoords.x, rightCoords.y, rightCoords.z);
         ans.emplace_back(0.0f, height, 0.0f);
+        ans.emplace_back(leftCoords.x, leftCoords.y, leftCoords.z);
     }
+
+    /*for(Vertex v : ans){
+        // if(std::abs(v.getX()) >= 6 || std::abs(v.getY()) > 18 || std::abs(v.getZ()) >= 6) std::cout << v << std::endl;
+
+        // if(isinf(v.getX()) || isinf(v.getY()) || isinf(v.getZ())) std::cout << v << std::endl;
+    }*/
+
+    std::cout << ans.size() << std::endl;
 
     return ans;
 }

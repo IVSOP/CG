@@ -3,6 +3,12 @@
 #include "Sphere.h"
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/gtx/norm.hpp>
+
+#define _USE_MATH_DEFINES
+#include <math.h>
+
+// #define M_PI 3.14159265358979323846f
+
 // stacks -> n de linhas horizontais
 // slices -> n de colunas verticais
 
