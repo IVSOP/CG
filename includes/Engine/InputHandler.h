@@ -14,6 +14,9 @@ struct KeyInfo {
 	KeyInfo() {
 		last_action = GLFW_RELEASE;
 		last_mods = 0;
+
+		// current_action = GLFW_RELEASE;
+		// current_mods = 0;
 	}
 	~KeyInfo() = default;
 
@@ -22,7 +25,7 @@ struct KeyInfo {
 		last_action = GLFW_PRESS;
 	}
 
-	void setState(int action, int mods) {
+	void newAction(int action, int mods) {
 		last_action = action;
 		last_mods = mods;
 	}
@@ -31,8 +34,17 @@ struct KeyInfo {
 		last_action = GLFW_RELEASE;
 	}
 
-	int last_action;
-	int last_mods;
+	// bool pressedNow() const { // true se era released e passou a pressed
+	// 	// fazer isto com | ??
+	// 	if (last_action == GLFW_RELEASE && current_action == GLFW_PRESS) {
+	// 		return true;
+	// 	}
+
+	// 	return false;
+	// }
+
+	int last_action; //, current_action;
+	int last_mods; //, current_mods;
 };
 
 class InputHandler {
@@ -52,7 +64,7 @@ public:
 	InputHandler();
 	~InputHandler() = default;
 
-	void pressKey(int key, int scancode, int action, int mods);
+	void pressKey(GLFWwindow *window, int key, int scancode, int action, int mods);
 	void centerMouseTo(GLdouble center_x, GLdouble center_y); // same as below but also changes the last position
 	void moveMouseTo(GLdouble x, GLdouble y);
 

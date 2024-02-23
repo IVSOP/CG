@@ -6,19 +6,24 @@ InputHandler::InputHandler()
 
 }
 
-void InputHandler::pressKey(int key, int scancode, int action, int mods) {
+void InputHandler::pressKey(GLFWwindow *window, int key, int scancode, int action, int mods) {
 	KeyInfo *keys = this->keyInfo.get();
 
-	keys[key].setState(action, mods);
+	keys[key].newAction(action, mods);
 
-			// if (inMenu) {
-			// 	glutSetCursor(GLUT_CURSOR_NONE);
-			// 	inMenu = false;
-			// 	glutWarpPointer(curX, curY);
-			// } else {
-			// 	glutSetCursor(GLUT_CURSOR_INHERIT);
-			// 	inMenu = true;
-			// }
+	// bandaid fix temporario
+	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
+		if (inMenu) {
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+			inMenu = false;
+			glfwSetCursorPos(window, curX, curY);
+		} else {
+			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+			inMenu = true;
+		}
+
+	}
+
 }
 
 void InputHandler::centerMouseTo(GLdouble center_x, GLdouble center_y) {

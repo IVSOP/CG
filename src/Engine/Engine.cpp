@@ -150,7 +150,7 @@ void setWindow(GLFWwindow* window, int width, int height) {
 }
 
 void handleKey(GLFWwindow *window, int key, int scancode, int action, int mods) {
-	inputHandler.pressKey(key, scancode, action, mods);
+	inputHandler.pressKey(window, key, scancode, action, mods);
 }
 
 void handleMouseMov(GLFWwindow *window, double xpos, double ypos) {
