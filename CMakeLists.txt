@@ -41,7 +41,7 @@ if  (WIN32)
 
 
     # include_directories(${TOOLKITS_FOLDER}/glut )
-    # link_libraries(${OPENGL_LIBRARIES}
+    link_libraries(${OPENGL_LIBRARIES})
     #         ${TOOLKITS_FOLDER}/glut/glut32.lib)
 
     # if (EXISTS "${TOOLKITS_FOLDER}/glut/glut32.dll" )
