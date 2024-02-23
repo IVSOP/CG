@@ -38,7 +38,7 @@ void drawAxis() {
     glEnd();
 }
 
-void Renderer::draw(std::vector<Vertex> &verts, Camera &camera) const {
+void Renderer::draw(std::vector<Vertex> &verts, Camera &camera, GLFWwindow * window) const {
     // Clear buffers
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -78,5 +78,5 @@ void Renderer::draw(std::vector<Vertex> &verts, Camera &camera) const {
     /* Test's end */
 
     // End of frame
-    glutSwapBuffers();
+    glfwSwapBuffers(window);
 }

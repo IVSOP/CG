@@ -47,6 +47,8 @@ std::vector<Vertex> points = std::vector<Vertex>();
 Renderer renderer;
 Camera camera;
 InputHandler inputHandler;
+GLFWwindow *window;
+void handleMouseMov(GLFWwindow *window, double xpos, double ypos);
 
 int parseXML(char * xmlFile) {
     tinyxml2::XMLDocument xmlDoc;
@@ -118,12 +120,20 @@ int parseXML(char * xmlFile) {
     return 0;
 }
 
-void setWindow(int width, int height) {
-    windowWidth = std::max(1, width);
-    windowHeight = std::max(1, height);
+void setWindow(GLFWwindow* window, int width, int height) {
+	windowWidth = width;
+	windowHeight = height;
 
-    // Compute window's ration
-    float aspectRatio = (float) (windowWidth) * 1.0f / (float) windowHeight;
+
+	// glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+	// glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
+	// glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+	// setting up MSAA anti aliasing, needs to happen before window creation??
+	// glfwWindowHint(GLFW_SAMPLES, 4);
+
+	// Compute window's ration
+    GLfloat aspectRatio = static_cast<GLfloat>(windowWidth) / static_cast<GLfloat>(windowHeight);
 
     // Set projection matrix
     glMatrixMode(GL_PROJECTION);
@@ -132,7 +142,9 @@ void setWindow(int width, int height) {
     glLoadIdentity();
 
     // Set perspective
-    gluPerspective(windowFov, aspectRatio, windowZNear, windowZFar);
+	const glm::mat4 perspective = glm::perspective(glm::radians(static_cast<GLfloat>(windowFov)), static_cast<GLfloat>(aspectRatio), static_cast<GLfloat>(windowZNear), static_cast<GLfloat>(windowZFar));
+    // gluPerspective(windowFov, aspectRatio, windowZNear, windowZFar);
+	glMultMatrixf(glm::value_ptr(perspective));
 
     // Return to the model view matrix mode
     glMatrixMode(GL_MODELVIEW);
@@ -140,50 +152,17 @@ void setWindow(int width, int height) {
     // Set viewport to be the entire window
     glViewport(0, 0, windowWidth, windowHeight);
 
-	inputHandler.moveMouseTo(windowWidth / 2, windowHeight / 2);
+	// printf("window set to %d %d. half is %d %d\n", windowWidth, windowHeight, windowWidth / 2, windowHeight / 2);
+	inputHandler.centerMouseTo(static_cast<GLdouble>(windowWidth / 2), static_cast<GLdouble>(windowHeight / 2));
 }
 
-//DEBUG
-// void rotateCenter(int key, int x, int y) {
-//     switch(key) {
-//         case GLUT_KEY_LEFT: angleY -= 10.0f; break;
-//         case GLUT_KEY_RIGHT: angleY += 10.0f; break;
-//     }
-//     glutPostRedisplay();
-// }
-
-void handleKey(unsigned char key, int x, int y) {
-	inputHandler.pressKey(key, x, y);
+void handleKey(GLFWwindow *window, int key, int scancode, int action, int mods) {
+	inputHandler.pressKey(key, scancode, action, mods);
 }
 
-void handleKeyUp(unsigned char key, int x, int y) {
-	inputHandler.releaseKey(key, x, y);
-}
-
-void handleSpecialKey(int key, int x, int y) {
-	inputHandler.pressSpecialKey(key, x, y);
-}
-
-void handleSpecialKeyUp(int key, int x, int y) {
-	inputHandler.releaseSpecialKey(key, x, y);
-}
-
-// void handleMouseButtons(int button, int state, int x, int y) {
-
-// }
-
-void handleMouseMov(int x, int y) {
-	inputHandler.moveMouseTo(x, y);
-}
-
-void renderScene() {
-	renderer.draw(points, camera);
-}
-
-void loopFunc(int blabla) {
-	inputHandler.applyToCamera(camera, windowWidth, windowHeight);
-	renderScene();
-	glutTimerFunc(PHYS_STEP * 1000.0f, loopFunc, 0);
+void handleMouseMov(GLFWwindow *window, double xpos, double ypos) {
+	// printf("mouse callback is at %f %f\n", static_cast<GLfloat>(xpos), static_cast<GLfloat>(ypos));
+	inputHandler.moveMouseTo(xpos, ypos);
 }
 
 int main(int argc, char **argv) {
@@ -196,57 +175,63 @@ int main(int argc, char **argv) {
 
     parseXML(argv[1]);
 
-	camera = Camera(glm::vec3(cameraXPos, cameraYPos, cameraZPos), glm::vec3(cameraXLook, cameraYLook, cameraZLook), glm::vec3(cameraXUp, cameraYUp, cameraZUp));
+		if (!glfwInit()) {
+		perror("GLFW window failed to initiate");
+	}
+	window = glfwCreateWindow(windowWidth, windowHeight, "CG", NULL, NULL);
+	if (window == NULL) {
+		perror("GLFW window failed to create");
+		glfwTerminate();
+		exit(1);
+	}
+	glfwMakeContextCurrent(window);
 
-    /* GLUT init */
-    glutInit(&argc, argv); // Initialize glut
+	///////////////////////// CALLBAKCS
+	glfwSetFramebufferSizeCallback(window, setWindow);
+	glfwSetKeyCallback(window, handleKey);
+	glfwSetCursorPosCallback(window, handleMouseMov);
 
-    /* Create glut window */
-    glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
 
-    /*
-     * The values passed here are only an indication, they may not be used as passed
-     * TODO which values should we use
-     */
-    glutInitWindowPosition(100, 100);
-
-    /*
-     * The values passed here are only an indication, they may not be used as passed
-     * Currently passing the values read on the XML file
-     */
-    glutInitWindowSize(windowWidth, windowHeight);
-
-    glutCreateWindow("Test");
-
-    /* Callback registry */
-
-    /* Function responsible rendering the scene when the window is created */
-    glutDisplayFunc(renderScene);
-
-    /* Function responsible for continuously rendering the scene */
-    // glutIdleFunc(renderScene);
-
-    /* Function responsible for resizing the window */
-    glutReshapeFunc(setWindow);
-
-    glutSpecialFunc(handleSpecialKey);
-	glutSpecialUpFunc(handleSpecialKeyUp);
-	glutKeyboardFunc(handleKey);
-	glutKeyboardUpFunc(handleKeyUp);
-	// glutMouseFunc(handleMouseButtons);
-	glutPassiveMotionFunc(handleMouseMov);
+	glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 
     /* OpenGL settings */
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
-	// hide mouse
-	glutSetCursor(GLUT_CURSOR_NONE);
+	// std::cout << glGetString(GL_VERSION) << std::endl;
 
-	glutTimerFunc(PHYS_STEP * 1000.0f, loopFunc, 0);
-	glutMainLoop();
+	// During init, enable debug output
+	///////////////////////////////////////// isto deve ser do glut, nao vou usar por agora
+	// glEnable( GL_DEBUG_OUTPUT );
+	// glDebugMessageCallback( openglCallbackFunction, NULL );
+
+	glfwSwapInterval(1); // hardcoded sync with monitor fps
+
+	// IMGUI_CHECKVERSION();
+	// ImGui::CreateContext();
+	// // ImGuiIO& io = ImGui::GetIO(); (void)io; // ????
+	// ImGui_ImplGlfw_InitForOpenGL(window, true);
+	// ImGui_ImplOpenGL3_Init("#version 450");
+	// ImGui::StyleColorsDark();
+	// // io.ConfigFlags |= .....
+
+
+	// MSAA
+	// glEnable(GL_MULTISAMPLE); 
+
+	camera = Camera(glm::vec3(cameraXPos, cameraYPos, cameraZPos), glm::vec3(cameraXLook, cameraYLook, cameraZLook), glm::vec3(cameraXUp, cameraYUp, cameraZUp));
+
+	setWindow(window, static_cast<GLdouble>(windowWidth), static_cast<GLdouble>(windowHeight));
+
+	while (!glfwWindowShouldClose(window)) {
+		inputHandler.applyToCamera(window, camera, windowWidth, windowHeight);
+		renderer.draw(points, camera, window);
+		glfwPollEvents();
+	}
 
     return 0;
 }
