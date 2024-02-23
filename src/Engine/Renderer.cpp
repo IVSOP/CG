@@ -7,14 +7,7 @@
 #include <cstdio>
 #include <filesystem>
 
-#include "tinyxml2.h"
 #include "Vertex.h"
-
-#ifdef __APPLE__
-#include <GLUT/glut.h>
-#else
-#include <GL/glut.h>
-#endif
 
 #include <glm/gtc/type_ptr.hpp>
 

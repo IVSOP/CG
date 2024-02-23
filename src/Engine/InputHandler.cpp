@@ -1,7 +1,7 @@
 #include "InputHandler.h"
 
 InputHandler::InputHandler()
-: keyInfo(std::make_unique<KeyInfo []>(MAX_KEYS_ID + 1)), curX(0.0f), curY(0.0f), lastX(0.0f), lastY(0.0f)
+: keyInfo(std::make_unique<KeyInfo []>(MAX_KEYS_ID + 1)), curX(0.0f), curY(0.0f), lastX(0.0f), lastY(0.0f), inMenu(false)
 {
 
 }

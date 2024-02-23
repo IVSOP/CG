@@ -6,14 +6,6 @@
 #include "tinyxml2.h"
 #include "Vertex.h"
 
-#ifdef __APPLE__
-#include <GLUT/glut.h>
-// #include <GLUT/freeglut_ext.h>
-#else
-#include <GL/glut.h>
-#include <GL/freeglut_ext.h>
-#endif
-
 #include "Renderer.h"
 #include "Camera.h"
 #include "InputHandler.h"
@@ -155,7 +147,6 @@ void setWindow(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, windowWidth, windowHeight);
 
 	// printf("window set to %d %d. half is %d %d\n", windowWidth, windowHeight, windowWidth / 2, windowHeight / 2);
-	inputHandler.centerMouseTo(static_cast<GLdouble>(windowWidth / 2), static_cast<GLdouble>(windowHeight / 2));
 	resize = true;
 }
 
@@ -164,11 +155,14 @@ void handleKey(GLFWwindow *window, int key, int scancode, int action, int mods) 
 }
 
 void handleMouseMov(GLFWwindow *window, double xpos, double ypos) {
+	// printf("mouse callback is at %f %f\n", static_cast<GLfloat>(xpos), static_cast<GLfloat>(ypos));
 	if (!resize) {
-		// printf("mouse callback is at %f %f\n", static_cast<GLfloat>(xpos), static_cast<GLfloat>(ypos));
 		inputHandler.moveMouseTo(xpos, ypos);
 	} else {
+		GLdouble xpos, ypos;
+		glfwGetCursorPos(window, &xpos, &ypos);
 		resize = false;
+		inputHandler.centerMouseTo(xpos, ypos);
 	}
 }
 
