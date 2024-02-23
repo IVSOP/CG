@@ -39,7 +39,6 @@ std::vector<Vertex> points = std::vector<Vertex>();
 Renderer renderer;
 Camera camera;
 InputHandler inputHandler;
-GLFWwindow *window;
 bool resize = false; // sempre que dou resize, ele manda um mouse callback que lixa tudo, tive de fazer isto para esse callback ser ignorado
 // isto e extremamente roto, mas nas docs basicamente diz que sou burro se tentar fazer como no glut e meter GLFW_CURSOR_HIDDEN e estar sempre a centra-lo, diz para usar GLFW_CURSOR_DISABLED
 // ou seja acho que vai ter de ficar assim
@@ -159,6 +158,7 @@ void handleMouseMov(GLFWwindow *window, double xpos, double ypos) {
 	if (!resize) {
 		inputHandler.moveMouseTo(xpos, ypos);
 	} else {
+		// fix para ao dar resize da janela coordenadas mudarem
 		GLdouble xpos, ypos;
 		glfwGetCursorPos(window, &xpos, &ypos);
 		resize = false;
@@ -179,7 +179,7 @@ int main(int argc, char **argv) {
 		if (!glfwInit()) {
 		perror("GLFW window failed to initiate");
 	}
-	window = glfwCreateWindow(windowWidth, windowHeight, "CG", NULL, NULL);
+	GLFWwindow *window = glfwCreateWindow(windowWidth, windowHeight, "CG", NULL, NULL);
 	if (window == NULL) {
 		perror("GLFW window failed to create");
 		glfwTerminate();
