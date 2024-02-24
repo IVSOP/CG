@@ -57,28 +57,28 @@ std::vector<KeyInfo> InputHandler::getKeysPressedOrHeld() const {
 // 	return glm::vec2(curX - lastX, curY - lastY);
 // }
 
-void InputHandler::applyToCamera(GLFWwindow * window, Camera &camera, int windowWidth, int windowHeight) {
+void InputHandler::applyToCamera(GLFWwindow * window, Camera &camera, int windowWidth, int windowHeight, GLfloat deltatime) {
 	// muito mal feito, tbm nao tive paciencia mas funcemina
 
 	const KeyInfo *keys = keyInfo.get();
 
 	if ((&keys[GLFW_KEY_W])->last_action != GLFW_RELEASE) {
-		camera.ProcessKeyboard(FRONT, PHYS_STEP);
+		camera.ProcessKeyboard(FRONT, deltatime);
 	}
 	if ((&keys[GLFW_KEY_S])->last_action != GLFW_RELEASE) {
-		camera.ProcessKeyboard(BACK, PHYS_STEP);
+		camera.ProcessKeyboard(BACK, deltatime);
 	}
 	if ((&keys[GLFW_KEY_A])->last_action != GLFW_RELEASE) {
-		camera.ProcessKeyboard(LEFT, PHYS_STEP);
+		camera.ProcessKeyboard(LEFT, deltatime);
 	}
 	if ((&keys[GLFW_KEY_D])->last_action != GLFW_RELEASE) {
-		camera.ProcessKeyboard(RIGHT, PHYS_STEP);
+		camera.ProcessKeyboard(RIGHT, deltatime);
 	}
 	if ((&keys[GLFW_KEY_SPACE])->last_action != GLFW_RELEASE) {
-		camera.ProcessKeyboard(UP, PHYS_STEP);
+		camera.ProcessKeyboard(UP, deltatime);
 	}
 	if ((&keys[GLFW_KEY_LEFT_ALT])->last_action != GLFW_RELEASE) {
-		camera.ProcessKeyboard(DOWN, PHYS_STEP);
+		camera.ProcessKeyboard(DOWN, deltatime);
 	}
 
 	if (!inMenu) {

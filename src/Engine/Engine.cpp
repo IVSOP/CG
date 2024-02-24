@@ -47,6 +47,7 @@ bool resize = false; // sempre que dou resize, ele manda um mouse callback que l
 // isto e extremamente roto, mas nas docs basicamente diz que sou burro se tentar fazer como no glut e meter GLFW_CURSOR_HIDDEN e estar sempre a centra-lo, diz para usar GLFW_CURSOR_DISABLED
 // ou seja acho que vai ter de ficar assim
 std::mutex mtx;
+int refreshRate = 60;
 
 
 int parseXML(char * xmlFile) {
@@ -153,6 +154,8 @@ void setWindow(GLFWwindow* window, int width, int height) {
 
 	// printf("window set to %d %d. half is %d %d\n", windowWidth, windowHeight, windowWidth / 2, windowHeight / 2);
 	resize = true;
+
+	refreshRate = glfwGetVideoMode(glfwGetPrimaryMonitor())->refreshRate;
 }
 
 void handleKey(GLFWwindow *window, int key, int scancode, int action, int mods) {
@@ -194,9 +197,10 @@ void loop_step(GLFWwindow *window) {
 }
 
 void renderLoop(GLFWwindow *window) {
+	// era possivel o deltatime ser dinamico, mas tive preguica, meti ao refresh rate do monitor
 	while (!glfwWindowShouldClose(window)) {
 		// no need for time or sleep, vsync takes care of it
-		inputHandler.applyToCamera(window, camera, windowWidth, windowHeight);
+		inputHandler.applyToCamera(window, camera, windowWidth, windowHeight, 1.0f / static_cast<GLfloat>(refreshRate));
 
 
 		std::unique_lock<std::mutex> lock = std::unique_lock<std::mutex>(mtx);
