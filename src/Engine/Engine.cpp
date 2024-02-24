@@ -6,6 +6,7 @@
 #include "tinyxml2.h"
 #include "Vertex.h"
 
+#include <unistd.h>
 #include "Renderer.h"
 #include "Camera.h"
 #include "InputHandler.h"
@@ -166,6 +167,26 @@ void handleMouseMov(GLFWwindow *window, double xpos, double ypos) {
 	}
 }
 
+void loop_step(GLFWwindow *window) {
+	double lastFrameTime = glfwGetTime(), currentFrameTime, deltaTime;
+
+	// do CPU things.........
+	inputHandler.applyToCamera(window, camera, windowWidth, windowHeight);
+	inputHandler.applyToCamera(window, camera, windowWidth, windowHeight);
+	
+	
+	
+	
+	
+	// draw if delta allows it. sleep until target
+	if (deltaTime < PHYS_STEP) {
+		const double sleepTime = (PHYS_STEP - deltaTime) * 10E5; // multiply to get from seconds to microseconds, this is prob platform dependent and very bad
+		usleep(sleepTime);
+		// is it better to just sleep or should I already start another tick here?
+		renderer.draw(points, camera, window);
+	}
+}
+
 int main(int argc, char **argv) {
 
     if (argc != 2) {
@@ -210,7 +231,7 @@ int main(int argc, char **argv) {
 	// glEnable( GL_DEBUG_OUTPUT );
 	// glDebugMessageCallback( openglCallbackFunction, NULL );
 
-	glfwSwapInterval(1); // hardcoded sync with monitor fps
+	// glfwSwapInterval(1); // hardcoded sync with monitor fps
 
 	// IMGUI_CHECKVERSION();
 	// ImGui::CreateContext();
@@ -229,8 +250,7 @@ int main(int argc, char **argv) {
 	setWindow(window, static_cast<GLdouble>(windowWidth), static_cast<GLdouble>(windowHeight));
 
 	while (!glfwWindowShouldClose(window)) {
-		inputHandler.applyToCamera(window, camera, windowWidth, windowHeight);
-		renderer.draw(points, camera, window);
+		loop_step(window);
 		glfwPollEvents();
 	}
 
