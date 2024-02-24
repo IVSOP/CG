@@ -44,16 +44,11 @@ std::vector<Vertex> draw_points;
 std::mutex mtx;
 int refreshRate = 60;
 
-void setWindow(GLFWwindow* window, int width, int height) {
-    xmlParser.setWindowWidth(width);
-    xmlParser.setWindowHeight(height);
-
-    int windowWidth = xmlParser.getWindowWidth();
-    int windowHeight = xmlParser.getWindowHeight();
-
-    GLdouble windowFov = xmlParser.getWindowFov();
-    GLdouble windowZNear = xmlParser.getWindowZNear();
-    GLdouble windowZFar = xmlParser.getWindowZFar();
+void setWindow(GLFWwindow* window, int windowWidth, int windowHeight) {
+	// cursed, devia sair daqui, os valores nunca se alteram desde que o xml e carregado
+    const GLdouble windowFov = xmlParser.getWindowFov();
+    const GLdouble windowZNear = xmlParser.getWindowZNear();
+    const GLdouble windowZFar = xmlParser.getWindowZFar();
 
 
     // glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
