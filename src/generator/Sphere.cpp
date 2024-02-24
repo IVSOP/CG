@@ -35,23 +35,17 @@ std::vector<Vertex> Sphere::createSpherePoints(const float radius, const int sli
     //obter os pontos que constituem a esfera
     for (int currStack = 1; currStack < stacks; currStack++) {
         currPhi = (M_PI / 2) - stackStep * currStack; // partindo do phi no topo, aka 90º ir descendo até chegar a -90º, segundo stackStep
-        midXZCalc = radius * cos(currPhi); // calcular o (r * cos(phi)), cálculo idêntico em x e y
-        currY = radius * sin(currPhi); 
+        midXZCalc = radius * std::cos(currPhi); // calcular o (r * cos(phi)), cálculo idêntico em x e y
+        currY = radius * std::sin(currPhi); 
 
         for(int currSlice = 0; currSlice < slices; currSlice++) {
             currTheta = sectorStep * currSlice;
-            currZ = midXZCalc * cos(currTheta);
-            currX = midXZCalc * sin(currTheta);
+            currZ = midXZCalc * std::cos(currTheta);
+            currX = midXZCalc * std::sin(currTheta);
 
             ans.emplace_back(currX,currY,currZ);
         }
     }
-
-    // for (auto point: ans) {
-    //     std::cout << glm::length(point.getCoords()) << std::endl;
-    //     std::cout << point << std::endl;
-    // }
-    // printf("Initial points:%lu\n",ans.size());
 
     int currLinePoints, nextLinePoints;
 
@@ -83,18 +77,11 @@ std::vector<Vertex> Sphere::createSpherePoints(const float radius, const int sli
     }
 
     int lastPos = ans.size() - 1;
-    for (int i=0; i < slices; i++) { // ligar o ponto no topo da esfera aos pontos da primeira camada
+    for (int i=0; i < slices; i++) { // ligar o ponto no fundo da esfera aos pontos da última camada
         ans2.emplace_back(ans[lastPos - i]);
         ans2.emplace_back(ans[lastPos - ((i+1) % slices)]);
         ans2.emplace_back(0,-radius,0);
-        // printf("iter: %d\n",i);
-        // std::cout << ans[lastPos - ((i+1) % slices)] << std::endl;
-        // std::cout << ans[lastPos - i] << std::endl;
     }
 
-    // for(auto point: ans) {
-    //     std::cout << point << std::endl;
-    // }
-    // printf("Total points:%lu\n",ans2.size());
     return ans2;
 }
