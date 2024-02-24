@@ -78,7 +78,7 @@ public:
 
 
 	// por simplicidade, inputHandler passa as coisas a camera diretamente
-	void applyToCamera(GLFWwindow * window, Camera &camera, int windowWidth, int windowHeight);
+	void applyToCamera(GLFWwindow * window, Camera &camera, int windowWidth, int windowHeight, GLfloat deltatime);
 };
 
 #endif
