@@ -89,6 +89,7 @@ add_executable(Generator
 	src/Generator.cpp
 	src/generator/Plane.cpp
 	src/generator/Box.cpp
+	src/generator/Cylinder.cpp
 	src/generator/Sphere.cpp
 	src/generator/Cone.cpp
 	src/common/Vertex.cpp

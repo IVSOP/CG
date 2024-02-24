@@ -198,37 +198,37 @@ void loop_step(GLFWwindow *window) {
 
 void renderLoop(GLFWwindow *window) {
 	// era possivel o deltatime ser dinamico, mas tive preguica, meti ao refresh rate do monitor
-	while (!glfwWindowShouldClose(window)) {
-		// no need for time or sleep, vsync takes care of it
-		inputHandler.applyToCamera(window, camera, windowWidth, windowHeight, 1.0f / static_cast<GLfloat>(refreshRate));
+	// no need for time or sleep, vsync takes care of it
+	inputHandler.applyToCamera(window, camera, windowWidth, windowHeight, 1.0f / static_cast<GLfloat>(refreshRate));
 
-
-		std::unique_lock<std::mutex> lock = std::unique_lock<std::mutex>(mtx);
-		auto s = draw_points.size();
-		// printf("%f %f %f %lu\n", draw_points[s -1].getX(), draw_points[s -1].getY(), draw_points[s -1].getZ(), s);
-		renderer.draw(draw_points, camera, window);
-		lock.unlock();
-
-		glfwPollEvents();
-	}
-}
-
-auto physLoop = []() {
-	double lastFrameTime = glfwGetTime(), currentFrameTime, deltaTime;
-	// perform calculations............................
 
 	std::unique_lock<std::mutex> lock = std::unique_lock<std::mutex>(mtx);
-	draw_points = points; // copy the buffer
+	auto s = draw_points.size();
+	// printf("%f %f %f %lu\n", draw_points[s -1].getX(), draw_points[s -1].getY(), draw_points[s -1].getZ(), s);
+	renderer.draw(draw_points, camera, window);
 	lock.unlock();
 
-	currentFrameTime = glfwGetTime();
-	deltaTime = currentFrameTime - lastFrameTime;
-	lastFrameTime = currentFrameTime;
+	glfwPollEvents();
+}
 
-	// draw if delta allows it. sleep until target
-	if (deltaTime < PHYS_STEP) {
-		const double sleepTime = (PHYS_STEP - deltaTime) * 10E5; // multiply to get from seconds to microseconds, this is prob platform dependent and very bad
-		usleep(sleepTime);
+auto physLoop = [](GLFWwindow *window) {
+	while (!glfwWindowShouldClose(window)) {
+		double lastFrameTime = glfwGetTime(), currentFrameTime, deltaTime;
+		// perform calculations............................
+
+		std::unique_lock<std::mutex> lock = std::unique_lock<std::mutex>(mtx);
+		draw_points = points; // copy the buffer
+		lock.unlock();
+
+		currentFrameTime = glfwGetTime();
+		deltaTime = currentFrameTime - lastFrameTime;
+		lastFrameTime = currentFrameTime;
+
+		// draw if delta allows it. sleep until target
+		if (deltaTime < PHYS_STEP) {
+			const double sleepTime = (PHYS_STEP - deltaTime) * 10E5; // multiply to get from seconds to microseconds, this is prob platform dependent and very bad
+			usleep(sleepTime);
+		}
 	}
 };
 
@@ -298,7 +298,7 @@ int main(int argc, char **argv) {
 
 	draw_points = points; // early copy to allow renderer to display something
 
-	std::thread thread_object(physLoop);
+	std::thread thread_object(physLoop, window);
 
 	while (!glfwWindowShouldClose(window)) {
 		renderLoop(window);
