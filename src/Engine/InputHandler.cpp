@@ -16,10 +16,12 @@ void InputHandler::pressKey(GLFWwindow *window, int key, int scancode, int actio
 		if (inMenu) {
 			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 			inMenu = false;
+			glfwSetCursorPosCallback(window, handleMouseMov);
 			glfwSetCursorPos(window, curX, curY);
 		} else {
 			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 			inMenu = true;
+			glfwSetCursorPosCallback(window, nullptr);
 		}
 
 	}

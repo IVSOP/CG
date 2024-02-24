@@ -61,6 +61,9 @@ public:
 	bool inMenu; // faz o rato nao virar a camera
 
 
+	// TEMPORARY
+	GLFWcursorposfun handleMouseMov;
+
 	InputHandler();
 	~InputHandler() = default;
 

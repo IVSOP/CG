@@ -213,6 +213,8 @@ int main(int argc, char **argv) {
 	///////////////////////// CALLBAKCS
 	glfwSetFramebufferSizeCallback(window, setWindow);
 	glfwSetKeyCallback(window, handleKey);
+	// TEMPORARY
+	inputHandler.handleMouseMov = handleMouseMov;
 	glfwSetCursorPosCallback(window, handleMouseMov);
 
 
