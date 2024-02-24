@@ -10,6 +10,8 @@
 #include "Renderer.h"
 #include "Camera.h"
 #include "InputHandler.h"
+#include <mutex>
+#include <thread>
 
 /* Test variables */
 #define COUNTER_START 0.65
@@ -34,6 +36,7 @@ GLdouble cameraXUp = 0.0f;
 GLdouble cameraYUp = 0.0f;
 GLdouble cameraZUp = -1.0f;
 std::vector<Vertex> points = std::vector<Vertex>();
+std::vector<Vertex> draw_points = std::vector<Vertex>();
 
 
 ///////////////////////////////////////////////////////// main objects
@@ -43,6 +46,8 @@ InputHandler inputHandler;
 bool resize = false; // sempre que dou resize, ele manda um mouse callback que lixa tudo, tive de fazer isto para esse callback ser ignorado
 // isto e extremamente roto, mas nas docs basicamente diz que sou burro se tentar fazer como no glut e meter GLFW_CURSOR_HIDDEN e estar sempre a centra-lo, diz para usar GLFW_CURSOR_DISABLED
 // ou seja acho que vai ter de ficar assim
+std::mutex mtx;
+
 
 int parseXML(char * xmlFile) {
     tinyxml2::XMLDocument xmlDoc;
@@ -171,8 +176,7 @@ void loop_step(GLFWwindow *window) {
 	double lastFrameTime = glfwGetTime(), currentFrameTime, deltaTime;
 
 	// do CPU things.........
-	inputHandler.applyToCamera(window, camera, windowWidth, windowHeight);
-	inputHandler.applyToCamera(window, camera, windowWidth, windowHeight);
+	
 	
 	
 	currentFrameTime = glfwGetTime();
@@ -185,9 +189,44 @@ void loop_step(GLFWwindow *window) {
 		const double sleepTime = (PHYS_STEP - deltaTime) * 10E5; // multiply to get from seconds to microseconds, this is prob platform dependent and very bad
 		usleep(sleepTime);
 		// is it better to just sleep or should I already start another tick here?
-		renderer.draw(points, camera, window);
+	}
+	renderer.draw(points, camera, window);
+}
+
+void renderLoop(GLFWwindow *window) {
+	while (!glfwWindowShouldClose(window)) {
+		// no need for time or sleep, vsync takes care of it
+		inputHandler.applyToCamera(window, camera, windowWidth, windowHeight);
+
+
+		std::unique_lock<std::mutex> lock = std::unique_lock<std::mutex>(mtx);
+		auto s = draw_points.size();
+		// printf("%f %f %f %lu\n", draw_points[s -1].getX(), draw_points[s -1].getY(), draw_points[s -1].getZ(), s);
+		renderer.draw(draw_points, camera, window);
+		lock.unlock();
+
+		glfwPollEvents();
 	}
 }
+
+auto physLoop = []() {
+	double lastFrameTime = glfwGetTime(), currentFrameTime, deltaTime;
+	// perform calculations............................
+
+	std::unique_lock<std::mutex> lock = std::unique_lock<std::mutex>(mtx);
+	draw_points = points; // copy the buffer
+	lock.unlock();
+
+	currentFrameTime = glfwGetTime();
+	deltaTime = currentFrameTime - lastFrameTime;
+	lastFrameTime = currentFrameTime;
+
+	// draw if delta allows it. sleep until target
+	if (deltaTime < PHYS_STEP) {
+		const double sleepTime = (PHYS_STEP - deltaTime) * 10E5; // multiply to get from seconds to microseconds, this is prob platform dependent and very bad
+		usleep(sleepTime);
+	}
+};
 
 int main(int argc, char **argv) {
 
@@ -235,7 +274,7 @@ int main(int argc, char **argv) {
 	// glEnable( GL_DEBUG_OUTPUT );
 	// glDebugMessageCallback( openglCallbackFunction, NULL );
 
-	// glfwSwapInterval(1); // hardcoded sync with monitor fps
+	glfwSwapInterval(1); // hardcoded sync with monitor fps
 
 	// IMGUI_CHECKVERSION();
 	// ImGui::CreateContext();
@@ -253,9 +292,12 @@ int main(int argc, char **argv) {
 
 	setWindow(window, static_cast<GLdouble>(windowWidth), static_cast<GLdouble>(windowHeight));
 
+	draw_points = points; // early copy to allow renderer to display something
+
+	std::thread thread_object(physLoop);
+
 	while (!glfwWindowShouldClose(window)) {
-		loop_step(window);
-		glfwPollEvents();
+		renderLoop(window);
 	}
 
     return 0;
