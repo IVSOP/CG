@@ -175,7 +175,9 @@ void loop_step(GLFWwindow *window) {
 	inputHandler.applyToCamera(window, camera, windowWidth, windowHeight);
 	
 	
-	
+	currentFrameTime = glfwGetTime();
+	deltaTime = currentFrameTime - lastFrameTime;
+	lastFrameTime = currentFrameTime;
 	
 	
 	// draw if delta allows it. sleep until target
