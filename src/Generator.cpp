@@ -10,6 +10,7 @@
 #include "Box.h"
 #include "Sphere.h"
 #include "Cone.h"
+#include "Cylinder.h"
 
 int main(int argc, char **argv) {
     if (argc < 2) {
@@ -85,6 +86,23 @@ int main(int argc, char **argv) {
         int stacks = std::stoi(std::string(argv[5]));
 
         return Cone::createConePoints(radius, height, slices, stacks);
+    }});
+
+    primitiveMap.insert({"cylinder", [&]() {
+        if (argc != 7) {
+            perror("Wrong number of arguments given to Cone primitive. Make sure you provide the radius of the base, the height of the Cone, the number of slices and the number of stacks. Also, don't forget to provide the name of the storage file.");
+
+            exit(-1);
+        }
+
+        storageFile = std::string(argv[6]);
+
+        float radius = std::stof(std::string(argv[2]));
+        float height = std::stof(std::string(argv[3]));
+        int slices = std::stoi(std::string(argv[4]));
+        int stacks = std::stoi(std::string(argv[5]));
+
+        return Cylinder::createCylinderPoints(radius, height, slices, stacks);
     }});
 
     if (primitiveMap.find(primitive) == primitiveMap.end()) {
