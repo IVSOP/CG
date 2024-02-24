@@ -75,23 +75,27 @@ add_executable(Engine
 	src/Engine/Renderer.cpp
 	src/Engine/Camera.cpp
 	src/Engine/InputHandler.cpp
+	src/Engine/XmlParser.cpp
+	src/Engine/Engine_Object.cpp
 	src/TinyXML2/tinyxml2.cpp
 	src/common/Vertex.cpp
-)
+	src/windows/windows_unistd.cpp)
 
 target_include_directories(Engine
 	PUBLIC includes/Engine
 	PUBLIC includes/TinyXML2
 	PUBLIC includes/common
+	PUBLIC includes/windows
 )
 
 add_executable(Generator
-	src/Generator.cpp
+	src/generator/Generator.cpp
 	src/generator/Plane.cpp
 	src/generator/Box.cpp
 	src/generator/Cylinder.cpp
 	src/generator/Sphere.cpp
 	src/generator/Cone.cpp
+	src/generator/Cylinder.cpp
 	src/common/Vertex.cpp
 	src/common/Consts.cpp
 )
