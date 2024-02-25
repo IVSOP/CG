@@ -1,20 +1,23 @@
 #ifndef CG_SCALE_H
 #define CG_SCALE_H
 
+#include "Consts.h"
 
 struct Scale {
+public:
+    glm::mat4 matrix;
     int x, y, z;
 
-    Scale(int x, int y, int z){
-        this->x = x;
-        this->y = y;
-        this->z = z;
+    Scale(float x, float y, float z){
+        this->matrix = Consts::scaleMatrix(x, y, z);
     }
 
     Scale(){
-        this->x = 0;
-        this->y = 0;
-        this->z = 0;
+        this->matrix = Consts::scaleMatrix(1, 1, 1);
+    }
+
+    glm::mat4 getMatrix() {
+        return this->matrix;
     }
 };
 

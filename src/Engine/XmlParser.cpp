@@ -1,8 +1,12 @@
 #include "XmlParser.h"
 #include "tinyxml2.h"
+#include "Transformation.h"
+#include "Rotate.h"
+#include "Translate.h"
+#include "Scale.h"
 
 void XmlParser::setWindowWidth(int width){
-
+        this->windowWidth = width;
 }
 
 int XmlParser::getWindowWidth(){
@@ -11,7 +15,7 @@ int XmlParser::getWindowWidth(){
 
 
 void XmlParser::setWindowHeight(int height){
-
+    this->windowHeight = height;
 }
 
 int XmlParser::getWindowHeight(){
@@ -20,7 +24,7 @@ int XmlParser::getWindowHeight(){
 
 
 void XmlParser::setWindowFov(GLdouble windowFov){
-
+    this->windowFov = windowFov;
 }
 
 GLdouble XmlParser::getWindowFov(){
@@ -29,7 +33,7 @@ GLdouble XmlParser::getWindowFov(){
 
 
 void XmlParser::setWindowZNear(GLdouble windowZNear){
-
+    this->windowZNear = windowZNear;
 }
 
 GLdouble XmlParser::getWindowZNear(){
@@ -38,7 +42,7 @@ GLdouble XmlParser::getWindowZNear(){
 
 
 void XmlParser::setWindowZFar(GLdouble windowZFar){
-
+    this->windowZFar = windowZFar;
 }
 
 GLdouble XmlParser::getWindowZFar(){
@@ -47,7 +51,7 @@ GLdouble XmlParser::getWindowZFar(){
 
 
 void XmlParser::setCameraXPos(GLdouble cameraXPos){
-
+    this->cameraXPos = cameraXPos;
 }
 
 GLdouble XmlParser::getCameraXPos(){
@@ -56,7 +60,7 @@ GLdouble XmlParser::getCameraXPos(){
 
 
 void XmlParser::setCameraYPos(GLdouble cameraYPos){
-
+    this->cameraYPos = cameraYPos;
 }
 
 GLdouble XmlParser::getCameraYPos(){
@@ -65,7 +69,7 @@ GLdouble XmlParser::getCameraYPos(){
 
 
 void XmlParser::setCameraZPos(GLdouble cameraZPos){
-
+    this->cameraZPos = cameraZPos;
 }
 
 GLdouble XmlParser::getCameraZPos(){
@@ -74,7 +78,7 @@ GLdouble XmlParser::getCameraZPos(){
 
 
 void XmlParser::setCameraXLook(GLdouble cameraXLook){
-
+    this->cameraXLook = cameraXLook;
 }
 
 GLdouble XmlParser::getCameraXLook(){
@@ -83,7 +87,7 @@ GLdouble XmlParser::getCameraXLook(){
 
 
 void XmlParser::setCameraYLook(GLdouble cameraYLook){
-
+    this->cameraYLook = cameraYLook;
 }
 
 GLdouble XmlParser::getCameraYLook(){
@@ -92,7 +96,7 @@ GLdouble XmlParser::getCameraYLook(){
 
 
 void XmlParser::setCameraZLook(GLdouble cameraZLook){
-
+    this->cameraZLook = cameraZLook;
 }
 
 GLdouble XmlParser::getCameraZLook(){
@@ -101,7 +105,7 @@ GLdouble XmlParser::getCameraZLook(){
 
 
 void XmlParser::setCameraXUp(GLdouble cameraXUp){
-
+    this->cameraXUp = cameraXUp;
 }
 
 GLdouble XmlParser::getCameraXUp(){
@@ -110,7 +114,7 @@ GLdouble XmlParser::getCameraXUp(){
 
 
 void XmlParser::setCameraYUp(GLdouble cameraYUp){
-
+    this->cameraYUp = cameraYUp;
 }
 
 GLdouble XmlParser::getCameraYUp(){
@@ -119,7 +123,7 @@ GLdouble XmlParser::getCameraYUp(){
 
 
 void XmlParser::setCameraZUp(GLdouble cameraZUp){
-
+    this->cameraZUp = cameraZUp;
 }
 
 GLdouble XmlParser::getCameraZUp(){
@@ -131,13 +135,95 @@ void XmlParser::setPoints(std::vector<Vertex>& points){
 }
 
 std::vector<Vertex> XmlParser::getPoints(){
-    return this->points;
+    return this->engineObject.getPoints();
+
+    /*std::vector<Vertex> tmp = this->engineObject.getPoints();
+
+    std::cout << this->points.size() << "\t" << tmp.size() << std::endl;
+
+    for(uint32_t i = 0; i < this->points.size(); i++){
+        Vertex v1 = this->points[i];
+        Vertex v2 = tmp[i];
+
+        if(v1.getCoords() != v2.getCoords()){
+            std::cout << v1 << "\t" << v2 << std::endl;
+        }
+    }
+
+    return this->points;*/
+}
+
+std::vector<Vertex> XmlParser::parseModels(tinyxml2::XMLElement *models){
+    std::vector<Vertex> ans = std::vector<Vertex>();
+
+    for (tinyxml2::XMLElement* node = models->FirstChildElement(); node != nullptr; node = node->NextSiblingElement()){
+        std::string name = std::string(node->Name());
+
+        if(name == "model"){
+            std::vector<Vertex> tmp = this->parseVertex(node);
+
+            ans.insert(ans.end(), tmp.begin(), tmp.end());
+
+            continue;
+        }
+
+        perror("Found unrecognized tag inside a models tag.");
+        std::cout << name << std::endl;
+    }
+
+    return ans;
+}
+
+// TODO Acabar
+Transformation XmlParser::parseTransformation(tinyxml2::XMLElement *transform){
+    Transformation transformation = Transformation();
+
+    for (tinyxml2::XMLElement* node = transform->FirstChildElement(); node != nullptr; node = node->NextSiblingElement()){
+        std::string name = std::string(node->Name());
+
+        if(name == "rotate"){
+            Rotate r = Rotate(node->DoubleAttribute("angle"), node->FloatAttribute("x"), node->FloatAttribute("y"), node->FloatAttribute("z"));
+
+            Transformation t = Transformation(r);
+
+            transformation.appendTransformation(t);
+
+            continue;
+        }
+
+        if(name == "translate"){
+            Translate translate = Translate(node->FloatAttribute("x"), node->FloatAttribute("y"), node->FloatAttribute("z"));
+
+            Transformation t = Transformation(translate);
+
+            transformation.appendTransformation(t);
+
+            continue;
+        }
+
+        if(name == "scale"){
+            Scale s = Scale(node->FloatAttribute("x"), node->FloatAttribute("y"), node->FloatAttribute("z"));
+
+            Transformation t = Transformation(s);
+
+            transformation.appendTransformation(t);
+
+            continue;
+        }
+
+        perror("Found unrecognized tag inside a models tag.");
+        std::cout << name << std::endl;
+    }
+
+    return transformation;
 }
 
 std::vector<Vertex> XmlParser::parseVertex(tinyxml2::XMLElement *model){
     FILE* f = std::fopen(model->Attribute("file"), "rb");
 
     if(f == nullptr){
+        perror("There is no such file with the given name.");
+        std::cout << model->Attribute("file") << std::endl;
 
         return {};
     }
@@ -155,15 +241,41 @@ std::vector<Vertex> XmlParser::parseVertex(tinyxml2::XMLElement *model){
     return points;
 }
 
-Engine_Object XmlParser::parseEngineObject(tinyxml2::XMLElement *group, std::vector<Transformation>& transformations){
-    std::vector<Vertex> points = std::vector<Vertex>();
+Engine_Object XmlParser::parseEngineObject(tinyxml2::XMLElement *group, Transformation transformations){
+    std::vector<Vertex> obj_points = std::vector<Vertex>();
     std::vector<Engine_Object> child_objs = std::vector<Engine_Object>();
 
-    for (tinyxml2::XMLNode* node = group->FirstChild(); node != nullptr; node = node->NextSibling()){
-        std::cout << node << std::endl;
+    for (tinyxml2::XMLElement* node = group->FirstChildElement(); node != nullptr; node = node->NextSiblingElement()){
+        std::string name = std::string(node->Name());
+
+        // std::cout << name << std::endl;
+
+        if(name == "transform"){
+            Transformation t = parseTransformation(node);
+            transformations.appendTransformation(t);
+
+            continue;
+        }
+
+        if(name == "models"){
+            std::vector<Vertex> tmp_points = parseModels(node);
+            obj_points.insert(obj_points.end(), tmp_points.begin(), tmp_points.end());
+
+            continue;
+        }
+
+        if(name == "group"){
+            Engine_Object child = parseEngineObject(node, Transformation(transformations));
+            child_objs.emplace_back(child.transformation, child.points, child.children_objects);
+
+            continue;
+        }
+
+        perror("Found unrecognized tag inside a group tag.");
+        std::cout << name << std::endl;
     }
 
-    return Engine_Object(transformations, points, child_objs);
+    return Engine_Object(transformations, obj_points, child_objs);
 }
 
 void XmlParser::parseXML(char * xmlFile) {
@@ -220,27 +332,11 @@ void XmlParser::parseXML(char * xmlFile) {
     this->cameraYUp = up->DoubleAttribute("y");
     this->cameraZUp = up->DoubleAttribute("z");
 
-    std::vector<Transformation> transformations = std::vector<Transformation>();
-    // this->engineObject = parseEngineObject(group, transformations);
+    Transformation transformations = Transformation();
+    this->engineObject = parseEngineObject(group, transformations);
 
+    /*
     tinyxml2::XMLElement *models = group->FirstChildElement("models");
 
-    for (tinyxml2::XMLElement* model = models->FirstChildElement("model"); model != nullptr; model = model->NextSiblingElement("model")){
-        FILE* f = std::fopen(model->Attribute("file"), "rb");
-
-        if(f == nullptr){
-
-            continue;
-        }
-
-        int size;
-
-        std::fread(&size, sizeof(int), 1, f);
-
-        Vertex* pts = new Vertex[size];
-        fread(pts, sizeof(Vertex), size, f);
-
-        this->points = std::vector<Vertex>(pts, pts + size);
-        delete[] pts;
-    }
+    this->points = parseModels(models);*/
 }

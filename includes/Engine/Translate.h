@@ -1,20 +1,22 @@
 #ifndef CG_TRANSLATE_H
 #define CG_TRANSLATE_H
 
+#include "Consts.h"
 
 struct Translate {
-    int x, y, z;
+public:
+    glm::mat4 matrix;
 
-    Translate(int x, int y, int z){
-        this->x = x;
-        this->y = y;
-        this->z = z;
+    Translate(float x, float y, float z){
+        this->matrix = Consts::translateMatrix(x, y, z);
     }
 
     Translate(){
-        this->x = 0;
-        this->y = 0;
-        this->z = 0;
+        this->matrix = Consts::translateMatrix(0, 0, 0);
+    }
+
+    glm::mat4 getMatrix() {
+        return this->matrix;
     }
 };
 

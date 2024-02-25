@@ -77,8 +77,13 @@ add_executable(Engine
 	src/Engine/InputHandler.cpp
 	src/Engine/XmlParser.cpp
 	src/Engine/Engine_Object.cpp
+	src/Engine/Translate.cpp
+	src/Engine/Rotate.cpp
+	src/Engine/Scale.cpp
+	src/Engine/Transformation.cpp
 	src/TinyXML2/tinyxml2.cpp
 	src/common/Vertex.cpp
+	src/common/Consts.cpp
 	src/windows/windows_unistd.cpp)
 
 target_include_directories(Engine

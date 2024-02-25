@@ -7,35 +7,65 @@
 #include "tinyxml2.h"
 
 #include <vector>
+#include <map>
+#include <functional>
 
 class XmlParser {
 private:
-    int windowWidth = 512;
-    int windowHeight = 512;
+    int windowWidth;
+    int windowHeight;
 
-    GLdouble windowFov = 45.0f;
-    GLdouble windowZNear = 1.0f;
-    GLdouble windowZFar = 1000.0f;
+    GLdouble windowFov;
+    GLdouble windowZNear;
+    GLdouble windowZFar;
 
-    GLdouble cameraXPos = 0.0f;
-    GLdouble cameraYPos = 0.0f;
-    GLdouble cameraZPos = 5.0f;
+    GLdouble cameraXPos;
+    GLdouble cameraYPos;
+    GLdouble cameraZPos;
 
-    GLdouble cameraXLook = 0.0f;
-    GLdouble cameraYLook = 0.0f;
-    GLdouble cameraZLook = -1.0f;
+    GLdouble cameraXLook;
+    GLdouble cameraYLook;
+    GLdouble cameraZLook;
 
-    GLdouble cameraXUp = 0.0f;
-    GLdouble cameraYUp = 0.0f;
-    GLdouble cameraZUp = -1.0f;
+    GLdouble cameraXUp;
+    GLdouble cameraYUp;
+    GLdouble cameraZUp;
 
-    // Engine_Object engineObject;
-    std::vector<Vertex> points = std::vector<Vertex>();
+    Engine_Object engineObject;
+    std::vector<Vertex> points;
 
-    Engine_Object parseEngineObject(tinyxml2::XMLElement *group, std::vector<Transformation>& transformations);
+    Engine_Object parseEngineObject(tinyxml2::XMLElement *group, Transformation transformations);
 
     std::vector<Vertex> parseVertex(tinyxml2::XMLElement *model);
+
+    std::vector<Vertex> parseModels(tinyxml2::XMLElement *models);
+
+    Transformation parseTransformation(tinyxml2::XMLElement *transform);
 public:
+    XmlParser(){
+        this->windowWidth = 512;
+        this->windowHeight = 512;
+
+        this->windowFov = 45.0f;
+        this->windowZNear = 1.0f;
+        this->windowZFar = 1000.0f;
+
+        this->cameraXPos = 0.0f;
+        this->cameraYPos = 0.0f;
+        this->cameraZPos = 5.0f;
+
+        this->cameraXLook = 0.0f;
+        this->cameraYLook = 0.0f;
+        this->cameraZLook = -1.0f;
+
+        this->cameraXUp = 0.0f;
+        this->cameraYUp = 0.0f;
+        this->cameraZUp = -1.0f;
+
+        this->engineObject = Engine_Object();
+        this->points = std::vector<Vertex>();
+    }
+
     void parseXML(char * xmlFile);
 
     void setWindowWidth(int width);
