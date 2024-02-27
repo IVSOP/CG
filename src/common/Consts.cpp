@@ -54,10 +54,25 @@ glm::mat4 Consts::idMatrix(){
     return glm::mat4(1.0f);
 }
 
-// TODO Acabar
-glm::mat4 Consts::rotMatrix(float angle, float x, float y, float z){
+// basiei-me aqui http://www.songho.ca/opengl/gl_rotate.html
+// rodrigues rotation formula -> mais eficiente que decompor rotações em torno de eixos x,y,z
+// matriz é transposta em relação ao que ta no site porque OpenGL usa column major order
+glm::mat4 Consts::rotMatrixVector(float angle, float x, float y, float z){
     glm::mat4 rotMatrix = glm::mat4(1.0f);
+    float rad_angle = angle * (M_PI / 180);
+    double c = cos(rad_angle);
+    double s = sin(rad_angle);
+    double oneMinusCos = 1 - c;
 
+    rotMatrix[0][0] = oneMinusCos * x * x + c ;
+    rotMatrix[0][1] = oneMinusCos * x * y  + s * z;
+    rotMatrix[0][2] = oneMinusCos * x * z - s * y;
+    rotMatrix[1][0] = oneMinusCos * x * y - s * z;
+    rotMatrix[1][1] = oneMinusCos * y * y  + c;
+    rotMatrix[1][2] = oneMinusCos * y * z + s * x;
+    rotMatrix[2][0] = oneMinusCos * x * z + s * y;
+    rotMatrix[2][1] = oneMinusCos * y * z - s * x;
+    rotMatrix[2][2] = oneMinusCos * z * z + c;
     return rotMatrix;
 }
 

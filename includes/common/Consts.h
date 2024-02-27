@@ -9,7 +9,7 @@ public:
     static glm::mat4 rotYMatrix(float angle);
     static glm::mat4 rotXMatrix(float angle);
     static glm::mat4 rotZMatrix(float angle);
-    static glm::mat4 rotMatrix(float angle, float x, float y, float z);
+    static glm::mat4 rotMatrixVector(float angle, float x, float y, float z);
     static glm::mat4 translateMatrix(float x, float y, float z);
     static glm::mat4 scaleMatrix(float x, float y, float z);
     static glm::mat4 idMatrix();
