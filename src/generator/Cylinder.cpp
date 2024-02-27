@@ -21,8 +21,8 @@ std::vector<Vertex> Cylinder::createCylinderPoints(float radius, float height, i
     glm::mat4 rotYMatrix = Consts::rotYMatrix(-angle);
 
     for(int i = 0; i <= stacks; i++) {
-        basePoints.emplace_back(0.0f , static_cast<float>(i) * stackStep, 0.0f);
-        basePoints.emplace_back(radius, static_cast<float>(i) * stackStep, 0.0f);
+        basePoints.emplace_back(0.0f , static_cast<float>(i) * stackStep - height / 2.0f, 0.0f);
+        basePoints.emplace_back(radius, static_cast<float>(i) * stackStep - height / 2.0f, 0.0f);
 
         for (int j = 1; j <= slices; j++) {
             baseCoords = basePoints[0].getCoords();
@@ -77,7 +77,7 @@ std::vector<Vertex> Cylinder::createCylinderPoints(float radius, float height, i
         // if(isinf(v.getX()) || isinf(v.getY()) || isinf(v.getZ())) std::cout << v << std::endl;
     }*/
 
-    std::cout << ans.size() << std::endl;
+    // std::cout << ans.size() << std::endl;
 
     return ans;
 }
