@@ -101,27 +101,6 @@ void handleMouseMov(GLFWwindow *window, double xpos, double ypos) {
     }
 }
 
-void loop_step(GLFWwindow *window) {
-    double lastFrameTime = glfwGetTime(), currentFrameTime, deltaTime;
-
-	// do CPU things.........
-
-
-
-	currentFrameTime = glfwGetTime();
-	deltaTime = currentFrameTime - lastFrameTime;
-	lastFrameTime = currentFrameTime;
-
-
-	// draw if delta allows it. sleep until target
-	if (deltaTime < PHYS_STEP) {
-		const double sleepTime = (PHYS_STEP - deltaTime) * 10E5; // multiply to get from seconds to microseconds, this is prob platform dependent and very bad
-		usleep(sleepTime);
-		// is it better to just sleep or should I already start another tick here?
-	}
-	renderer.draw(points, camera, window);
-}
-
 void renderLoop(GLFWwindow *window) {
     int windowWidth = xmlParser.getWindowWidth();
     int windowHeight = xmlParser.getWindowHeight();
@@ -132,7 +111,7 @@ void renderLoop(GLFWwindow *window) {
 
 
 	std::unique_lock<std::mutex> lock = std::unique_lock<std::mutex>(mtx);
-	auto s = draw_points.size();
+	// auto s = draw_points.size();
 	// printf("%f %f %f %lu\n", draw_points[s -1].getX(), draw_points[s -1].getY(), draw_points[s -1].getZ(), s);
 	renderer.draw(draw_points, camera, window);
 	lock.unlock();
