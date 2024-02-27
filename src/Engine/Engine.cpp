@@ -19,18 +19,8 @@
 #include <mutex>
 #include <thread>
 
-/* Test variables */
-#define COUNTER_START 0.65
-#define COUNTER_STOP 1.15
-
-double counter = COUNTER_START;
-bool increment = true;
-/* End of test variables */
-
 
 ///////////////////////////////////////////////////////// main objects
-Renderer renderer;
-Camera camera;
 InputHandler inputHandler;
 XmlParser xmlParser;
 bool resize = false;
@@ -101,7 +91,7 @@ void handleMouseMov(GLFWwindow *window, double xpos, double ypos) {
     }
 }
 
-void renderLoop(GLFWwindow *window) {
+void renderLoop(GLFWwindow *window, Camera &camera, Renderer &renderer) {
     int windowWidth = xmlParser.getWindowWidth();
     int windowHeight = xmlParser.getWindowHeight();
 
@@ -213,7 +203,8 @@ int main(int argc, char **argv) {
     GLdouble cameraYUp = xmlParser.getCameraYUp();
     GLdouble cameraZUp = xmlParser.getCameraZUp();
 
-    camera = Camera(glm::vec3(cameraXPos, cameraYPos, cameraZPos), glm::vec3(cameraXLook, cameraYLook, cameraZLook), glm::vec3(cameraXUp, cameraYUp, cameraZUp));
+    Camera camera = Camera(glm::vec3(cameraXPos, cameraYPos, cameraZPos), glm::vec3(cameraXLook, cameraYLook, cameraZLook), glm::vec3(cameraXUp, cameraYUp, cameraZUp));
+	Renderer renderer;
 
     setWindow(window, static_cast<GLdouble>(windowWidth), static_cast<GLdouble>(windowHeight));
 
@@ -223,7 +214,7 @@ int main(int argc, char **argv) {
 	std::thread thread_object(physLoop, window);
 
 	while (!glfwWindowShouldClose(window)) {
-		renderLoop(window);
+		renderLoop(window, camera, renderer);
 	}
 
     return 0;
