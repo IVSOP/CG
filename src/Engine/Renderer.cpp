@@ -47,7 +47,7 @@ void Renderer::draw(std::vector<Vertex> &verts, Camera &camera, GLFWwindow * win
 
     glBegin(GL_TRIANGLES);
 
-    for(int i = 0; i < verts.size(); i++){
+    for(unsigned int i = 0; i < verts.size(); i++){
         Vertex &v = verts[i];
         
 		// glColor3f(0.01f * i, 1.0f - 0.01f * i, 0.0f);

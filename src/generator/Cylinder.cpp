@@ -12,7 +12,7 @@ std::vector<Vertex> Cylinder::createCylinderPoints(float radius, float height, i
 
     float angle = 360.0f / static_cast<float>(slices);
     float stackStep = height / static_cast<float>(stacks);
-    float radiusStep = radius / static_cast<float>(stacks);
+    // float radiusStep = radius / static_cast<float>(stacks);
 
     glm::vec4 currCoords;
     glm::vec4 prevCoords;

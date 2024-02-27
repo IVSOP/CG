@@ -65,7 +65,7 @@ std::vector<Vertex> Cone::createConePoints(float radius, float height, int slice
     }
 
 
-    for(int i = 1; i < prevBasePoints.size(); i++){
+    for(unsigned int i = 1; i < prevBasePoints.size(); i++){
         glm::vec4 leftCoords = prevBasePoints[i].getCoords();
         glm::vec4 rightCoords = prevBasePoints[i-1].getCoords();
 

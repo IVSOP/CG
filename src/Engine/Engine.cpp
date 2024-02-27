@@ -48,6 +48,11 @@ void setWindow(GLFWwindow* window, int windowWidth, int windowHeight) {
     // setting up MSAA anti aliasing, needs to happen before window creation??
     // glfwWindowHint(GLFW_SAMPLES, 4);
 
+	if (windowWidth == 0 || windowHeight == 0) {
+		fprintf(stderr, "Detected window size 0, ignoring resize operation\n");
+		return;
+	}
+
     // Compute window's ration
     GLfloat aspectRatio = static_cast<GLfloat>(windowWidth) / static_cast<GLfloat>(windowHeight);
 
@@ -97,7 +102,7 @@ void renderLoop(GLFWwindow *window, Camera &camera, Renderer &renderer) {
 
 	// era possivel o deltatime ser dinamico, mas tive preguica, meti ao refresh rate do monitor
 	// no need for time or sleep, vsync takes care of it
-	inputHandler.applyToCamera(window, camera, windowWidth, windowHeight, 1.0f / static_cast<GLfloat>(refreshRate));
+	inputHandler.applyToCamera(camera, windowWidth, windowHeight, 1.0f / static_cast<GLfloat>(refreshRate));
 
 
 	std::unique_lock<std::mutex> lock = std::unique_lock<std::mutex>(mtx);

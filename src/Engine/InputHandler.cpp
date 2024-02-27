@@ -57,7 +57,7 @@ std::vector<KeyInfo> InputHandler::getKeysPressedOrHeld() const {
 // 	return glm::vec2(curX - lastX, curY - lastY);
 // }
 
-void InputHandler::applyToCamera(GLFWwindow * window, Camera &camera, int windowWidth, int windowHeight, GLfloat deltatime) {
+void InputHandler::applyToCamera(Camera &camera, int windowWidth, int windowHeight, GLfloat deltatime) {
 	// muito mal feito, tbm nao tive paciencia mas funcemina
 
 	const KeyInfo *keys = keyInfo.get();
@@ -82,8 +82,8 @@ void InputHandler::applyToCamera(GLFWwindow * window, Camera &camera, int window
 	}
 
 	if (!inMenu) {
-		const int center_x = windowWidth / 2;
-		const int center_y = windowHeight / 2;
+		// const int center_x = windowWidth / 2;
+		// const int center_y = windowHeight / 2;
 
 		const float xoffset = static_cast<GLfloat>(curX) - static_cast<GLfloat>(lastX);
 		const float yoffset = static_cast<GLfloat>(lastY) - static_cast<GLfloat>(curY); // reversed since y-coordinates go from bottom to top
