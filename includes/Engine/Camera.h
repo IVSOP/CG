@@ -159,6 +159,30 @@ public:
             Zoom = 45.0f;
     }
 
+	// update camera vectors???
+	void moveTo(const glm::vec3 &pos) {
+		this->Position = pos;
+	}
+
+	// update camera vectors???
+	void move(const glm::vec3 &delta) {
+		this->Position += delta;
+	}
+
+	// update camera vectors???
+	void lookAt(const glm::vec3 &lookAt) {
+		// calcular pitch e yaw manualmente
+		glm::vec3 tempVec = glm::normalize(lookAt - this->Position);
+		Yaw = glm::degrees(atan2(tempVec.z, tempVec.x));
+		Pitch = glm::degrees(atan2(tempVec.y, sqrt((tempVec.z * tempVec.z) + (tempVec.x * tempVec.x))));
+	}
+
+	// update camera vectors???
+	void look(GLfloat deltaPitch, GLfloat deltaYaw) {
+		this->Pitch += deltaPitch;
+		this->Yaw += deltaYaw;
+	}
+
 private:
     // calculates the front vector from the Camera's (updated) Euler Angles
     void updateCameraVectors()
