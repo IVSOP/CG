@@ -32,7 +32,6 @@ std::vector<Vertex> draw_points;
 // isto e extremamente roto, mas nas docs basicamente diz que sou burro se tentar fazer como no glut e meter GLFW_CURSOR_HIDDEN e estar sempre a centra-lo, diz para usar GLFW_CURSOR_DISABLED
 // ou seja acho que vai ter de ficar assim
 std::mutex mtx;
-int refreshRate = 60;
 
 void setWindow(GLFWwindow* window, int windowWidth, int windowHeight) {
 	// cursed, devia sair daqui, os valores nunca se alteram desde que o xml e carregado
@@ -75,8 +74,6 @@ void setWindow(GLFWwindow* window, int windowWidth, int windowHeight) {
 
 	// printf("window set to %d %d. half is %d %d\n", windowWidth, windowHeight, windowWidth / 2, windowHeight / 2);
 	resize = true;
-
-	refreshRate = glfwGetVideoMode(glfwGetPrimaryMonitor())->refreshRate;
 }
 
 void handleKey(GLFWwindow *window, int key, int scancode, int action, int mods) {
@@ -97,26 +94,37 @@ void handleMouseMov(GLFWwindow *window, double xpos, double ypos) {
 }
 
 void renderLoop(GLFWwindow *window, Camera &camera, Renderer &renderer) {
-    int windowWidth = xmlParser.getWindowWidth();
-    int windowHeight = xmlParser.getWindowHeight();
+	double lastFrameTime, currentFrameTime, deltaTime = PHYS_STEP; // to prevent errors when this is first ran, I initialize it to the physics substep
+	while (!glfwWindowShouldClose(window)) {
+		lastFrameTime = glfwGetTime();
+		int windowWidth = xmlParser.getWindowWidth();
+		int windowHeight = xmlParser.getWindowHeight();
 
-	// era possivel o deltatime ser dinamico, mas tive preguica, meti ao refresh rate do monitor
-	// no need for time or sleep, vsync takes care of it
-	inputHandler.applyToCamera(camera, windowWidth, windowHeight, 1.0f / static_cast<GLfloat>(refreshRate));
+		// printf("delta is %f (%f fps)\n", deltaTime, 1.0f / deltaTime);
+		inputHandler.applyToCamera(camera, windowWidth, windowHeight, static_cast<GLfloat>(deltaTime));
 
 
-	std::unique_lock<std::mutex> lock = std::unique_lock<std::mutex>(mtx);
-	// auto s = draw_points.size();
-	// printf("%f %f %f %lu\n", draw_points[s -1].getX(), draw_points[s -1].getY(), draw_points[s -1].getZ(), s);
-	renderer.draw(draw_points, camera, window);
-	lock.unlock();
+		std::unique_lock<std::mutex> lock = std::unique_lock<std::mutex>(mtx);
+		// auto s = draw_points.size();
+		// printf("%f %f %f %lu\n", draw_points[s -1].getX(), draw_points[s -1].getY(), draw_points[s -1].getZ(), s);
+		renderer.draw(draw_points, camera, window);
+		lock.unlock();
 
-	glfwPollEvents();
+		glfwPollEvents();
+
+
+		currentFrameTime = glfwGetTime();
+		deltaTime = currentFrameTime - lastFrameTime;
+		lastFrameTime = currentFrameTime;
+
+		// no need for sleep, vsync takes care of mantaining timings	
+	}										
 }
 
 auto physLoop = [](GLFWwindow *window) {
+	double lastFrameTime, currentFrameTime, deltaTime;
 	while (!glfwWindowShouldClose(window)) {
-		double lastFrameTime = glfwGetTime(), currentFrameTime, deltaTime;
+		lastFrameTime = glfwGetTime();
 		// perform calculations............................
 
 		std::unique_lock<std::mutex> lock = std::unique_lock<std::mutex>(mtx);
@@ -218,9 +226,7 @@ int main(int argc, char **argv) {
 
 	std::thread thread_object(physLoop, window);
 
-	while (!glfwWindowShouldClose(window)) {
-		renderLoop(window, camera, renderer);
-	}
+	renderLoop(window, camera, renderer);
 
     return 0;
 }
