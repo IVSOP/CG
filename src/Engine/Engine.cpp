@@ -16,8 +16,8 @@
 #include "Renderer.h"
 #include "Camera.h"
 #include "InputHandler.h"
-#include <mutex>
 #include <thread>
+#include <mutex>
 
 
 ///////////////////////////////////////////////////////// main objects
