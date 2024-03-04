@@ -4,7 +4,7 @@ DIR="buildWin"
 
 if cmake -DCMAKE_TOOLCHAIN_FILE=TC-mingw.cmake -D-DGLFW_BUILD_DOCS=OFF -S . -B $DIR; then
 	printf "\n"
-	if make -j$(nproc) -C $DIR; then
+	if cmake --build $DIR --parallel $(nproc); then
 		exit 0
 	else
 		printf ">> build failed\n"
