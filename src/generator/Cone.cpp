@@ -27,7 +27,8 @@ std::vector<Vertex> Cone::createConePoints(float radius, float height, int slice
             baseCoords = basePoints[0].getCoords();
             prevCoords = basePoints[j].getCoords();
 
-            currCoords = rotYMatrix * prevCoords;
+            if(j != slices) currCoords = rotYMatrix * prevCoords;
+            else currCoords = basePoints[1].getCoords();
 
             if(i == 0){
                 ans.emplace_back(baseCoords.x, baseCoords.y, baseCoords.z);

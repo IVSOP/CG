@@ -28,7 +28,8 @@ std::vector<Vertex> Cylinder::createCylinderPoints(float radius, float height, i
             baseCoords = basePoints[0].getCoords();
             prevCoords = basePoints[j].getCoords();
 
-            currCoords = rotYMatrix * prevCoords;
+            if(j != slices) currCoords = rotYMatrix * prevCoords;
+            else currCoords = basePoints[1].getCoords();
 
             if(i == 0){
                 ans.emplace_back(baseCoords.x, baseCoords.y, baseCoords.z);
