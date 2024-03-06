@@ -4,3 +4,4 @@ build/
 debug/
 .vscode/
 buildWin/
+imgui.ini

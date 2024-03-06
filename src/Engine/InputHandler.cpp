@@ -6,26 +6,38 @@ InputHandler::InputHandler()
 
 }
 
+void handleMouseMovInMenu(GLFWwindow *window, double xpos, double ypos) {
+	// maneira manhosa de meter o imgui clicavel, no futuro vai para o inputhandler
+	ImGui::GetIO().AddMousePosEvent(xpos, ypos);
+}
+
+void handleMouseClickInMenu(GLFWwindow* window, int button, int action, int mods) {
+	// maneira manhosa de meter o imgui clicavel, no futuro vai para o inputhandler
+	ImGui::GetIO().AddMouseButtonEvent(button, action == GLFW_PRESS ? true : false);
+}
+
 void InputHandler::pressKey(GLFWwindow *window, int key, int scancode, int action, int mods) {
 	KeyInfo *keys = this->keyInfo.get();
 
 	keys[key].newAction(action, mods);
 
-	// bandaid fix temporario
+	// bandaid fix temporario isto estar aqui, presskey nao devia fazer isto
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS) {
-		if (inMenu) {
+		if (inMenu) { // then go into engine
 			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+			glfwSetMouseButtonCallback(window, nullptr);
+			// ImGui::SetMouseCursor(ImGuiMouseCursor_None); // acho que isto nao e preciso
 			inMenu = false;
 			glfwSetCursorPosCallback(window, handleMouseMov);
 			glfwSetCursorPos(window, curX, curY);
-		} else {
+		} else { // then go into menu
 			glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+			// ImGui::SetMouseCursor(ImGuiMouseCursor_Arrow); // acho que isto nao e preciso
 			inMenu = true;
-			glfwSetCursorPosCallback(window, nullptr);
+			glfwSetMouseButtonCallback(window, handleMouseClickInMenu);
+			glfwSetCursorPosCallback(window, handleMouseMovInMenu);
 		}
-
 	}
-
 }
 
 void InputHandler::centerMouseTo(GLdouble center_x, GLdouble center_y) {

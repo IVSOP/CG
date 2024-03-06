@@ -19,7 +19,6 @@
 #include <thread>
 #include <mutex>
 
-
 ///////////////////////////////////////////////////////// main objects
 InputHandler inputHandler;
 XmlParser xmlParser;
@@ -96,6 +95,8 @@ void handleMouseMov(GLFWwindow *window, double xpos, double ypos) {
 void renderLoop(GLFWwindow *window, Camera &camera, Renderer &renderer) {
 	double lastFrameTime, currentFrameTime, deltaTime = PHYS_STEP; // to prevent errors when this is first ran, I initialize it to the physics substep
 	while (!glfwWindowShouldClose(window)) {
+		glfwPollEvents(); // at the start due to imgui (??) test moving it to after the unlock()
+
 		lastFrameTime = glfwGetTime();
 		int windowWidth = xmlParser.getWindowWidth();
 		int windowHeight = xmlParser.getWindowHeight();
@@ -109,9 +110,6 @@ void renderLoop(GLFWwindow *window, Camera &camera, Renderer &renderer) {
 		// printf("%f %f %f %lu\n", draw_points[s -1].getX(), draw_points[s -1].getY(), draw_points[s -1].getZ(), s);
 		renderer.draw(draw_points, camera, window);
 		lock.unlock();
-
-		glfwPollEvents();
-
 
 		currentFrameTime = glfwGetTime();
 		deltaTime = currentFrameTime - lastFrameTime;
@@ -167,6 +165,8 @@ int main(int argc, char **argv) {
     }
     glfwMakeContextCurrent(window);
 
+	glfwSwapInterval(1); // hardcoded sync with monitor fps
+
     ///////////////////////// CALLBAKCS
     glfwSetFramebufferSizeCallback(window, setWindow);
     glfwSetKeyCallback(window, handleKey);
@@ -185,23 +185,41 @@ int main(int argc, char **argv) {
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
+
+	// IMGUI
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    // io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+    // io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
+
+    ImGui::StyleColorsDark();
+
+    // Setup Platform/Renderer backends
+    ImGui_ImplGlfw_InitForOpenGL(window, true);
+	// MUDAR ISTO DEPOIS se for preciso, tirei do exemplo do imgui
+#if defined(__APPLE__)
+    // GL 3.2 + GLSL 150
+    const char* glsl_version = "#version 150";
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // Required on Mac
+#else
+    // GL 3.0 + GLSL 130
+    const char* glsl_version = "#version 130";
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+    //glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
+    //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
+#endif
+    ImGui_ImplOpenGL3_Init(glsl_version);
+
     // std::cout << glGetString(GL_VERSION) << std::endl;
 
     // During init, enable debug output
-    ///////////////////////////////////////// isto deve ser do glut, nao vou usar por agora
     // glEnable( GL_DEBUG_OUTPUT );
     // glDebugMessageCallback( openglCallbackFunction, NULL );
-
-	glfwSwapInterval(1); // hardcoded sync with monitor fps
-
-    // IMGUI_CHECKVERSION();
-    // ImGui::CreateContext();
-    // // ImGuiIO& io = ImGui::GetIO(); (void)io; // ????
-    // ImGui_ImplGlfw_InitForOpenGL(window, true);
-    // ImGui_ImplOpenGL3_Init("#version 450");
-    // ImGui::StyleColorsDark();
-    // // io.ConfigFlags |= .....
-
 
     // MSAA
     // glEnable(GL_MULTISAMPLE);
@@ -227,6 +245,13 @@ int main(int argc, char **argv) {
 	std::thread thread_object(physLoop, window);
 
 	renderLoop(window, camera, renderer);
+
+	ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
+
+	glfwDestroyWindow(window);
+    glfwTerminate();
 
     return 0;
 }

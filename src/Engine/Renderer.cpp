@@ -32,8 +32,18 @@ void drawAxis() {
 }
 
 void Renderer::draw(std::vector<Vertex> &verts, Camera &camera, GLFWwindow * window) const {
-    // Clear buffers
+    // Clear buffers // isto funcionava em baixo do ImGui::Begin, buguei
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	ImGui_ImplOpenGL3_NewFrame();
+	ImGui_ImplGlfw_NewFrame();
+	ImGui::NewFrame();
+
+	ImGui::Begin("Debug");
+	// ImGui::ShowDemoWindow();
+	ImGui::Text("Facing x:%f y:%f z:%f", camera.Front.x, camera.Front.y, camera.Front.z);
+	ImGui::InputFloat3("Position:", glm::value_ptr(camera.Position));
+
 
 	glMatrixMode(GL_MODELVIEW);
     // Load identity matrix
@@ -56,20 +66,9 @@ void Renderer::draw(std::vector<Vertex> &verts, Camera &camera, GLFWwindow * win
 
     glEnd();
 
-    /* Test -> swap for loaded file instructions */
-    /*
-    glRotated(30 * (counter - COUNTER_START), 0, 0, 1);
 
-    glutWireTeapot(counter);
-
-    if (increment && counter >= COUNTER_STOP) increment = false;
-
-    if (!increment && counter <= COUNTER_START) increment = true;
-
-    counter = increment ? counter + 0.005 : counter - 0.005;
-    */
-    /* Test's end */
-
-    // End of frame
+	ImGui::End();
+	ImGui::Render();
+	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     glfwSwapBuffers(window);
 }

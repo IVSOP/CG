@@ -70,6 +70,9 @@ include_directories(external/glm)
 add_subdirectory(external/glfw)
 include_directories(external/glfw/include)
 
+include_directories(external/imgui)
+include_directories(external/imgui/backends)
+
 add_executable(Engine
 	src/Engine/Engine.cpp
 	src/Engine/Renderer.cpp
@@ -84,7 +87,16 @@ add_executable(Engine
 	src/TinyXML2/tinyxml2.cpp
 	src/common/Vertex.cpp
 	src/common/Consts.cpp
-	src/windows/windows_unistd.cpp)
+	src/windows/windows_unistd.cpp
+
+	external/imgui/imgui.cpp
+	external/imgui/imgui_demo.cpp
+	external/imgui/imgui_draw.cpp
+	external/imgui/imgui_tables.cpp
+	external/imgui/imgui_widgets.cpp
+	external/imgui/backends/imgui_impl_glfw.cpp
+	external/imgui/backends/imgui_impl_opengl3.cpp
+)
 
 target_include_directories(Engine
 	PUBLIC includes/Engine
