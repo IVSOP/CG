@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.22.1)
 project(CG)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -22,9 +22,6 @@ endif(WIN32)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 find_package(OpenGL REQUIRED)
-include_directories(${OpenGL_INCLUDE_DIRS})
-link_directories(${OpenGL_LIBRARY_DIRS})
-add_definitions(${OpenGL_DEFINITIONS})
 
 if(NOT OPENGL_FOUND)
     message(ERROR " OPENGL not found!")
@@ -41,7 +38,7 @@ if  (WIN32)
 
 
     # include_directories(${TOOLKITS_FOLDER}/glut )
-    link_libraries(${OPENGL_LIBRARIES})
+    # link_libraries(${OPENGL_LIBRARIES})
     #         ${TOOLKITS_FOLDER}/glut/glut32.lib)
 
     # if (EXISTS "${TOOLKITS_FOLDER}/glut/glut32.dll" )
@@ -49,19 +46,6 @@ if  (WIN32)
     # endif(EXISTS "${TOOLKITS_FOLDER}/glut/glut32.dll" )
 
     set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
-
-else (WIN32) #Linux and Mac
-
-    # find_package(GLUT REQUIRED)
-    # include_directories(${GLUT_INCLUDE_DIR})
-    # link_directories(${GLUT_LIBRARY_DIRS})
-    # add_definitions(${GLUT_DEFINITIONS})
-
-    link_libraries(${OPENGL_LIBRARIES} ) # ${GLUT_LIBRARIES} )
-    # if(NOT GLUT_FOUND)
-    #     message(ERROR ": GLUT not found!")
-    # endif(NOT GLUT_FOUND)
-
 endif(WIN32)
 
 add_subdirectory(external/glm)
@@ -123,5 +107,8 @@ target_include_directories(Generator
 	PUBLIC includes/common
 )
 
-target_link_libraries(Engine glfw)
+target_link_libraries(Engine
+	glfw
+	OpenGL::GL
+)
 # ?????? o glm funciona por magia sem linking nenhum????? e usar so link_libraries nao funcionou, isto ja me ultrapassa

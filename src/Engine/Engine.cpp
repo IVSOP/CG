@@ -85,7 +85,6 @@ void handleMouseMov(GLFWwindow *window, double xpos, double ypos) {
         inputHandler.moveMouseTo(xpos, ypos);
     } else {
         // fix para ao dar resize da janela coordenadas mudarem
-        GLdouble xpos, ypos;
         glfwGetCursorPos(window, &xpos, &ypos);
         resize = false;
         inputHandler.centerMouseTo(xpos, ypos);
@@ -141,6 +140,12 @@ auto physLoop = [](GLFWwindow *window) {
 	}
 };
 
+void glfw_error_callback(int error, const char* description)
+{
+    fprintf(stderr, "GLFW Error %d: %s\n", error, description);
+}
+
+
 int main(int argc, char **argv) {
 
     if (argc != 2) {
@@ -154,9 +159,15 @@ int main(int argc, char **argv) {
     int windowWidth = xmlParser.getWindowWidth();
     int windowHeight = xmlParser.getWindowHeight();
 
+	glfwSetErrorCallback(glfw_error_callback);
     if (!glfwInit()) {
         perror("GLFW window failed to initiate");
     }
+
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+	// glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
     GLFWwindow *window = glfwCreateWindow(windowWidth, windowHeight, "CG", NULL, NULL);
     if (window == NULL) {
         perror("GLFW window failed to create");
