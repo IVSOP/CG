@@ -26,7 +26,7 @@ std::vector<Vertex> Torus::createTorusPoints(float intRadius, float extRadius, i
     glm::vec4 prevCoords;
 
 
-    glm::mat4 rotYMatrix = Consts::rotYMatrix(-angleStacks);
+    glm::mat4 rotYMatrix = Consts::rotYMatrix(-angleSlices);
     glm::mat4 rotZMatrix = Consts::rotZMatrix(90.0f);
     glm::mat4 rotYMatrix2 = Consts::rotYMatrix(180.0f);
 
