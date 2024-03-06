@@ -21,6 +21,7 @@ endif(WIN32)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
+find_package(GLEW REQUIRED)
 find_package(OpenGL REQUIRED)
 
 if(NOT OPENGL_FOUND)
@@ -109,6 +110,7 @@ target_include_directories(Generator
 
 target_link_libraries(Engine
 	glfw
+	GLEW::GLEW
 	OpenGL::GL
 )
 # ?????? o glm funciona por magia sem linking nenhum????? e usar so link_libraries nao funcionou, isto ja me ultrapassa
