@@ -53,6 +53,12 @@
 		"streambuf": "cpp",
 		"cinttypes": "cpp",
 		"typeinfo": "cpp",
-		"filesystem": "cpp"
+		"filesystem": "cpp",
+		"condition_variable": "cpp",
+		"fstream": "cpp",
+		"mutex": "cpp",
+		"semaphore": "cpp",
+		"stop_token": "cpp",
+		"thread": "cpp"
 	}
 }

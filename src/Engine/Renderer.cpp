@@ -13,25 +13,33 @@
 
 #include "Camera.h"
 
-void drawAxis() {
-        glBegin(GL_LINES);
-// X axis in red
-    glColor3f(1.0f, 0.0f, 0.0f);
-    glVertex3f(-100.0f, 0.0f, 0.0f);
-    glVertex3f( 100.0f, 0.0f, 0.0f);
-// Y Axis in Green
-    glColor3f(0.0f, 1.0f, 0.0f);
-    glVertex3f(0.0f, -100.0f, 0.0f);
-    glVertex3f(0.0f, 100.0f, 0.0f);
-// Z Axis in Blue
-    glColor3f(0.0f, 0.0f, 1.0f);
-    glVertex3f(0.0f, 0.0f, -100.0f);
-    glVertex3f(0.0f, 0.0f, 100.0f);
-    glColor3f(1.0f, 1.0f, 1.0f);
-    glEnd();
+void Renderer::drawAxis(const glm::mat4 &MVP) const {
+
+	const Vertex vertices[] = {
+		// x
+		{-100.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f},
+		{100.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f},
+
+		// y
+		{0.0f, -100.0f, 0.0f, 0.0f, 1.0f, 0.0f},
+		{0.0f, 100.0f, 0.0f, 0.0f, 1.0f, 0.0f},
+
+		// z
+		{0.0f, 0.0f, -100.0f, 0.0f, 0.0f, 1.0f},
+		{0.0f, 0.0f, 100.0f, 0.0f, 0.0f, 1.0f}
+	};
+
+
+	GLCall(glBindBuffer(GL_ARRAY_BUFFER, this->vertexBuffer));
+	GLCall(glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW));
+
+	GLCall(glUseProgram(this->program));
+	GLCall(glUniformMatrix4fv(this->u_MVP, 1, GL_FALSE, glm::value_ptr(MVP)));
+
+	GLCall(glDrawArrays(GL_LINES, 0, 6)); // 6 pontos, 3 linhas
 }
 
-// por favor nao ler isto, era so para ter uma forma rapida de ler os shaders
+// cursed, era so para ter uma forma rapida de ler os shaders
 const GLchar *readFromFile(char *filepath) {
 	FILE *fp = fopen(filepath, "r");
 	if (fp == NULL) {
@@ -54,21 +62,26 @@ const GLchar *readFromFile(char *filepath) {
 }
 
 Renderer::Renderer()
-: VAO(0), vertexBuffer(0), u_MVP(0)
+: VAO(0), vertexBuffer(0), program(0), u_MVP(-1)
 {
 
 	//////////////////////////// LOADING VAO ////////////////////////////
 	GLCall(glGenVertexArrays(1, &this->VAO));
 	GLCall(glBindVertexArray(this->VAO));
 
-	//////////////////////////// LOADING VBO ////////////////////////////////
+	//////////////////////////// LOADING VBOS ////////////////////////////////
 	GLCall(glGenBuffers(1, &this->vertexBuffer));
 	GLCall(glBindBuffer(GL_ARRAY_BUFFER, this->vertexBuffer));
 	// GLCall(glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW));
 		GLuint vertex_position_layout = 0;
 		GLCall(glEnableVertexAttribArray(vertex_position_layout));					// size appart				// offset
-		GLCall(glVertexAttribPointer(vertex_position_layout, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void *)offsetof(Vertex, coords)));
+		GLCall(glVertexAttribPointer(vertex_position_layout, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void *)offsetof(Vertex, coords)));
 		GLCall(glVertexAttribDivisor(vertex_position_layout, 0)); // values are per vertex
+
+		GLuint vertex_color_layout = 1;
+		GLCall(glEnableVertexAttribArray(vertex_color_layout));					// size appart				// offset
+		GLCall(glVertexAttribPointer(vertex_color_layout, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void *)offsetof(Vertex, color)));
+		GLCall(glVertexAttribDivisor(vertex_color_layout, 0)); // values are per vertex
 
 	//////////////////////////// LOADING SHADERS ////////////////////////////	
 
@@ -99,16 +112,20 @@ Renderer::Renderer()
 	GLCall(glLinkProgram(program));
 		checkProgramLinking(program);
 		validateProgram(program);
-	GLCall(glUseProgram(program));
+
+
+	GLCall(glDeleteShader(VS));
+	GLCall(glDeleteShader(FS));
+
 
 	//////////////////////////// LOADING SHADER UNIFORMS ///////////////////////////
+	GLCall(glUseProgram(program));
 	GLCall(this->u_MVP = glGetUniformLocation(program, "u_MVP")); // missing error checking, could be -1
 	GLCall(glUniformMatrix4fv(this->u_MVP, 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0f)))); // load identity just for safety
 
-
 	//////////////////////////// CLEANUP ///////////////////////////
-	GLCall(glDeleteShader(VS));
-	GLCall(glDeleteShader(FS));
+	// GLCall(glDeleteShader(VS));
+	// GLCall(glDeleteShader(FS));
 	GLCall(glUseProgram(0));
 	GLCall(glBindBuffer(GL_ARRAY_BUFFER, 0));
 	GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
@@ -116,6 +133,7 @@ Renderer::Renderer()
 }
 
 Renderer::~Renderer() {
+	GLCall(glDeleteProgram(program));
 	GLCall(glDeleteBuffers(1, &vertexBuffer));
 	GLCall(glDeleteVertexArrays(1, &VAO));
 }
@@ -133,25 +151,27 @@ void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Cam
 	ImGui::Text("Facing x:%f y:%f z:%f", camera.Front.x, camera.Front.y, camera.Front.z);
 	ImGui::InputFloat3("Position:", glm::value_ptr(camera.Position));
 
-
 	constexpr glm::mat4 model = glm::mat4(1.0f);
 	const glm::mat4 view = camera.GetViewMatrix();
-	const glm::mat4 MVP = projection * view * model;
+	const glm::mat4 MVP = projection * view * model; // nao so nao sei, como nao quero saber. vou assumir que a maneira que o glm faz as coisas influencia isto
 
 
-	// bind VAO, VBO, program
+	// bind VAO, VBO
 	GLCall(glBindVertexArray(this->VAO));
 	GLCall(glBindBuffer(GL_ARRAY_BUFFER, this->vertexBuffer));
-	GLCall(glUseProgram(this->program));
 
 	// load vertices
 	GLCall(glBufferData(GL_ARRAY_BUFFER, verts.size() * sizeof(Vertex), verts.data(), GL_STATIC_DRAW));
 
-	// load MVP to shader
+	// bind program, load MVP
+	GLCall(glUseProgram(this->program));
 	GLCall(glUniformMatrix4fv(this->u_MVP, 1, GL_FALSE, glm::value_ptr(MVP)));
 
 	// draw
+	GLCall(glPolygonMode(GL_FRONT_AND_BACK,GL_LINE));
 	GLCall(glDrawArrays(GL_TRIANGLES, 0, verts.size()));
+
+	drawAxis(MVP);
 
 	ImGui::End();
 	ImGui::Render();

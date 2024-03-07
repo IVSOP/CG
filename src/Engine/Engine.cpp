@@ -19,7 +19,7 @@
 #include <thread>
 #include <mutex>
 
-///////////////////////////////////////////////////////// main objects
+///////////////////////////////////////////////////////// main objects. temporario, depois vai sair daqui
 InputHandler inputHandler;
 XmlParser xmlParser;
 bool resize = false;
@@ -47,19 +47,8 @@ void setWindow(GLFWwindow* window, int windowWidth, int windowHeight) {
     // Compute window's ration
     GLfloat aspectRatio = static_cast<GLfloat>(windowWidth) / static_cast<GLfloat>(windowHeight);
 
-    // // Set projection matrix
-    // glMatrixMode(GL_PROJECTION);
-
-    // // Load identity matrix
-    // glLoadIdentity();
-
     // Set perspective
     projection = glm::perspective(glm::radians(static_cast<GLfloat>(windowFov)), static_cast<GLfloat>(aspectRatio), static_cast<GLfloat>(windowZNear), static_cast<GLfloat>(windowZFar));
-    // gluPerspective(windowFov, aspectRatio, windowZNear, windowZFar);
-    // glMultMatrixf(glm::value_ptr(perspective));
-
-    // Return to the model view matrix mode
-    // glMatrixMode(GL_MODELVIEW);
 
     // Set viewport to be the entire window
     glViewport(0, 0, windowWidth, windowHeight);
@@ -113,6 +102,15 @@ void renderLoop(GLFWwindow *window, Camera &camera, Renderer &renderer) {
 
 auto physLoop = [](GLFWwindow *window) {
     double lastFrameTime, currentFrameTime, deltaTime;
+	for (unsigned int i = 0; i < points.size(); i++) {
+		float r = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+		float g = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+		float b = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+
+		points[i].color.r = r;
+		points[i].color.g = g;
+		points[i].color.b = b;
+	}
     while (!glfwWindowShouldClose(window)) {
         lastFrameTime = glfwGetTime();
         // perform calculations............................
@@ -159,20 +157,19 @@ int main(int argc, char **argv) {
 
 #if defined(__APPLE__)
     // GL 3.2 + GLSL 150
-    const char* glsl_version = "#version 150";
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+    const char* glsl_version = "#version 450";
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // Required on Mac
 #else
     // GL 3.0 + GLSL 130
-    const char* glsl_version = "#version 130";
+    const char* glsl_version = "#version 450";
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
-    //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
+    //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only isto faz o que??????????????????????????????????????????????????????????????????????????????????????????????????????
 #endif
-    // glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
     GLFWwindow *window = glfwCreateWindow(windowWidth, windowHeight, "CG", NULL, NULL);
     if (window == NULL) {
@@ -198,7 +195,6 @@ int main(int argc, char **argv) {
 
 
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
 
     /* OpenGL settings */
     glEnable(GL_DEPTH_TEST);
