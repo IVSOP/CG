@@ -43,7 +43,7 @@ std::vector<Vertex> Torus::createTorusPoints(float intRadius, float extRadius, i
 
     // rodar o circulo 90 graus
     for (auto point: circuloPoints2) {
-        currCoords = rotYMatrix * rotZMatrix * point.getCoords();
+        currCoords = rotYMatrix2 * rotZMatrix * point.getCoords();
         circuloPoints3.emplace_back(currCoords.x, currCoords.y, currCoords.z);
     }
 
