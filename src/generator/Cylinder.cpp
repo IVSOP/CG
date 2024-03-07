@@ -72,13 +72,5 @@ std::vector<Vertex> Cylinder::createCylinderPoints(float radius, float height, i
         basePoints.clear();
     }
 
-    /*for(Vertex v : ans){
-        // if(std::abs(v.getX()) >= 6 || std::abs(v.getY()) > 18 || std::abs(v.getZ()) >= 6) std::cout << v << std::endl;
-
-        // if(isinf(v.getX()) || isinf(v.getY()) || isinf(v.getZ())) std::cout << v << std::endl;
-    }*/
-
-    // std::cout << ans.size() << std::endl;
-
     return ans;
 }

@@ -4,6 +4,8 @@
 #include <string>
 #include <cstdio>
 #include <stdlib.h>
+#include <iosfwd>
+#include <fstream>
 
 #include "Vertex.h"
 #include "Plane.h"
@@ -131,13 +133,13 @@ int main(int argc, char **argv) {
 
     points = primitiveMap[primitive].operator()();
 
-    FILE* f = std::fopen(storageFile.c_str(), "w");
-    int size = static_cast<int>(points.size());
-
-    std::fwrite(&size, sizeof(int), 1, f);
-    std::fwrite(points.data(), sizeof(Vertex), size, f);
-
-    std::fclose(f);
+    std::ofstream outFile(storageFile.c_str(), std::ios::binary);
+    if (outFile.is_open()) {
+        outFile.write(reinterpret_cast<const char*>(points.data()), points.size() * sizeof(Vertex));
+        outFile.close();
+    } else {
+        std::cerr << "Error opening file for writing." << std::endl;
+    }
 
     return 0;
 }

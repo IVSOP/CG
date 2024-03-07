@@ -5,6 +5,9 @@
 #include "Translate.h"
 #include "Scale.h"
 
+#include <iosfwd>
+#include <fstream>
+
 void XmlParser::setWindowWidth(int width){
         this->windowWidth = width;
 }
@@ -136,21 +139,6 @@ void XmlParser::setPoints(std::vector<Vertex>& points){
 
 std::vector<Vertex> XmlParser::getPoints(){
     return this->engineObject.getPoints();
-
-    /*std::vector<Vertex> tmp = this->engineObject.getPoints();
-
-    std::cout << this->points.size() << "\t" << tmp.size() << std::endl;
-
-    for(uint32_t i = 0; i < this->points.size(); i++){
-        Vertex v1 = this->points[i];
-        Vertex v2 = tmp[i];
-
-        if(v1.getCoords() != v2.getCoords()){
-            std::cout << v1 << "\t" << v2 << std::endl;
-        }
-    }
-
-    return this->points;*/
 }
 
 std::vector<Vertex> XmlParser::parseModels(tinyxml2::XMLElement *models){
@@ -219,24 +207,21 @@ Transformation XmlParser::parseTransformation(tinyxml2::XMLElement *transform){
 }
 
 std::vector<Vertex> XmlParser::parseVertex(tinyxml2::XMLElement *model){
-    FILE* f = std::fopen(model->Attribute("file"), "rb");
+    std::vector<Vertex> points;
+    std::ifstream inFile(model->Attribute("file"), std::ios::binary);
 
-    if(f == nullptr){
-        perror("There is no such file with the given name.");
-        std::cout << model->Attribute("file") << std::endl;
+    if (inFile.is_open()) {
+        inFile.seekg(0, std::ios::end);
+        size_t fileSize = inFile.tellg();
+        inFile.seekg(0, std::ios::beg);
 
-        return {};
+        points.resize(fileSize / sizeof(Vertex));
+        inFile.read(reinterpret_cast<char*>(points.data()), fileSize);
+        inFile.close();
+
+    } else {
+        std::cerr << "Error opening file for reading." << std::endl;
     }
-
-    int size;
-
-    std::fread(&size, sizeof(int), 1, f);
-
-    Vertex* pts = new Vertex[size];
-    fread(pts, sizeof(Vertex), size, f);
-
-    std::vector<Vertex> points = std::vector<Vertex>(pts, pts + size);
-    delete[] pts;
 
     return points;
 }
@@ -247,8 +232,6 @@ Engine_Object XmlParser::parseEngineObject(tinyxml2::XMLElement *group, Transfor
 
     for (tinyxml2::XMLElement* node = group->FirstChildElement(); node != nullptr; node = node->NextSiblingElement()){
         std::string name = std::string(node->Name());
-
-        // std::cout << name << std::endl;
 
         if(name == "transform"){
             Transformation t = parseTransformation(node);
@@ -334,9 +317,4 @@ void XmlParser::parseXML(char * xmlFile) {
 
     Transformation transformations = Transformation();
     this->engineObject = parseEngineObject(group, transformations);
-
-    /*
-    tinyxml2::XMLElement *models = group->FirstChildElement("models");
-
-    this->points = parseModels(models);*/
 }
