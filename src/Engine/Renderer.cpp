@@ -31,7 +31,96 @@ void drawAxis() {
     glEnd();
 }
 
-void Renderer::draw(std::vector<Vertex> &verts, Camera &camera, GLFWwindow * window) const {
+// por favor nao ler isto, era so para ter uma forma rapida de ler os shaders
+const GLchar *readFromFile(char *filepath) {
+	FILE *fp = fopen(filepath, "r");
+	if (fp == NULL) {
+		fprintf(stderr, "%s\n", filepath);
+		perror("Invalid file path");
+		exit(1);
+	}
+	fseek(fp, 0L, SEEK_END);
+	unsigned long size = ftell(fp);
+	fseek(fp, 0L, SEEK_SET);
+	GLchar *ret = new GLchar[size + 1];
+	size_t charread = fread(ret, sizeof(GLchar), size, fp);
+	if (charread != size) {
+		fprintf(stderr, "Did not read all chars: %ld vs %ld\n", size, charread);
+		exit(1);
+	}
+	ret[charread] = '\0';
+	fclose(fp);
+	return ret;
+}
+
+Renderer::Renderer()
+: VAO(0), vertexBuffer(0), u_MVP(0)
+{
+
+	//////////////////////////// LOADING VAO ////////////////////////////
+	GLCall(glGenVertexArrays(1, &this->VAO));
+	GLCall(glBindVertexArray(this->VAO));
+
+	//////////////////////////// LOADING VBO ////////////////////////////////
+	GLCall(glGenBuffers(1, &this->vertexBuffer));
+	GLCall(glBindBuffer(GL_ARRAY_BUFFER, this->vertexBuffer));
+	// GLCall(glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW));
+		GLuint vertex_position_layout = 0;
+		GLCall(glEnableVertexAttribArray(vertex_position_layout));					// size appart				// offset
+		GLCall(glVertexAttribPointer(vertex_position_layout, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void *)offsetof(Vertex, coords)));
+		GLCall(glVertexAttribDivisor(vertex_position_layout, 0)); // values are per vertex
+
+	//////////////////////////// LOADING SHADERS ////////////////////////////	
+
+	GLCall(this->program = glCreateProgram());
+
+	GLuint VS, FS;
+	{
+		char filename[] = "shaders/basic.vert";
+		const GLchar *vertex_shader = readFromFile(filename);
+		GLCall(VS = glCreateShader(GL_VERTEX_SHADER));
+		GLCall(glShaderSource(VS, 1, &vertex_shader, NULL));
+		GLCall(glCompileShader(VS));
+		GLCall(checkErrorInShader(VS));
+		GLCall(glAttachShader(program, VS));
+		delete[] vertex_shader;
+	}
+
+	{
+		char filename[] = "shaders/basic.frag";
+		const GLchar *fragment_shader = readFromFile(filename);
+		GLCall(FS = glCreateShader(GL_FRAGMENT_SHADER));
+		GLCall(glShaderSource(FS, 1, &fragment_shader, NULL));
+		GLCall(glCompileShader(FS));
+		GLCall(checkErrorInShader(FS));
+		GLCall(glAttachShader(program, FS));
+	}
+	
+	GLCall(glLinkProgram(program));
+		checkProgramLinking(program);
+		validateProgram(program);
+	GLCall(glUseProgram(program));
+
+	//////////////////////////// LOADING SHADER UNIFORMS ///////////////////////////
+	GLCall(this->u_MVP = glGetUniformLocation(program, "u_MVP")); // missing error checking, could be -1
+	GLCall(glUniformMatrix4fv(this->u_MVP, 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0f)))); // load identity just for safety
+
+
+	//////////////////////////// CLEANUP ///////////////////////////
+	GLCall(glDeleteShader(VS));
+	GLCall(glDeleteShader(FS));
+	GLCall(glUseProgram(0));
+	GLCall(glBindBuffer(GL_ARRAY_BUFFER, 0));
+	GLCall(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0));
+	GLCall(glBindVertexArray(0));
+}
+
+Renderer::~Renderer() {
+	GLCall(glDeleteBuffers(1, &vertexBuffer));
+	GLCall(glDeleteVertexArrays(1, &VAO));
+}
+
+void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Camera &camera, GLFWwindow * window) const {
     // Clear buffers // isto funcionava em baixo do ImGui::Begin, buguei
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -45,27 +134,24 @@ void Renderer::draw(std::vector<Vertex> &verts, Camera &camera, GLFWwindow * win
 	ImGui::InputFloat3("Position:", glm::value_ptr(camera.Position));
 
 
-	glMatrixMode(GL_MODELVIEW);
-    // Load identity matrix
-    glLoadIdentity();
-    // Set camera position and angle
-	glMultMatrixf(glm::value_ptr(camera.GetViewMatrix()));
+	constexpr glm::mat4 model = glm::mat4(1.0f);
+	const glm::mat4 view = camera.GetViewMatrix();
+	const glm::mat4 MVP = projection * view * model;
 
-    drawAxis();
 
-    glPolygonMode(GL_FRONT, GL_LINE);
+	// bind VAO, VBO, program
+	GLCall(glBindVertexArray(this->VAO));
+	GLCall(glBindBuffer(GL_ARRAY_BUFFER, this->vertexBuffer));
+	GLCall(glUseProgram(this->program));
 
-    glBegin(GL_TRIANGLES);
+	// load vertices
+	GLCall(glBufferData(GL_ARRAY_BUFFER, verts.size() * sizeof(Vertex), verts.data(), GL_STATIC_DRAW));
 
-    for(unsigned int i = 0; i < verts.size(); i++){
-        Vertex &v = verts[i];
-        
-		// glColor3f(0.01f * i, 1.0f - 0.01f * i, 0.0f);
-		glVertex3fv(glm::value_ptr(v.getCoords()));
-    }
+	// load MVP to shader
+	GLCall(glUniformMatrix4fv(this->u_MVP, 1, GL_FALSE, glm::value_ptr(MVP)));
 
-    glEnd();
-
+	// draw
+	GLCall(glDrawArrays(GL_TRIANGLES, 0, verts.size()));
 
 	ImGui::End();
 	ImGui::Render();

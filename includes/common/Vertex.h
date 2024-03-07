@@ -4,8 +4,7 @@
 #include <iostream>
 #include <glm/vec4.hpp>
 
-class Vertex {
-private:
+struct Vertex {
 	glm::vec4 coords;
 
     friend std::ostream &operator<<(std::ostream &os, const Vertex &p) {
@@ -13,7 +12,6 @@ private:
         return os;
     }
 
-public:
     Vertex(float x, float y, float z) : coords(x, y, z, 1.0f) {}
     Vertex() : coords(0.0f, 0.0f, 0.0f, 1.0f) {}
 

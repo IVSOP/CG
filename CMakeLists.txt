@@ -21,6 +21,7 @@ endif(WIN32)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
+find_package(GLEW REQUIRED)
 find_package(OpenGL REQUIRED)
 
 if(NOT OPENGL_FOUND)
@@ -68,6 +69,7 @@ add_executable(Engine
 		src/Engine/Rotate.cpp
 		src/Engine/Scale.cpp
 		src/Engine/Transformation.cpp
+		src/Engine/GLErrors.cpp
 		src/TinyXML2/tinyxml2.cpp
 		src/common/Vertex.cpp
 		src/common/Consts.cpp
@@ -80,14 +82,14 @@ add_executable(Engine
 		external/imgui/imgui_widgets.cpp
 		external/imgui/backends/imgui_impl_glfw.cpp
 		external/imgui/backends/imgui_impl_opengl3.cpp
-		)
+)
 
 target_include_directories(Engine
 		PUBLIC includes/Engine
 		PUBLIC includes/TinyXML2
 		PUBLIC includes/common
 		PUBLIC includes/windows
-		)
+)
 
 add_executable(Generator
 		src/generator/Generator.cpp
@@ -100,15 +102,16 @@ add_executable(Generator
 		src/generator/donute.cpp
 		src/common/Vertex.cpp
 		src/common/Consts.cpp
-		)
+)
 
 target_include_directories(Generator
 		PUBLIC includes/generator
 		PUBLIC includes/common
-		)
+)
 
 target_link_libraries(Engine
 		glfw
+		GLEW::GLEW
 		OpenGL::GL
-		)
+)
 # ?????? o glm funciona por magia sem linking nenhum????? e usar so link_libraries nao funcionou, isto ja me ultrapassa
