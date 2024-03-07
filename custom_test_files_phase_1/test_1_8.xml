@@ -8,7 +8,7 @@
     </camera>
     <group>
         <models>
-            <model file="sphere_2_20_20.3d"/> <!-- generator cone 1 2 4 3 cone_1_2_4_3.3d -->
+            <model file="sphere_2_20_20.3d"/> <!-- generator sphere 2 20 20 sphere_2_20_20.3d -->
         </models>
     </group>
 </world>

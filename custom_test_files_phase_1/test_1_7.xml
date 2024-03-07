@@ -8,7 +8,7 @@
     </camera>
     <group>
         <models>
-            <model file="cylinder_2_4_10_5.3d"/> <!-- generator cone 1 2 4 3 cone_1_2_4_3.3d -->
+            <model file="cylinder_2_4_10_5.3d"/> <!-- generator cylinder 2 4 10 5 cylinder_2_4_10_5.3d -->
         </models>
     </group>
 </world>
