@@ -12,8 +12,6 @@ if (WIN32)
 
 	cmake_policy(SET CMP0072 NEW)
 
-	# set(CMAKE_PREFIX_PATH "C:/Program Files (x86)/freeglut")
-
 else (WIN32)
 	set(CMAKE_CXX_FLAGS_DEBUG "${GCC_COVERAGE_COMPILE_FLAGS} -Wno-deprecated ${CMAKE_CXX_FLAGS_DEBUG} -O0 -g3")
 	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${GCC_COVERAGE_COMPILE_FLAGS} -Wno-deprecated -O2 -Wall -Wextra -pedantic")
@@ -21,33 +19,35 @@ endif(WIN32)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-find_package(GLEW REQUIRED)
 find_package(OpenGL REQUIRED)
 
 if(NOT OPENGL_FOUND)
 	message(ERROR " OPENGL not found!")
 endif(NOT OPENGL_FOUND)
 
-if  (WIN32)
+if (WIN32)
 
 	message(STATUS "Toolkits_DIR set to: " ${TOOLKITS_FOLDER})
 	set(TOOLKITS_FOLDER "" CACHE PATH "Path to Toolkits folder")
 
-	# if (NOT EXISTS "${TOOLKITS_FOLDER}/glut/GL/glut.h" OR NOT EXISTS "${TOOLKITS_FOLDER}/glut/glut32.lib")
-	#     message(ERROR ": GLUT not found")
-	# endif (NOT EXISTS "${TOOLKITS_FOLDER}/glut/GL/glut.h" OR NOT EXISTS "${TOOLKITS_FOLDER}/glut/glut32.lib")
-
-
-	# include_directories(${TOOLKITS_FOLDER}/glut )
-	# link_libraries(${OPENGL_LIBRARIES})
-	#         ${TOOLKITS_FOLDER}/glut/glut32.lib)
-
-	# if (EXISTS "${TOOLKITS_FOLDER}/glut/glut32.dll" )
-	#     file(COPY ${TOOLKITS_FOLDER}/glut/glut32.dll DESTINATION ${CMAKE_BINARY_DIR})
-	# endif(EXISTS "${TOOLKITS_FOLDER}/glut/glut32.dll" )
-
 	set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
-endif(WIN32)
+
+	if (NOT EXISTS "${TOOLKITS_FOLDER}/glew/GL/glew.h" OR NOT EXISTS "${TOOLKITS_FOLDER}/glew/glew32.lib")
+		message(ERROR ": GLEW not found")
+	endif (NOT EXISTS "${TOOLKITS_FOLDER}/glew/GL/glew.h" OR NOT EXISTS "${TOOLKITS_FOLDER}/glew/glew32.lib")	
+
+
+	include_directories(${TOOLKITS_FOLDER}/glut ${TOOLKITS_FOLDER}/glew)
+
+	if (EXISTS "${TOOLKITS_FOLDER}/glut/glut32.dll"  AND EXISTS "${TOOLKITS_FOLDER}/glew/glew32.dll")
+		file(COPY ${TOOLKITS_FOLDER}/glut/glut32.dll DESTINATION ${CMAKE_BINARY_DIR})
+		file(COPY ${TOOLKITS_FOLDER}/glew/glew32.dll DESTINATION ${CMAKE_BINARY_DIR})
+	endif(EXISTS "${TOOLKITS_FOLDER}/glut/glut32.dll"  AND EXISTS "${TOOLKITS_FOLDER}/glew/glew32.dll")	
+
+else (WIN32)
+	find_package(GLEW REQUIRED)
+
+endif (WIN32)
 
 add_subdirectory(external/glm)
 include_directories(external/glm)
@@ -109,9 +109,21 @@ target_include_directories(Generator
 		PUBLIC includes/common
 )
 
-target_link_libraries(Engine
+if (WIN32)
+	target_link_libraries(Engine
 		glfw
-		GLEW::GLEW
-		OpenGL::GL
-)
-# ?????? o glm funciona por magia sem linking nenhum????? e usar so link_libraries nao funcionou, isto ja me ultrapassa
+		# GLEW::GLEW
+		# OpenGL::GL
+		${OPENGL_LIBRARIES} 
+		${TOOLKITS_FOLDER}/glut/glut32.lib 
+		${TOOLKITS_FOLDER}/glew/glew32.lib
+	)
+else (WIN32)
+
+	target_link_libraries(Engine
+			glfw
+			GLEW::GLEW
+			OpenGL::GL
+	)
+	# ?????? o glm funciona por magia sem linking nenhum????? e usar so link_libraries nao funcionou, isto ja me ultrapassa
+endif (WIN32)
