@@ -21,16 +21,16 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 find_package(OpenGL REQUIRED)
 
-if(NOT OPENGL_FOUND)
-	message(ERROR " OPENGL not found!")
-endif(NOT OPENGL_FOUND)
-
 if (WIN32)
 
 	message(STATUS "Toolkits_DIR set to: " ${TOOLKITS_FOLDER})
 	set(TOOLKITS_FOLDER "" CACHE PATH "Path to Toolkits folder")
 
 	set_property(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
+
+	if (NOT EXISTS "${TOOLKITS_FOLDER}/glut/GL/glut.h" OR NOT EXISTS "${TOOLKITS_FOLDER}/glut/glut32.lib")
+		message(ERROR ": GLUT not found")
+	endif (NOT EXISTS "${TOOLKITS_FOLDER}/glut/GL/glut.h" OR NOT EXISTS "${TOOLKITS_FOLDER}/glut/glut32.lib")
 
 	if (NOT EXISTS "${TOOLKITS_FOLDER}/glew/GL/glew.h" OR NOT EXISTS "${TOOLKITS_FOLDER}/glew/glew32.lib")
 		message(ERROR ": GLEW not found")
@@ -45,9 +45,15 @@ if (WIN32)
 	endif(EXISTS "${TOOLKITS_FOLDER}/glut/glut32.dll"  AND EXISTS "${TOOLKITS_FOLDER}/glew/glew32.dll")	
 
 else (WIN32)
-	find_package(GLEW REQUIRED)
+############# windows usa o glew de maneira manhosa, apple usa o glut, linux como sempre e o superior e faz tudo de maneira normal
+	if (APPLE)
+		find_package(GLUT REQUIRED)
+	else (APPLE)
+		find_package(GLEW REQUIRED)
+	endif(APPLE)
 
 endif (WIN32)
+
 
 add_subdirectory(external/glm)
 include_directories(external/glm)
@@ -109,7 +115,7 @@ target_include_directories(Generator
 		PUBLIC includes/common
 )
 
-if (WIN32)
+if (WIN32) # windows glfw, glew, glut, opengl mas de maneira manhosa
 	target_link_libraries(Engine
 		glfw
 		# GLEW::GLEW
@@ -120,10 +126,18 @@ if (WIN32)
 	)
 else (WIN32)
 
-	target_link_libraries(Engine
+	if (APPLE) # apple glfw, opengl, glut
+		target_link_libraries(Engine
 			glfw
-			GLEW::GLEW
 			OpenGL::GL
-	)
-	# ?????? o glm funciona por magia sem linking nenhum????? e usar so link_libraries nao funcionou, isto ja me ultrapassa
-endif (WIN32)
+			${GLUT_LIBRARIES} # nao sabia a maneira normal de fazer isto
+		)
+	else (APPLE) # linux glfw, glew, opengl
+		target_link_libraries(Engine
+				glfw
+				GLEW::GLEW
+				OpenGL::GL
+		)
+	endif (APPLE)
+	endif (WIN32)
+# ?????? o glm funciona por magia sem linking nenhum????? e usar so link_libraries nao funcionou, isto ja me ultrapassa

@@ -1,7 +1,12 @@
 #ifndef GLERRORS_H
 #define GLERRORS_H
 
-#include <GL/glew.h>
+#ifndef __APPLE__
+	#include <GL/glew.h>
+#else
+	#include <GLUT/glut.h>
+#endif
+
 #include <GLFW/glfw3.h>
 #include <signal.h>
 

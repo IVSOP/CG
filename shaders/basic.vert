@@ -1,4 +1,4 @@
-#version 450 core
+#version 410 core
 
 // per vertex
 layout (location = 0) in vec4 aPos;
