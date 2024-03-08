@@ -97,7 +97,7 @@ add_executable(Generator
 		src/generator/Sphere.cpp
 		src/generator/Cone.cpp
 		src/generator/Cylinder.cpp
-		src/generator/donute.cpp
+		src/generator/Torus.cpp
 		src/common/Vertex.cpp
 		src/common/Consts.cpp
 		)

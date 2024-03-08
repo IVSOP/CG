@@ -108,7 +108,7 @@ int main(int argc, char **argv) {
         return Cylinder::createCylinderPoints(radius, height, slices, stacks);
     }});
 
-    primitiveMap.insert({"donute", [&]() {
+    primitiveMap.insert({"torus", [&]() {
         if (argc != 7) {
             perror("Wrong number of arguments given to Cone primitive. Make sure you provide the radius of the base, the height of the Cone, the number of slices and the number of stacks. Also, don't forget to provide the name of the storage file.");
 
