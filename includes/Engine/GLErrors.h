@@ -19,7 +19,7 @@
 
 #define ASSERT(x) if (!(x)) raise(SIGTRAP);
 
-#ifdef __APPLE__
+#ifndef __APPLE__
 	#define GLCall(f) GLClearError();\
 		f;\
 		ASSERT(GLLogCall(#f, __FILE__, __LINE__))
