@@ -1,11 +1,7 @@
 #ifndef GLERRORS_H
 #define GLERRORS_H
 
-#ifndef __APPLE__
-	#include <GL/glew.h>
-#else
-	#include <GLUT/glut.h>
-#endif
+#include <GL/glew.h>
 
 #include <GLFW/glfw3.h>
 #include <signal.h>
@@ -22,9 +18,14 @@
 #define print_error(msg) printf("%s, %s, line %d:\n", __FILE__, __func__, __LINE__); perror(msg);
 
 #define ASSERT(x) if (!(x)) raise(SIGTRAP);
-#define GLCall(f) GLClearError();\
-	f;\
-	ASSERT(GLLogCall(#f, __FILE__, __LINE__))
+
+#ifdef __APPLE__
+	#define GLCall(f) GLClearError();\
+		f;\
+		ASSERT(GLLogCall(#f, __FILE__, __LINE__))
+#else // on mac do nothing, skill issue functions do not exist on 4.1
+	#define GLCall(f) f;
+#endif
 
 void GLClearError();
 

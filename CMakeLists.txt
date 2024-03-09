@@ -45,13 +45,7 @@ if (WIN32)
 	endif(EXISTS "${TOOLKITS_FOLDER}/glut/glut32.dll"  AND EXISTS "${TOOLKITS_FOLDER}/glew/glew32.dll")	
 
 else (WIN32)
-############# windows usa o glew de maneira manhosa, apple usa o glut, linux como sempre e o superior e faz tudo de maneira normal
-	if (APPLE)
-		find_package(GLUT REQUIRED)
-	else (APPLE)
-		find_package(GLEW REQUIRED)
-	endif(APPLE)
-
+	find_package(GLEW REQUIRED)
 endif (WIN32)
 
 
@@ -125,19 +119,10 @@ if (WIN32) # windows glfw, glew, glut, opengl mas de maneira manhosa
 		${TOOLKITS_FOLDER}/glew/glew32.lib
 	)
 else (WIN32)
-
-	if (APPLE) # apple glfw, opengl, glut
-		target_link_libraries(Engine
+	target_link_libraries(Engine
 			glfw
+			GLEW::GLEW
 			OpenGL::GL
-			${GLUT_LIBRARIES} # nao sabia a maneira normal de fazer isto
-		)
-	else (APPLE) # linux glfw, glew, opengl
-		target_link_libraries(Engine
-				glfw
-				GLEW::GLEW
-				OpenGL::GL
-		)
-	endif (APPLE)
-	endif (WIN32)
+	)
+endif (WIN32)
 # ?????? o glm funciona por magia sem linking nenhum????? e usar so link_libraries nao funcionou, isto ja me ultrapassa
