@@ -208,7 +208,9 @@ int main(int argc, char **argv) {
 	std::cout << glGetString(GL_VERSION) << std::endl;
 
 	// During init, enable debug output (not for macs tho skill issue)
-#ifndef __APPLE__
+
+    // mudei de ifndef para ifdef
+#ifdef __APPLE__
 	glEnable( GL_DEBUG_OUTPUT );
 	glDebugMessageCallback( openglCallbackFunction, NULL );
 #endif

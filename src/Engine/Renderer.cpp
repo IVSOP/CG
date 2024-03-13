@@ -10,6 +10,7 @@
 #include "Vertex.h"
 
 #include <glm/gtc/type_ptr.hpp>
+#include <fstream>
 
 #include "Camera.h"
 
@@ -41,24 +42,34 @@ void Renderer::drawAxis(const glm::mat4 &MVP) const {
 
 // cursed, era so para ter uma forma rapida de ler os shaders
 const GLchar *readFromFile(char *filepath) {
-	FILE *fp = fopen(filepath, "r");
-	if (fp == NULL) {
-		fprintf(stderr, "%s\n", filepath);
-		perror("Invalid file path");
-		exit(1);
-	}
-	fseek(fp, 0L, SEEK_END);
-	unsigned long size = ftell(fp);
-	fseek(fp, 0L, SEEK_SET);
-	GLchar *ret = new GLchar[size + 1];
-	size_t charread = fread(ret, sizeof(GLchar), size, fp);
-	if (charread != size) {
-		fprintf(stderr, "Did not read all chars: %ld vs %ld\n", size, charread);
-		exit(1);
-	}
-	ret[charread] = '\0';
-	fclose(fp);
-	return ret;
+    std::ifstream inFile(filepath, std::ios::binary);
+
+    if (inFile.is_open()) {
+        inFile.seekg(0, std::ios::end);
+        size_t fileSize = inFile.tellg();
+        inFile.seekg(0, std::ios::beg);
+
+
+        GLchar* ret = new GLchar[fileSize + 1];
+
+        inFile.read(reinterpret_cast<GLchar*>(ret), fileSize);
+
+        inFile.close();
+
+        ret[fileSize] = '\0';
+
+        /*if (charread. != fileSize) {
+            fprintf(stderr, "Did not read all chars: %ld vs %ld\n", size, charread);
+            exit(1);
+        }*/
+
+        // TODO dar free do ret
+        return ret;
+    }
+
+    std::cerr << "Invalid file path " << filepath << std::endl;
+
+    exit(1);
 }
 
 Renderer::Renderer()

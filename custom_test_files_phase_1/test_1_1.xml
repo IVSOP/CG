@@ -8,7 +8,7 @@
      </camera>
      <group>
          <models>
-             <model file="plane_5_2.3d"/> <!-- generator cone 1 2 4 3 cone_1_2_4_3.3d -->
+             <model file="plane_5_2.3d"/> <!-- generator plane 5 2 plane_5_2.3d -->
          </models>
      </group>
 </world>
