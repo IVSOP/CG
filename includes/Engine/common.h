@@ -8,7 +8,7 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 
-#include <GLFW/glfw3.h>
+#include "GLErrors.h"
 
 #define PHYS_FPS 60.0f
 #define PHYS_STEP 1.0f / PHYS_FPS

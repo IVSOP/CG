@@ -19,10 +19,11 @@
 #include <thread>
 #include <mutex>
 
-///////////////////////////////////////////////////////// main objects
+///////////////////////////////////////////////////////// main objects. temporario, depois vai sair daqui
 InputHandler inputHandler;
 XmlParser xmlParser;
 bool resize = false;
+glm::mat4 projection = glm::mat4(1.0f);
 
 std::vector<Vertex> points;
 std::vector<Vertex> draw_points;
@@ -38,14 +39,6 @@ void setWindow(GLFWwindow* window, int windowWidth, int windowHeight) {
     const GLdouble windowZNear = xmlParser.getWindowZNear();
     const GLdouble windowZFar = xmlParser.getWindowZFar();
 
-
-    // glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    // glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
-    // glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-    // setting up MSAA anti aliasing, needs to happen before window creation??
-    // glfwWindowHint(GLFW_SAMPLES, 4);
-
     if (windowWidth == 0 || windowHeight == 0) {
         fprintf(stderr, "Detected window size 0, ignoring resize operation\n");
         return;
@@ -54,19 +47,8 @@ void setWindow(GLFWwindow* window, int windowWidth, int windowHeight) {
     // Compute window's ration
     GLfloat aspectRatio = static_cast<GLfloat>(windowWidth) / static_cast<GLfloat>(windowHeight);
 
-    // Set projection matrix
-    glMatrixMode(GL_PROJECTION);
-
-    // Load identity matrix
-    glLoadIdentity();
-
     // Set perspective
-    const glm::mat4 perspective = glm::perspective(glm::radians(static_cast<GLfloat>(windowFov)), static_cast<GLfloat>(aspectRatio), static_cast<GLfloat>(windowZNear), static_cast<GLfloat>(windowZFar));
-    // gluPerspective(windowFov, aspectRatio, windowZNear, windowZFar);
-    glMultMatrixf(glm::value_ptr(perspective));
-
-    // Return to the model view matrix mode
-    glMatrixMode(GL_MODELVIEW);
+    projection = glm::perspective(glm::radians(static_cast<GLfloat>(windowFov)), static_cast<GLfloat>(aspectRatio), static_cast<GLfloat>(windowZNear), static_cast<GLfloat>(windowZFar));
 
     // Set viewport to be the entire window
     glViewport(0, 0, windowWidth, windowHeight);
@@ -107,7 +89,7 @@ void renderLoop(GLFWwindow *window, Camera &camera, Renderer &renderer) {
         std::unique_lock<std::mutex> lock = std::unique_lock<std::mutex>(mtx);
         // auto s = draw_points.size();
         // printf("%f %f %f %lu\n", draw_points[s -1].getX(), draw_points[s -1].getY(), draw_points[s -1].getZ(), s);
-        renderer.draw(draw_points, camera, window);
+        renderer.draw(draw_points, projection, camera, window);
         lock.unlock();
 
         currentFrameTime = glfwGetTime();
@@ -120,6 +102,15 @@ void renderLoop(GLFWwindow *window, Camera &camera, Renderer &renderer) {
 
 auto physLoop = [](GLFWwindow *window) {
     double lastFrameTime, currentFrameTime, deltaTime;
+	for (unsigned int i = 0; i < points.size(); i++) {
+		float r = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+		float g = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+		float b = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+
+		points[i].color.r = r;
+		points[i].color.g = g;
+		points[i].color.b = b;
+	}
     while (!glfwWindowShouldClose(window)) {
         lastFrameTime = glfwGetTime();
         // perform calculations............................
@@ -164,17 +155,34 @@ int main(int argc, char **argv) {
         perror("GLFW window failed to initiate");
     }
 
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-    // glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#if defined(__APPLE__)
+    // GL 3.2 + GLSL 150
+    const char* glsl_version = "#version 410";
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // Required on Mac
+#else
+    // GL 3.0 + GLSL 130
+    const char* glsl_version = "#version 410";
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
+    // glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only isto faz o que??????????????????????????????????????????????????????????????????????????????????????????????????????
+#endif
 
     GLFWwindow *window = glfwCreateWindow(windowWidth, windowHeight, "CG", NULL, NULL);
     if (window == NULL) {
         perror("GLFW window failed to create");
         glfwTerminate();
-        exit(1);
+        return 1;
     }
     glfwMakeContextCurrent(window);
+
+	if (glewInit() != GLEW_OK) {
+		perror("GLEW failed");
+		return 1;
+	}
 
     glfwSwapInterval(1); // hardcoded sync with monitor fps
 
@@ -188,7 +196,6 @@ int main(int argc, char **argv) {
 
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-
     /* OpenGL settings */
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_CULL_FACE);
@@ -196,6 +203,17 @@ int main(int argc, char **argv) {
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 
+	std::cout << glGetString(GL_VENDOR) << std::endl;
+	std::cout << glGetString(GL_RENDERER) << std::endl;
+	std::cout << glGetString(GL_VERSION) << std::endl;
+
+	// During init, enable debug output (not for macs tho skill issue)
+
+    // mudei de ifndef para ifdef
+#ifdef __APPLE__
+	glEnable( GL_DEBUG_OUTPUT );
+	glDebugMessageCallback( openglCallbackFunction, NULL );
+#endif
 
     // IMGUI
     IMGUI_CHECKVERSION();
@@ -208,22 +226,6 @@ int main(int argc, char **argv) {
 
     // Setup Platform/Renderer backends
     ImGui_ImplGlfw_InitForOpenGL(window, true);
-    // MUDAR ISTO DEPOIS se for preciso, tirei do exemplo do imgui
-#if defined(__APPLE__)
-    // GL 3.2 + GLSL 150
-    const char* glsl_version = "#version 150";
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // Required on Mac
-#else
-    // GL 3.0 + GLSL 130
-    const char* glsl_version = "#version 130";
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-    //glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
-    //glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
-#endif
     ImGui_ImplOpenGL3_Init(glsl_version);
 
     // std::cout << glGetString(GL_VERSION) << std::endl;
