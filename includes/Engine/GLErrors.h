@@ -19,13 +19,13 @@
 
 #define ASSERT(x) if (!(x)) raise(SIGTRAP);
 
-// mudei de ifndef para ifdef
-#ifdef __APPLE__
+// on mac and windows do nothing, skill issue
+#if defined(__APPLE__) || defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
+	#define GLCall(f) f;
+#else
 	#define GLCall(f) GLClearError();\
 		f;\
 		ASSERT(GLLogCall(#f, __FILE__, __LINE__))
-#else // on mac do nothing, skill issue functions do not exist on 4.1
-	#define GLCall(f) f;
 #endif
 
 void GLClearError();

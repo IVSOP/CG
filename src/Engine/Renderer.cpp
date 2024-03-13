@@ -63,7 +63,6 @@ const GLchar *readFromFile(char *filepath) {
             exit(1);
         }*/
 
-        // TODO dar free do ret
         return ret;
     }
 
@@ -118,6 +117,7 @@ Renderer::Renderer()
 		GLCall(glCompileShader(FS));
 		GLCall(checkErrorInShader(FS));
 		GLCall(glAttachShader(program, FS));
+		delete[] fragment_shader;
 	}
 	
 	GLCall(glLinkProgram(program));
