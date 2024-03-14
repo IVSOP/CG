@@ -121,8 +121,23 @@ if (WIN32) # windows glfw, glew, glut, opengl mas de maneira manhosa
 		${TOOLKITS_FOLDER}/glut/glut32.lib 
 		${TOOLKITS_FOLDER}/glew/glew32.lib
 	)
+
+	target_link_libraries(Generator
+			glfw
+			# GLEW::GLEW
+			# OpenGL::GL
+			${OPENGL_LIBRARIES}
+			${TOOLKITS_FOLDER}/glut/glut32.lib
+			${TOOLKITS_FOLDER}/glew/glew32.lib
+	)
 else (WIN32)
 	target_link_libraries(Engine
+			glfw
+			GLEW::GLEW
+			OpenGL::GL
+	)
+
+	target_link_libraries(Generator
 			glfw
 			GLEW::GLEW
 			OpenGL::GL
