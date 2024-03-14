@@ -72,7 +72,7 @@ const GLchar *readFromFile(char *filepath) {
 }
 
 Renderer::Renderer()
-: VAO(0), vertexBuffer(0), program(0), u_MVP(-1)
+: VAO(0), vertexBuffer(0), program(0), u_MVP(-1), u_TextureArraySlot(-1)
 {
 
 	//////////////////////////// LOADING VAO ////////////////////////////
@@ -86,12 +86,22 @@ Renderer::Renderer()
 		GLuint vertex_position_layout = 0;
 		GLCall(glEnableVertexAttribArray(vertex_position_layout));					// size appart				// offset
 		GLCall(glVertexAttribPointer(vertex_position_layout, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void *)offsetof(Vertex, coords)));
-		GLCall(glVertexAttribDivisor(vertex_position_layout, 0)); // values are per vertex
+		// GLCall(glVertexAttribDivisor(vertex_position_layout, 0)); // values are per vertex
 
 		GLuint vertex_color_layout = 1;
 		GLCall(glEnableVertexAttribArray(vertex_color_layout));					// size appart				// offset
 		GLCall(glVertexAttribPointer(vertex_color_layout, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void *)offsetof(Vertex, color)));
-		GLCall(glVertexAttribDivisor(vertex_color_layout, 0)); // values are per vertex
+		// GLCall(glVertexAttribDivisor(vertex_color_layout, 0)); // values are per vertex
+
+		GLuint vertex_texcoord_layout = 2;
+		GLCall(glEnableVertexAttribArray(vertex_texcoord_layout));					// size appart				// offset
+		GLCall(glVertexAttribPointer(vertex_texcoord_layout, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void *)offsetof(Vertex, tex_coord)));
+		// GLCall(glVertexAttribDivisor(vertex_color_layout, 0)); // values are per vertex
+
+		GLuint vertex_texid_layout = 3;
+		GLCall(glEnableVertexAttribArray(vertex_texid_layout));					// size appart				// offset
+		GLCall(glVertexAttribPointer(vertex_texid_layout, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void *)offsetof(Vertex, tex_id)));
+		// GLCall(glVertexAttribDivisor(vertex_color_layout, 0)); // values are per triangle, but I am not using instancing
 
 	//////////////////////////// LOADING SHADERS ////////////////////////////	
 
@@ -99,7 +109,7 @@ Renderer::Renderer()
 
 	GLuint VS, FS;
 	{
-		char filename[] = "shaders/basic.vert";
+		char filename[] = "shaders/texture.vert";
 		const GLchar *vertex_shader = readFromFile(filename);
 		GLCall(VS = glCreateShader(GL_VERTEX_SHADER));
 		GLCall(glShaderSource(VS, 1, &vertex_shader, NULL));
@@ -110,7 +120,7 @@ Renderer::Renderer()
 	}
 
 	{
-		char filename[] = "shaders/basic.frag";
+		char filename[] = "shaders/texture.frag";
 		const GLchar *fragment_shader = readFromFile(filename);
 		GLCall(FS = glCreateShader(GL_FRAGMENT_SHADER));
 		GLCall(glShaderSource(FS, 1, &fragment_shader, NULL));
@@ -134,6 +144,12 @@ Renderer::Renderer()
 	GLCall(this->u_MVP = glGetUniformLocation(program, "u_MVP")); // missing error checking, could be -1
 	GLCall(glUniformMatrix4fv(this->u_MVP, 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0f)))); // load identity just for safety
 
+	GLCall(this->u_TextureArraySlot = glGetUniformLocation(program, "u_TextureArraySlot")); // missing error checking, could be -1
+	GLCall(glUniform1i(u_TextureArraySlot, TEX_ARRAY_SLOT));
+
+	//////////////////////////// LOADING TEXTURES ///////////////////////////
+	loadTextures();
+
 	//////////////////////////// CLEANUP ///////////////////////////
 	// GLCall(glDeleteShader(VS));
 	// GLCall(glDeleteShader(FS));
@@ -147,6 +163,17 @@ Renderer::~Renderer() {
 	GLCall(glDeleteProgram(program));
 	GLCall(glDeleteBuffers(1, &vertexBuffer));
 	GLCall(glDeleteVertexArrays(1, &VAO));
+}
+
+void Renderer::loadTextures() {
+	// load texture array instance
+	this->textureArray = std::make_unique<TextureArray>(TEXTURE_WIDTH, TEXTURE_HEIGHT, TEXTURE_LAYERS);
+
+	TextureArray *tex = textureArray.get();
+	tex->addTexture("textures/missing_texture.png"); // 0
+	tex->addTexture("textures/grass.png"); // 1
+
+	tex->setTextureArrayToSlot(TEX_ARRAY_SLOT);
 }
 
 void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Camera &camera, GLFWwindow * window) const {
@@ -174,15 +201,16 @@ void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Cam
 	// load vertices
 	GLCall(glBufferData(GL_ARRAY_BUFFER, verts.size() * sizeof(Vertex), verts.data(), GL_STATIC_DRAW));
 
-	// bind program, load MVP
+	// bind program, load MVP and texture array slot
 	GLCall(glUseProgram(this->program));
 	GLCall(glUniformMatrix4fv(this->u_MVP, 1, GL_FALSE, glm::value_ptr(MVP)));
+	GLCall(glUniform1i(u_TextureArraySlot, TEX_ARRAY_SLOT));
 
 	// draw
-	GLCall(glPolygonMode(GL_FRONT_AND_BACK,GL_LINE));
+	// GLCall(glPolygonMode(GL_FRONT_AND_BACK,GL_LINE));
 	GLCall(glDrawArrays(GL_TRIANGLES, 0, verts.size()));
 
-	drawAxis(MVP);
+	// drawAxis(MVP);
 
 	ImGui::End();
 	ImGui::Render();

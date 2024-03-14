@@ -102,15 +102,17 @@ void renderLoop(GLFWwindow *window, Camera &camera, Renderer &renderer) {
 
 auto physLoop = [](GLFWwindow *window) {
     double lastFrameTime, currentFrameTime, deltaTime;
-	for (unsigned int i = 0; i < points.size(); i++) {
-		float r = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-		float g = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-		float b = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+	// for (unsigned int i = 0; i < points.size(); i++) {
+	// 	float r = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+	// 	float g = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
+	// 	float b = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
 
-		points[i].color.r = r;
-		points[i].color.g = g;
-		points[i].color.b = b;
-	}
+	// 	points[i].color.r = r;
+	// 	points[i].color.g = g;
+	// 	points[i].color.b = b;
+		// points[i].tex_id = 1.0f;
+	// }
+	
     while (!glfwWindowShouldClose(window)) {
         lastFrameTime = glfwGetTime();
         // perform calculations............................
@@ -209,8 +211,7 @@ int main(int argc, char **argv) {
 
 	// During init, enable debug output (not for macs tho skill issue)
 
-    // mudei de ifndef para ifdef
-#ifdef __APPLE__
+#if not (defined(__APPLE__) || defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__))
 	glEnable( GL_DEBUG_OUTPUT );
 	glDebugMessageCallback( openglCallbackFunction, NULL );
 #endif
@@ -253,6 +254,17 @@ int main(int argc, char **argv) {
     setWindow(window, static_cast<GLdouble>(windowWidth), static_cast<GLdouble>(windowHeight));
 
     points = xmlParser.getPoints();
+
+	// temporary to test engine while generator does not have tex coords
+	points = std::vector<Vertex>();
+	points.push_back(Vertex(-1.0f, -1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1));
+	points.push_back(Vertex(1.0f, -1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1));
+	points.push_back(Vertex(1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1));
+	points.push_back(Vertex(1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1));
+	points.push_back(Vertex(-1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1));
+	points.push_back(Vertex(-1.0f, -1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1));
+
+
     draw_points = points; // early copy to allow renderer to display something
 
     std::thread thread_object(physLoop, window);

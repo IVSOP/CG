@@ -58,6 +58,8 @@ include_directories(external/glfw/include)
 include_directories(external/imgui)
 include_directories(external/imgui/backends)
 
+include_directories(external/stb)
+
 add_executable(Engine
 		src/Engine/Engine.cpp
 		src/Engine/Renderer.cpp
@@ -70,6 +72,7 @@ add_executable(Engine
 		src/Engine/Scale.cpp
 		src/Engine/Transformation.cpp
 		src/Engine/GLErrors.cpp
+		src/Engine/TextureArray.cpp
 		src/TinyXML2/tinyxml2.cpp
 		src/common/Vertex.cpp
 		src/common/Consts.cpp
