@@ -33,4 +33,11 @@ struct Vertex {
     float getZ();
 };
 
+struct AxisVertex {
+	glm::vec4 coords = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+	glm::vec4 color = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+
+	AxisVertex(float x, float y, float z, float R, float G, float B) : coords(x, y, z, 1.0f), color(R, G, B, 1.0f) {}
+};
+
 #endif //CG_VERTEX_H
