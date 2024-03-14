@@ -29,6 +29,7 @@ public:
 	std::unique_ptr<TextureArray> textureArray = nullptr; // pointer since it starts as null and gets initialized later. unique_ptr so it always gets deleted
 	void loadShader(const char path[], GLenum shaderType, GLuint program) const;
 	void loadTextures();
+	void checkProgram(GLuint program);
 };
 
 

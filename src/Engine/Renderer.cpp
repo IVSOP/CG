@@ -132,10 +132,12 @@ Renderer::Renderer()
 	GLCall(this->program = glCreateProgram());
 	loadShader("shaders/texture.vert", GL_VERTEX_SHADER, program);
 	loadShader("shaders/texture.frag", GL_FRAGMENT_SHADER, program);
+	checkProgram(program);
 
 	GLCall(this->program_axis = glCreateProgram());
 	loadShader("shaders/basic.vert", GL_VERTEX_SHADER, program_axis);
 	loadShader("shaders/basic.frag", GL_FRAGMENT_SHADER, program_axis);
+	checkProgram(program_axis);
 
 	//////////////////////////// LOADING SHADER UNIFORMS ///////////////////////////
 	GLCall(glUseProgram(program));
@@ -177,11 +179,13 @@ void Renderer::loadShader(const char path[], GLenum shaderType, GLuint _program)
 	GLCall(glAttachShader(_program, shader));
 	delete[] buff;
 
-	GLCall(glLinkProgram(_program));
-		checkProgramLinking(_program);
-		validateProgram(_program);
-
 	GLCall(glDeleteShader(shader));
+}
+
+void Renderer::checkProgram(GLuint program) {
+	GLCall(glLinkProgram(program));
+		checkProgramLinking(program);
+		validateProgram(program);
 }
 
 void Renderer::loadTextures() {
