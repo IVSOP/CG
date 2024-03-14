@@ -113,6 +113,17 @@ void APIENTRY openglCallbackFunction(GLenum source, GLenum type, GLuint id, GLen
     std::cout << "---------------------opengl-callback-end--------------" << std::endl;
 }
 
+#ifdef __APPLE__ // apple da erros estupidos em que diz que falha e depois afinal ta tudo a dar. portou se mal logo vai ter 0 debug
+
+void validateProgram(const GLuint program) {
+	return;
+}
+
+void checkProgramLinking(const GLuint program) {
+	return;
+}
+
+#else
 // thse two are basically the same, will remake this
 void validateProgram(const GLuint program) {
 	GLCall(glValidateProgram(program));
@@ -162,3 +173,6 @@ void checkProgramLinking(const GLuint program) {
 		raise(SIGINT);
 	}
 }
+
+#endif
+

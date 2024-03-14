@@ -21,7 +21,8 @@
 
 // on mac and windows do nothing, skill issue
 #if defined(__APPLE__) || defined(WIN32) || defined(_WIN32) || defined(__WIN32) && !defined(__CYGWIN__)
-	#define GLCall(f) f;
+    #define GLCall(f) GLClearError();\
+        f
 #else
 	#define GLCall(f) GLClearError();\
 		f;\
