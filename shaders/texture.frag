@@ -3,7 +3,7 @@
 layout(location = 0) out vec4 color;
 
 in vec2 v_TexCoord;
-in float v_TexLayer;
+flat in float v_TexLayer;
 uniform sampler2DArray u_TextureArraySlot;
 
 void main() {
