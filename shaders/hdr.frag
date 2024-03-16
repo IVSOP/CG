@@ -18,16 +18,16 @@ uniform float u_Exposure;
 // Reinhard tone mapping
 // void main()
 // {             
-//     const float gamma = 2.2;
-//     vec3 hdrColor = texture(hdrBuffer, TexCoords).rgb;
+//     // const float gamma = 2.2;
+//     vec3 hdrColor = texture(u_HdrBuffer, v_TexCoord).rgb;
   
 //     // reinhard tone mapping
 //     vec3 mapped = hdrColor / (hdrColor + vec3(1.0));
 //     // gamma correction 
-//     mapped = pow(mapped, vec3(1.0 / gamma));
+//     mapped = pow(mapped, vec3(1.0 / u_Gamma));
   
-//     FragColor = vec4(mapped, 1.0);
-// } 
+//     color = vec4(mapped, 1.0);
+// }
 
 // tone mapping with gamma and exposure
 void main()

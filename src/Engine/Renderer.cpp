@@ -340,10 +340,11 @@ void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Cam
 	// load UBO
 	Material materials[8];
 
-	materials[0].diffuse = glm::vec4(0.5f, 0.5f, 0.5f, 0.0f);
-	materials[0].ambient = glm::vec4(0.5f, 0.5f, 0.5f, 0.0f);
-	materials[0].specular = glm::vec4(0.5f, 0.5f, 0.5f, 0.0f);
-	materials[0].emissive = glm::vec4(0.5f, 0.0f, 0.0f, 0.0f);
+	// brown is (79,58,43) -> 0.31, 0.227, 0.169
+	materials[0].diffuse = glm::vec4(0.31f, 0.227f, 0.169f, 0.0f);
+	materials[0].ambient = glm::vec4(0.31f, 0.227f, 0.169f, 0.0f);
+	materials[0].specular = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f); // dirt cannot have this
+	materials[0].emissive = glm::vec4(0.31f, 0.227f, 0.169f, 0.0f);
 	materials[0].shininess = glm::vec4(32);
 	materials[0].texture_id = glm::vec4(2);
 	GLCall(glBindBuffer(GL_UNIFORM_BUFFER, UBO_materials));
@@ -351,7 +352,7 @@ void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Cam
 	GLCall(glBindBuffer(GL_UNIFORM_BUFFER, 0));  // unbind
 
 	// load test light
-	GLCall(glUniform1f(u_PointLight_constant, 0.0f));
+	GLCall(glUniform1f(u_PointLight_constant, 1.0f));
 	GLCall(glUniform1f(u_PointLight_linear, 0.09f));
 	GLCall(glUniform1f(u_PointLight_quadratic, 0.032f));
 	GLCall(glUniform3f(u_PointLight_position, 0.0f, 5.0f, 2.0f));
@@ -412,6 +413,7 @@ void Renderer::generate_HDR_texture() {
 
 	GLCall(glGenTextures(1, &this->hdrTexture));
 	GLCall(glBindTexture(GL_TEXTURE_2D, this->hdrTexture));
+	// you can get the default behaviour by either not using the framebuffer or setting this to GL_RGBA
 	GLCall(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, this->viewport_width, this->viewport_height, 0, GL_RGBA, GL_FLOAT, NULL));  // change to 32float if needed
 
 	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
