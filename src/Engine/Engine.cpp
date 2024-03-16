@@ -261,12 +261,28 @@ int main(int argc, char **argv) {
 
 	// temporary to test engine while generator does not have tex coords
 	points = std::vector<Vertex>();
-	points.push_back(Vertex(-1.0f, -1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1));
-	points.push_back(Vertex(1.0f, -1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1));
-	points.push_back(Vertex(1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1));
-	points.push_back(Vertex(1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1));
-	points.push_back(Vertex(-1.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 1.0f, 1));
-	points.push_back(Vertex(-1.0f, -1.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1));
+	points.push_back(Vertex(-1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0));
+	points.push_back(Vertex(1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0));
+	points.push_back(Vertex(1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0));
+	points.push_back(Vertex(1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0));
+	points.push_back(Vertex(-1.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0));
+	points.push_back(Vertex(-1.0f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0));
+	
+	points.push_back(Vertex(-1.0f, -1.0f + 2.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0));
+	points.push_back(Vertex(1.0f, -1.0f + 2.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0));
+	points.push_back(Vertex(1.0f, 1.0f + 2.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0));
+	points.push_back(Vertex(1.0f, 1.0f + 2.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0));
+	points.push_back(Vertex(-1.0f, 1.0f + 2.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0));
+	points.push_back(Vertex(-1.0f, -1.0f + 2.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0));
+
+	points.push_back(Vertex(-1.0f, -1.0f + 4.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0));
+	points.push_back(Vertex(1.0f, -1.0f + 4.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0));
+	points.push_back(Vertex(1.0f, 1.0f + 4.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0));
+	points.push_back(Vertex(1.0f, 1.0f + 4.0f, 0.0f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f, 0));
+	points.push_back(Vertex(-1.0f, 1.0f + 4.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0));
+	points.push_back(Vertex(-1.0f, -1.0f + 4.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0));
+
+	
 
 
     draw_points = points; // early copy to allow renderer to display something

@@ -14,6 +14,29 @@
 
 #include "Camera.h"
 
+// TODO temporary
+struct Material {
+	glm::vec4 diffuse;
+	glm::vec4 ambient;
+	glm::vec4 specular;
+	glm::vec4 emissive;
+	glm::vec4 shininess;
+	glm::vec4 texture_id;
+};
+
+struct PointLight {
+    glm::vec3 position;
+
+    GLfloat constant;
+    GLfloat linear;
+    GLfloat quadratic;  
+
+    glm::vec3 ambient;
+    glm::vec3 diffuse;
+    glm::vec3 specular;
+};
+
+
 void Renderer::drawAxis(const glm::mat4 &MVP) const {
 	const AxisVertex vertices[] = {
 		// x
@@ -92,19 +115,19 @@ Renderer::Renderer()
 		GLCall(glVertexAttribPointer(vertex_position_layout, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void *)offsetof(Vertex, coords)));
 		// GLCall(glVertexAttribDivisor(vertex_position_layout, 0)); // values are per vertex
 
-		GLuint vertex_color_layout = 1;
-		GLCall(glEnableVertexAttribArray(vertex_color_layout));					// size appart				// offset
-		GLCall(glVertexAttribPointer(vertex_color_layout, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void *)offsetof(Vertex, color)));
-		// GLCall(glVertexAttribDivisor(vertex_color_layout, 0)); // values are per vertex
+		GLuint vertex_normal_layout = 1;
+		GLCall(glEnableVertexAttribArray(vertex_normal_layout));					// size appart				// offset
+		GLCall(glVertexAttribPointer(vertex_normal_layout, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void *)offsetof(Vertex, normal)));
+		// GLCall(glVertexAttribDivisor(vertex_normal_layout, 0)); // values are per vertex
 
 		GLuint vertex_texcoord_layout = 2;
 		GLCall(glEnableVertexAttribArray(vertex_texcoord_layout));					// size appart				// offset
 		GLCall(glVertexAttribPointer(vertex_texcoord_layout, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void *)offsetof(Vertex, tex_coord)));
 		// GLCall(glVertexAttribDivisor(vertex_color_layout, 0)); // values are per vertex
 
-		GLuint vertex_texid_layout = 3;
-		GLCall(glEnableVertexAttribArray(vertex_texid_layout));					// size appart				// offset
-		GLCall(glVertexAttribPointer(vertex_texid_layout, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void *)offsetof(Vertex, tex_id)));
+		GLuint vertex_matid_layout = 3;
+		GLCall(glEnableVertexAttribArray(vertex_matid_layout));					// size appart				// offset
+		GLCall(glVertexAttribPointer(vertex_matid_layout, 1, GL_FLOAT, GL_FALSE, sizeof(Vertex), (const void *)offsetof(Vertex, material_id)));
 		// GLCall(glVertexAttribDivisor(vertex_color_layout, 0)); // values are per triangle, but I am not using instancing
 	}
 
@@ -130,8 +153,8 @@ Renderer::Renderer()
 	//////////////////////////// LOADING SHADERS ////////////////////////////	
 
 	GLCall(this->program = glCreateProgram());
-	loadShader("shaders/texture.vert", GL_VERTEX_SHADER, program);
-	loadShader("shaders/texture.frag", GL_FRAGMENT_SHADER, program);
+	loadShader("shaders/lighting.vert", GL_VERTEX_SHADER, program);
+	loadShader("shaders/lighting.frag", GL_FRAGMENT_SHADER, program);
 	checkProgram(program);
 
 	GLCall(this->program_axis = glCreateProgram());
@@ -147,12 +170,41 @@ Renderer::Renderer()
 	GLCall(this->u_TextureArraySlot = glGetUniformLocation(program, "u_TextureArraySlot")); // missing error checking, could be -1
 	GLCall(glUniform1i(u_TextureArraySlot, TEX_ARRAY_SLOT));
 
+	GLCall(this->u_View = glGetUniformLocation(program, "u_View")); // missing error checking, could be -1
+	GLCall(glUniformMatrix4fv(this->u_View, 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0f)))); // load identity just for safety
+
+	GLCall(this->u_PointLight_position = glGetUniformLocation(program, "u_PointLight.position")); // missing error checking, could be -1
+	GLCall(this->u_PointLight_constant = glGetUniformLocation(program, "u_PointLight.constant")); // missing error checking, could be -1
+	GLCall(this->u_PointLight_linear = glGetUniformLocation(program, "u_PointLight.linear")); // missing error checking, could be -1
+	GLCall(this->u_PointLight_quadratic = glGetUniformLocation(program, "u_PointLight.quadratic")); // missing error checking, could be -1
+	GLCall(this->u_PointLight_ambient = glGetUniformLocation(program, "u_PointLight.ambient")); // missing error checking, could be -1
+	GLCall(this->u_PointLight_diffuse = glGetUniformLocation(program, "u_PointLight.diffuse")); // missing error checking, could be -1
+	GLCall(this->u_PointLight_specular = glGetUniformLocation(program, "u_PointLight.specular")); // missing error checking, could be -1
+
+	// this is a UBO, not like other uniforms
+	GLCall(this->u_MaterialBufferBlockIndex = glGetUniformBlockIndex(program, "u_MaterialBuffer")); // missing error checking, could be -1
+	// bind to 0
+	glUniformBlockBinding(program, u_MaterialBufferBlockIndex, 0);
+	// generate the UBO
+	glGenBuffers(1, &UBO_materials);
+	
+	glBindBuffer(GL_UNIFORM_BUFFER, UBO_materials);
+	glBufferData(GL_UNIFORM_BUFFER, 8 * sizeof(Material), NULL, GL_DYNAMIC_DRAW); // pre alocate data. hardcoded 8 for now
+	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+	
+	glBindBufferRange(GL_UNIFORM_BUFFER, 0, UBO_materials, 0, 8 * sizeof(Material));
+
+	//////////////////////////// LOADING TEXTURES ///////////////////////////
+	loadTextures();
+
+
+
+
+	// for axis shader
 	GLCall(glUseProgram(program_axis));
 	GLCall(this->u_MVP_axis = glGetUniformLocation(program_axis, "u_MVP")); // missing error checking, could be -1
 	GLCall(glUniformMatrix4fv(this->u_MVP, 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0f)))); // load identity just for safety
 
-	//////////////////////////// LOADING TEXTURES ///////////////////////////
-	loadTextures();
 
 	//////////////////////////// CLEANUP ///////////////////////////
 	GLCall(glUseProgram(0));
@@ -168,6 +220,7 @@ Renderer::~Renderer() {
 	GLCall(glDeleteBuffers(1, &vertexBuffer_axis));
 	GLCall(glDeleteVertexArrays(1, &VAO));
 	GLCall(glDeleteVertexArrays(1, &VAO_axis));
+	// TODO delete UBO
 }
 
 void Renderer::loadShader(const char path[], GLenum shaderType, GLuint _program) const {
@@ -194,7 +247,9 @@ void Renderer::loadTextures() {
 
 	TextureArray *tex = textureArray.get();
 	tex->addTexture("textures/missing_texture.png"); // 0
-	tex->addTexture("textures/grass.png"); // 1
+	tex->addTexture("textures/black.png"); // 1
+	tex->addTexture("textures/grass.png"); // 2
+	tex->addTexture("textures/oak_log.png"); // 3
 
 	tex->setTextureArrayToSlot(TEX_ARRAY_SLOT);
 }
@@ -224,10 +279,38 @@ void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Cam
 	// load vertices
 	GLCall(glBufferData(GL_ARRAY_BUFFER, verts.size() * sizeof(Vertex), verts.data(), GL_STATIC_DRAW));
 
-	// bind program, load MVP and texture array slot
+	// bind program, load uniforms
 	GLCall(glUseProgram(this->program));
+
+	// load MVP
 	GLCall(glUniformMatrix4fv(this->u_MVP, 1, GL_FALSE, glm::value_ptr(MVP)));
 	GLCall(glUniform1i(u_TextureArraySlot, TEX_ARRAY_SLOT));
+
+	// load View
+	GLCall(glUniformMatrix4fv(this->u_View, 1, GL_FALSE, glm::value_ptr(view)));
+
+	// load UBO
+	Material materials[8];
+
+	materials[0].diffuse = glm::vec4(0.5f, 0.0f, 0.0f, 0.0f);
+	materials[0].ambient = glm::vec4(0.5f, 0.0f, 0.0f, 0.0f);
+	materials[0].specular = glm::vec4(0.5f, 0.0f, 0.0f, 0.0f);
+	materials[0].emissive = glm::vec4(0.5f, 0.0f, 0.0f, 0.0f);
+	materials[0].shininess = glm::vec4(32);
+	materials[0].texture_id = glm::vec4(1);
+	glBindBuffer(GL_UNIFORM_BUFFER, UBO_materials);
+	glBufferSubData(GL_UNIFORM_BUFFER, 0, 8 * sizeof(Material), materials);
+	glBindBuffer(GL_UNIFORM_BUFFER, 0);  // unbind
+
+	// load test light
+	GLCall(glUniform1f(u_PointLight_constant, 1.0f));
+	GLCall(glUniform1f(u_PointLight_linear, 0.09f));
+	GLCall(glUniform1f(u_PointLight_quadratic, 0.032f));
+	GLCall(glUniform3f(u_PointLight_position, 0.0f, 5.0f, 2.0f));
+	GLCall(glUniform3f(u_PointLight_ambient, 0.2f, 0.2f, 0.2f));
+	GLCall(glUniform3f(u_PointLight_diffuse, 0.5f, 0.5f, 0.5f));
+	GLCall(glUniform3f(u_PointLight_specular, 1.0f, 1.0f, 1.0f));
+
 
 	// draw
 	// GLCall(glPolygonMode(GL_FRONT_AND_BACK,GL_LINE));
