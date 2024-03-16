@@ -21,7 +21,7 @@ struct Material {
 	glm::vec4 specular;
 	glm::vec4 emissive;
 	glm::vec4 shininess;
-	glm::vec4 texture_id;
+	glm::uvec4 texture_id;
 };
 
 struct PointLight {
@@ -97,15 +97,15 @@ const GLchar *readFromFile(const char *filepath) {
     exit(1);
 }
 
-Renderer::Renderer()
-: VAO(0), vertexBuffer(0), program(0), u_MVP(-1), u_TextureArraySlot(-1)
+Renderer::Renderer(GLsizei viewport_width, GLsizei viewport_height)
+: viewport_width(viewport_width), viewport_height(viewport_height), VAO(0), vertexBuffer(0), program(0), u_MVP(-1), u_TextureArraySlot(-1)
 {
 
 	//////////////////////////// LOADING VAO ////////////////////////////
 	GLCall(glGenVertexArrays(1, &this->VAO));
 	GLCall(glBindVertexArray(this->VAO));
 
-	//////////////////////////// LOADING VBOS ////////////////////////////////
+	//////////////////////////// LOADING VBO ////////////////////////////////
 	GLCall(glGenBuffers(1, &this->vertexBuffer));
 	GLCall(glBindBuffer(GL_ARRAY_BUFFER, this->vertexBuffer));
 	// GLCall(glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW));
@@ -131,11 +131,11 @@ Renderer::Renderer()
 		// GLCall(glVertexAttribDivisor(vertex_color_layout, 0)); // values are per triangle, but I am not using instancing
 	}
 
-	//////////////////////////// LOADING VAO ////////////////////////////
+	//////////////////////////// LOADING VAO FOR AXIS ////////////////////////////
 	GLCall(glGenVertexArrays(1, &this->VAO_axis));
 	GLCall(glBindVertexArray(this->VAO_axis));
 
-	//////////////////////////// LOADING VBOS ////////////////////////////////
+	//////////////////////////// LOADING VBO FOR AXIS ////////////////////////////////
 	GLCall(glGenBuffers(1, &this->vertexBuffer_axis));
 	GLCall(glBindBuffer(GL_ARRAY_BUFFER, this->vertexBuffer_axis));
 	// GLCall(glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW));
@@ -150,6 +150,27 @@ Renderer::Renderer()
 		GLCall(glVertexAttribPointer(vertex_color_layout, 3, GL_FLOAT, GL_FALSE, sizeof(AxisVertex), (const void *)offsetof(AxisVertex, color)));
 		// GLCall(glVertexAttribDivisor(vertex_color_layout, 0)); // values are per vertex
 	}
+
+	//////////////////////////// LOADING VAO FOR HDR ////////////////////////////
+	GLCall(glGenVertexArrays(1, &this->VAO_hdr));
+	GLCall(glBindVertexArray(this->VAO_hdr));
+
+	//////////////////////////// LOADING VBO FOR HDR ////////////////////////////
+	GLCall(glGenBuffers(1, &this->vertexBuffer_hdr));
+	GLCall(glBindBuffer(GL_ARRAY_BUFFER, this->vertexBuffer_hdr));
+	// GLCall(glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW));
+	{
+		GLuint vertex_position_layout = 0;
+		GLCall(glEnableVertexAttribArray(vertex_position_layout));					// size appart				// offset
+		GLCall(glVertexAttribPointer(vertex_position_layout, 4, GL_FLOAT, GL_FALSE, sizeof(HDRVertex), (const void *)offsetof(HDRVertex, coords)));
+		// GLCall(glVertexAttribDivisor(vertex_position_layout, 0)); // values are per vertex
+
+		GLuint vertex_texcoord_layout = 1;
+		GLCall(glEnableVertexAttribArray(vertex_texcoord_layout));					// size appart				// offset
+		GLCall(glVertexAttribPointer(vertex_texcoord_layout, 2, GL_FLOAT, GL_FALSE, sizeof(HDRVertex), (const void *)offsetof(HDRVertex, tex_coord)));
+		// GLCall(glVertexAttribDivisor(vertex_normal_layout, 0)); // values are per vertex
+	}
+
 	//////////////////////////// LOADING SHADERS ////////////////////////////	
 
 	GLCall(this->program = glCreateProgram());
@@ -161,6 +182,11 @@ Renderer::Renderer()
 	loadShader("shaders/basic.vert", GL_VERTEX_SHADER, program_axis);
 	loadShader("shaders/basic.frag", GL_FRAGMENT_SHADER, program_axis);
 	checkProgram(program_axis);
+
+	GLCall(this->program_hdr = glCreateProgram());
+	loadShader("shaders/hdr.vert", GL_VERTEX_SHADER, program_hdr);
+	loadShader("shaders/hdr.frag", GL_FRAGMENT_SHADER, program_hdr);
+	checkProgram(program_hdr);
 
 	//////////////////////////// LOADING SHADER UNIFORMS ///////////////////////////
 	GLCall(glUseProgram(program));
@@ -194,16 +220,33 @@ Renderer::Renderer()
 	
 	glBindBufferRange(GL_UNIFORM_BUFFER, 0, UBO_materials, 0, 8 * sizeof(Material));
 
-	//////////////////////////// LOADING TEXTURES ///////////////////////////
-	loadTextures();
-
-
 
 
 	// for axis shader
 	GLCall(glUseProgram(program_axis));
 	GLCall(this->u_MVP_axis = glGetUniformLocation(program_axis, "u_MVP")); // missing error checking, could be -1
 	GLCall(glUniformMatrix4fv(this->u_MVP, 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0f)))); // load identity just for safety
+
+
+
+	// for hdr shader
+	GLCall(glUseProgram(program_hdr));
+	GLCall(this->u_HdrBuffer = glGetUniformLocation(program_hdr, "u_HdrBuffer"));
+	GLCall(this->u_Gamma = glGetUniformLocation(program_hdr, "u_Gamma"));
+	GLCall(this->u_Exposure = glGetUniformLocation(program_hdr, "u_Exposure"));
+
+
+	//////////////////////////// LOADING TEXTURES ///////////////////////////
+	loadTextures();
+
+
+	//////////////////////////// LOADING FRAMEBUFFER AND HDR TEXTURE ////////////////////////////
+	GLCall(glGenFramebuffers(1, &hdrFBO));
+	GLCall(glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO));
+	generate_HDR_texture();
+	GLCall(checkFrameBuffer(hdrFBO));
+	GLCall(glBindFramebuffer(GL_FRAMEBUFFER, 0));
+
 
 
 	//////////////////////////// CLEANUP ///////////////////////////
@@ -220,7 +263,7 @@ Renderer::~Renderer() {
 	GLCall(glDeleteBuffers(1, &vertexBuffer_axis));
 	GLCall(glDeleteVertexArrays(1, &VAO));
 	GLCall(glDeleteVertexArrays(1, &VAO_axis));
-	// TODO delete UBO
+	// TODO delete UBO, fbo, etc
 }
 
 void Renderer::loadShader(const char path[], GLenum shaderType, GLuint _program) const {
@@ -254,7 +297,7 @@ void Renderer::loadTextures() {
 	tex->setTextureArrayToSlot(TEX_ARRAY_SLOT);
 }
 
-void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Camera &camera, GLFWwindow * window) const {
+void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Camera &camera, GLFWwindow * window) {
     // Clear buffers // isto funcionava em baixo do ImGui::Begin, buguei
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -266,6 +309,8 @@ void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Cam
 	// ImGui::ShowDemoWindow();
 	ImGui::Text("Facing x:%f y:%f z:%f", camera.Front.x, camera.Front.y, camera.Front.z);
 	ImGui::InputFloat3("Position:", glm::value_ptr(camera.Position));
+	ImGui::SliderFloat("gamma", &gamma, 0.0f, 10.0f, "gamma = %.3f");
+	ImGui::SliderFloat("exposure", &exposure, 0.0f, 10.0f, "exposure = %.3f");
 
 	constexpr glm::mat4 model = glm::mat4(1.0f);
 	const glm::mat4 view = camera.GetViewMatrix();
@@ -289,21 +334,24 @@ void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Cam
 	// load View
 	GLCall(glUniformMatrix4fv(this->u_View, 1, GL_FALSE, glm::value_ptr(view)));
 
+	// load texture array for safety
+	this->textureArray.get()->setTextureArrayToSlot(TEX_ARRAY_SLOT);
+
 	// load UBO
 	Material materials[8];
 
-	materials[0].diffuse = glm::vec4(0.5f, 0.0f, 0.0f, 0.0f);
-	materials[0].ambient = glm::vec4(0.5f, 0.0f, 0.0f, 0.0f);
-	materials[0].specular = glm::vec4(0.5f, 0.0f, 0.0f, 0.0f);
+	materials[0].diffuse = glm::vec4(0.5f, 0.5f, 0.5f, 0.0f);
+	materials[0].ambient = glm::vec4(0.5f, 0.5f, 0.5f, 0.0f);
+	materials[0].specular = glm::vec4(0.5f, 0.5f, 0.5f, 0.0f);
 	materials[0].emissive = glm::vec4(0.5f, 0.0f, 0.0f, 0.0f);
 	materials[0].shininess = glm::vec4(32);
-	materials[0].texture_id = glm::vec4(1);
-	glBindBuffer(GL_UNIFORM_BUFFER, UBO_materials);
-	glBufferSubData(GL_UNIFORM_BUFFER, 0, 8 * sizeof(Material), materials);
-	glBindBuffer(GL_UNIFORM_BUFFER, 0);  // unbind
+	materials[0].texture_id = glm::vec4(2);
+	GLCall(glBindBuffer(GL_UNIFORM_BUFFER, UBO_materials));
+	GLCall(glBufferSubData(GL_UNIFORM_BUFFER, 0, 8 * sizeof(Material), materials));
+	GLCall(glBindBuffer(GL_UNIFORM_BUFFER, 0));  // unbind
 
 	// load test light
-	GLCall(glUniform1f(u_PointLight_constant, 1.0f));
+	GLCall(glUniform1f(u_PointLight_constant, 0.0f));
 	GLCall(glUniform1f(u_PointLight_linear, 0.09f));
 	GLCall(glUniform1f(u_PointLight_quadratic, 0.032f));
 	GLCall(glUniform3f(u_PointLight_position, 0.0f, 5.0f, 2.0f));
@@ -312,14 +360,84 @@ void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Cam
 	GLCall(glUniform3f(u_PointLight_specular, 1.0f, 1.0f, 1.0f));
 
 
-	// draw
+	// draw into the hdr framebuffer
+	glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  
 	// GLCall(glPolygonMode(GL_FRONT_AND_BACK,GL_LINE));
-	GLCall(glDrawArrays(GL_TRIANGLES, 0, verts.size()));
+		GLCall(glDrawArrays(GL_TRIANGLES, 0, verts.size()));
+		drawAxis(MVP);
+	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-	drawAxis(MVP);
+	// switch to hdr shader, and rerender
+	HDRVertex hdrvertices[] = {
+		{-1.0f, -1.0f, 0.0f, 0.0f, 0.0f},
+		{1.0f, -1.0f, 0.0f, 1.0f, 0.0f},
+		{1.0f, 1.0f, 0.0f, 1.0f, 1.0f},
+		{1.0f, 1.0f, 0.0f, 1.0f, 1.0f},
+		{-1.0f, 1.0f, 0.0f, 0.0f, 1.0f},
+		{-1.0f, -1.0f, 0.0f, 0.0f, 0.0f}
+	};
+	GLCall(glBindVertexArray(this->VAO_hdr));
+	GLCall(glBindBuffer(GL_ARRAY_BUFFER, this->vertexBuffer_hdr));
+
+	GLCall(glBufferData(GL_ARRAY_BUFFER, sizeof(hdrvertices), hdrvertices, GL_STATIC_DRAW));
+
+
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	GLCall(glUseProgram(this->program_hdr));
+	GLCall(glActiveTexture(GL_TEXTURE0 + HDR_TEXTURE_SLOT));
+	GLCall(glBindTexture(GL_TEXTURE_2D, this->hdrTexture));
+	GLCall(glUniform1i(u_HdrBuffer, HDR_TEXTURE_SLOT));
+	GLCall(glUniform1f(u_Gamma, gamma));
+	GLCall(glUniform1f(u_Exposure, exposure));
+
+	GLCall(glDrawArrays(GL_TRIANGLES, 0, 6));
+
 
 	ImGui::End();
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     glfwSwapBuffers(window);
+}
+
+// this does NOT take into acount currently used textures slots etc, only here for organisation
+// make sure fbo is bound before calling this
+void Renderer::generate_HDR_texture() {
+	// delete existing texture, if needed
+	if (this->hdrTexture != 0) {
+		GLCall(glBindTexture(GL_TEXTURE_2D, 0)); // for safety
+		GLCall(glDeleteTextures(1, &hdrTexture));
+	}
+
+	GLCall(glGenTextures(1, &this->hdrTexture));
+	GLCall(glBindTexture(GL_TEXTURE_2D, this->hdrTexture));
+	GLCall(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, this->viewport_width, this->viewport_height, 0, GL_RGBA, GL_FLOAT, NULL));  // change to 32float if needed
+
+	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
+	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+	GLCall(glBindTexture(GL_TEXTURE_2D, 0));
+
+	// attatch to fbo
+	GLCall(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, hdrTexture, 0));
+}
+
+// regenerate the hdr texture
+void Renderer::resizeViewport(GLsizei viewport_width, GLsizei viewport_height) {
+	this->viewport_width = viewport_width;
+	this->viewport_height = viewport_height;
+
+	GLCall(glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO));
+	generate_HDR_texture();
+	GLCall(glBindFramebuffer(GL_FRAMEBUFFER, 0));
+}
+
+// needs to be improved
+void Renderer::checkFrameBuffer(GLuint fbo) {
+	GLCall(GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER));
+
+	if (status != GL_FRAMEBUFFER_COMPLETE) {
+    	puts("Error in fbo");
+		exit(1);
+	}
 }

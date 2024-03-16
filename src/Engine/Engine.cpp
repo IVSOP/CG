@@ -28,6 +28,8 @@ InputHandler inputHandler;
 XmlParser xmlParser;
 bool resize = false;
 glm::mat4 projection = glm::mat4(1.0f);
+bool renderer_resize_flag = false; // this is a temporary hack since I could not pass renderer into setWindow. When this file gets cleaned up this needs to go
+int renderer_windowWidth, renderer_windowHeight; // same thing
 
 std::vector<Vertex> points;
 std::vector<Vertex> draw_points;
@@ -57,8 +59,13 @@ void setWindow(GLFWwindow* window, int windowWidth, int windowHeight) {
     // Set viewport to be the entire window
     glViewport(0, 0, windowWidth, windowHeight);
 
+	renderer_windowWidth = windowWidth;
+	renderer_windowHeight = windowHeight;
+
     // printf("window set to %d %d. half is %d %d\n", windowWidth, windowHeight, windowWidth / 2, windowHeight / 2);
     resize = true;
+	
+	renderer_resize_flag = true;
 }
 
 void handleKey(GLFWwindow *window, int key, int scancode, int action, int mods) {
@@ -81,6 +88,11 @@ void renderLoop(GLFWwindow *window, Camera &camera, Renderer &renderer) {
     double lastFrameTime, currentFrameTime, deltaTime = PHYS_STEP; // to prevent errors when this is first ran, I initialize it to the physics substep
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents(); // at the start due to imgui (??) test moving it to after the unlock()
+
+		if (renderer_resize_flag) {
+			renderer.resizeViewport(renderer_windowWidth, renderer_windowHeight);
+			renderer_resize_flag = false;
+		}
 
         lastFrameTime = glfwGetTime();
         int windowWidth = xmlParser.getWindowWidth();
@@ -172,7 +184,7 @@ int main(int argc, char **argv) {
     // GL 3.0 + GLSL 130
     const char* glsl_version = "#version 410";
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
     // glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only isto faz o que??????????????????????????????????????????????????????????????????????????????????????????????????????
 #endif
@@ -253,7 +265,9 @@ int main(int argc, char **argv) {
     GLdouble cameraZUp = xmlParser.getCameraZUp();
 
     Camera camera = Camera(glm::vec3(cameraXPos, cameraYPos, cameraZPos), glm::vec3(cameraXLook, cameraYLook, cameraZLook), glm::vec3(cameraXUp, cameraYUp, cameraZUp));
-    Renderer renderer;
+    Renderer renderer(static_cast<GLsizei>(windowWidth), static_cast<GLsizei>(windowHeight));
+	renderer_windowWidth = windowWidth;
+	renderer_windowHeight = windowHeight;
 
     setWindow(window, static_cast<GLdouble>(windowWidth), static_cast<GLdouble>(windowHeight));
 

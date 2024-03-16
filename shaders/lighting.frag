@@ -8,7 +8,7 @@ struct Material { // !!!! IMPORTANT everything vec4 so that cpu matches gpu layo
 	vec4 specular;
 	vec4 emissive;
 	vec4 shininess; // float
-	vec4 texture_id; //float
+	uvec4 texture_id; //float
 };
 
 struct DirLight {

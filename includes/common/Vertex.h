@@ -39,4 +39,11 @@ struct AxisVertex {
 	AxisVertex(float x, float y, float z, float R, float G, float B) : coords(x, y, z, 1.0f), color(R, G, B, 1.0f) {}
 };
 
+struct HDRVertex {
+	glm::vec4 coords = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+	glm::vec2 tex_coord = glm::vec2(0.0f, 0.0f);
+
+	HDRVertex(float x, float y, float z, float tex_x, float tex_y) : coords(x, y, z, 1.0f), tex_coord(tex_x, tex_y) {}
+};
+
 #endif //CG_VERTEX_H
