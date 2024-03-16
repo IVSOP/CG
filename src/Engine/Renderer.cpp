@@ -293,6 +293,7 @@ void Renderer::loadTextures() {
 	tex->addTexture("textures/black.png"); // 1
 	tex->addTexture("textures/grass.png"); // 2
 	tex->addTexture("textures/oak_log.png"); // 3
+	tex->addTexture("textures/white.png"); // 4
 
 	tex->setTextureArrayToSlot(TEX_ARRAY_SLOT);
 }
@@ -341,25 +342,35 @@ void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Cam
 	Material materials[8];
 
 	// brown is (79,58,43) -> 0.31, 0.227, 0.169
-	materials[0].diffuse = glm::vec4(0.31f, 0.227f, 0.169f, 0.0f);
-	materials[0].ambient = glm::vec4(0.31f, 0.227f, 0.169f, 0.0f);
-	materials[0].specular = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f); // dirt cannot have this
-	materials[0].emissive = glm::vec4(0.31f, 0.227f, 0.169f, 0.0f);
+	// materials[0].diffuse = glm::vec4(0.31f, 0.227f, 0.169f, 0.0f);
+	// materials[0].ambient = glm::vec4(0.31f, 0.227f, 0.169f, 0.0f);
+	// materials[0].specular = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f); // dirt cannot have this
+	// materials[0].emissive = glm::vec4(0.31f, 0.227f, 0.169f, 0.0f);
+		materials[0].diffuse = glm::vec4(1.0f, 1.0f, 1.0f, 0.0f);
+		materials[0].ambient = glm::vec4(1.0f, 1.0f, 1.0f, 0.0f);
+		materials[0].specular = glm::vec4(1.0f, 1.0f, 1.0f, 0.0f); // dirt cannot have this
+		materials[0].emissive = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
 	materials[0].shininess = glm::vec4(32);
-	materials[0].texture_id = glm::vec4(2);
+	materials[0].texture_id = glm::vec4(1);
 	GLCall(glBindBuffer(GL_UNIFORM_BUFFER, UBO_materials));
 	GLCall(glBufferSubData(GL_UNIFORM_BUFFER, 0, 8 * sizeof(Material), materials));
 	GLCall(glBindBuffer(GL_UNIFORM_BUFFER, 0));  // unbind
 
 	// load test light
-	GLCall(glUniform1f(u_PointLight_constant, 1.0f));
-	GLCall(glUniform1f(u_PointLight_linear, 0.09f));
-	GLCall(glUniform1f(u_PointLight_quadratic, 0.032f));
-	GLCall(glUniform3f(u_PointLight_position, 0.0f, 5.0f, 2.0f));
-	GLCall(glUniform3f(u_PointLight_ambient, 0.2f, 0.2f, 0.2f));
-	GLCall(glUniform3f(u_PointLight_diffuse, 0.5f, 0.5f, 0.5f));
-	GLCall(glUniform3f(u_PointLight_specular, 1.0f, 1.0f, 1.0f));
-
+	// GLCall(glUniform1f(u_PointLight_constant, 1.0f));
+	// GLCall(glUniform1f(u_PointLight_linear, 0.09f));
+	// GLCall(glUniform1f(u_PointLight_quadratic, 0.032f));
+	// GLCall(glUniform3f(u_PointLight_position, 0.0f, 5.0f, 2.0f));
+	// GLCall(glUniform3f(u_PointLight_ambient, 0.2f, 0.2f, 0.2f));
+	// GLCall(glUniform3f(u_PointLight_diffuse, 0.5f, 0.5f, 0.5f));
+	// GLCall(glUniform3f(u_PointLight_specular, 1.0f, 1.0f, 1.0f));
+		GLCall(glUniform1f(u_PointLight_constant, 1.0f));
+		GLCall(glUniform1f(u_PointLight_linear, 0.09f));
+		GLCall(glUniform1f(u_PointLight_quadratic, 0.032f));
+		GLCall(glUniform3f(u_PointLight_position, 0.0f, 2.0f, 2.0f));
+		GLCall(glUniform3f(u_PointLight_ambient, 0.2f, 0.2f, 0.0f));
+		GLCall(glUniform3f(u_PointLight_diffuse, 0.78f, 0.78f, 0.0f));
+		GLCall(glUniform3f(u_PointLight_specular, 0.0f, 0.0f, 0.0f));
 
 	// draw into the hdr framebuffer
 	glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);

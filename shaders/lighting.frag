@@ -8,7 +8,7 @@ struct Material { // !!!! IMPORTANT everything vec4 so that cpu matches gpu layo
 	vec4 specular;
 	vec4 emissive;
 	vec4 shininess; // float
-	uvec4 texture_id; //float
+	uvec4 texture_id; // uint
 };
 
 struct DirLight {
@@ -85,7 +85,10 @@ void main() {
 	vec3 normal = normalize(v_Normal);
 
 	// apply colors
-	res_color += vec4(CalcPointLight(u_PointLight, normal, v_FragPos, viewDir, material), 1.0);
+	res_color.rgb += CalcPointLight(u_PointLight, normal, v_FragPos, viewDir, material);
+
+	// add emissive
+	res_color.rgb += material.emissive.rbg;
 
 	// losing transparency but whatever will change if needed
 	color = res_color;
