@@ -295,6 +295,7 @@ void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Cam
 	ImGui::SliderFloat("gamma", &gamma, 0.0f, 10.0f, "gamma = %.3f");
 	ImGui::SliderFloat("exposure", &exposure, 0.0f, 10.0f, "exposure = %.3f");
 	ImGui::SliderFloat("bloomThreshold", &bloomThreshold, 0.0f, 5.0f, "bloomThreshold = %.3f");
+	// texOffsetCoeff = static_cast<GLfloat>(rand()) / static_cast<GLfloat>(RAND_MAX) * 10.0f;
 	ImGui::SliderFloat("texOffsetCoeff", &texOffsetCoeff, 0.0f, 10.0f, "texOffsetCoeff = %.3f");
 	ImGui::Checkbox("Show normals", &showNormals);
 
@@ -337,7 +338,7 @@ void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Cam
 		materials[0].diffuse = glm::vec4(1.0f, 1.0f, 1.0f, 0.0f);
 		materials[0].ambient = glm::vec4(1.0f, 1.0f, 1.0f, 0.0f);
 		materials[0].specular = glm::vec4(1.0f, 1.0f, 1.0f, 0.0f);
-		materials[0].emissive = glm::vec4(0.99f, 0.72f, 0.0745f, 0.0f);
+		materials[0].emissive = glm::vec4(2.99f, 0.72f, 0.0745f, 0.0f);
 		materials[0].shininess = glm::vec4(32);
 		materials[0].texture_id = glm::vec4(1);
 		GLCall(glBindBuffer(GL_UNIFORM_BUFFER, UBO_materials));
