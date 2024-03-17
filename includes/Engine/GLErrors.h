@@ -6,14 +6,23 @@
 #include <GLFW/glfw3.h>
 #include <signal.h>
 
-#define KNRM  "\x1B[0m"
-#define KRED  "\x1B[31m"
-#define KGRN  "\x1B[32m"
-#define KYEL  "\x1B[33m"
-#define KBLU  "\x1B[34m"
-#define KMAG  "\x1B[35m"
-#define KCYN  "\x1B[36m"
-#define KWHT  "\x1B[37m"
+#define RESET   "\033[0m"
+#define BLACK   "\033[30m"
+#define RED     "\033[31m"
+#define GREEN   "\033[32m"
+#define YELLOW  "\033[33m"
+#define BLUE    "\033[34m"
+#define MAGENTA "\033[35m"
+#define CYAN    "\033[36m"
+#define WHITE   "\033[37m"
+#define BOLDBLACK   "\033[1m\033[30m"
+#define BOLDRED     "\033[1m\033[31m" 
+#define BOLDGREEN   "\033[1m\033[32m" 
+#define BOLDYELLOW  "\033[1m\033[33m" 
+#define BOLDBLUE    "\033[1m\033[34m" 
+#define BOLDMAGENTA "\033[1m\033[35m" 
+#define BOLDCYAN    "\033[1m\033[36m" 
+#define BOLDWHITE   "\033[1m\033[37m" 
 
 #define print_error(msg) printf("%s, %s, line %d:\n", __FILE__, __func__, __LINE__); perror(msg);
 

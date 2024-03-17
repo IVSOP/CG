@@ -50,7 +50,7 @@ void TextureArray::addTexture(const char path[]) {
 	}
 
 	if (BPP != 4) {
-		fprintf(stderr, "WARNING: %s is not RGBA, BPP is %d\n", path, BPP);
+		fprintf(stderr, "%sWARNING:%s %s is not RGBA, BPP is %d\n", YELLOW, RESET, path, BPP);
 	}
 
 	// in the future, if needed, can use

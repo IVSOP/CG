@@ -29,6 +29,15 @@ struct PointLight {
     glm::vec3 specular;
 };
 
+// quad filling entire screen
+ViewportVertex viewportVertices[] = {
+	{-1.0f, -1.0f, 0.0f, 0.0f, 0.0f},
+	{1.0f, -1.0f, 0.0f, 1.0f, 0.0f},
+	{1.0f, 1.0f, 0.0f, 1.0f, 1.0f},
+	{1.0f, 1.0f, 0.0f, 1.0f, 1.0f},
+	{-1.0f, 1.0f, 0.0f, 0.0f, 1.0f},
+	{-1.0f, -1.0f, 0.0f, 0.0f, 0.0f}
+};
 
 void Renderer::drawAxis(const glm::mat4 &MVP) {
 	const AxisVertex vertices[] = {
@@ -61,10 +70,9 @@ void Renderer::drawAxis(const glm::mat4 &MVP) {
 
 Renderer::Renderer(GLsizei viewport_width, GLsizei viewport_height)
 : viewport_width(viewport_width), viewport_height(viewport_height), VAO(0), vertexBuffer(0),
-  lightingShader("shaders/lighting.vert", "shaders/lighting.frag"), axisShader("shaders/basic.vert", "shaders/basic.frag"),
-  hdrShader("shaders/hdr.vert", "shaders/hdr.frag")
+  lightingShader("shaders/lighting_extract_brightness.vert", "shaders/lighting_extract_brightness.frag"), axisShader("shaders/basic.vert", "shaders/basic.frag"),
+  blurShader("shaders/blur.vert", "shaders/blur.frag"), hdrBbloomMergeShader("shaders/hdrBloomMerge.vert", "shaders/hdrBloomMerge.frag")
 {
-
 	//////////////////////////// LOADING VAO ////////////////////////////
 	GLCall(glGenVertexArrays(1, &this->VAO));
 	GLCall(glBindVertexArray(this->VAO));
@@ -116,26 +124,24 @@ Renderer::Renderer(GLsizei viewport_width, GLsizei viewport_height)
 	}
 
 	//////////////////////////// LOADING VAO FOR HDR ////////////////////////////
-	GLCall(glGenVertexArrays(1, &this->VAO_hdr));
-	GLCall(glBindVertexArray(this->VAO_hdr));
+	GLCall(glGenVertexArrays(1, &this->VAO_viewport));
+	GLCall(glBindVertexArray(this->VAO_viewport));
 
 	//////////////////////////// LOADING VBO FOR HDR ////////////////////////////
-	GLCall(glGenBuffers(1, &this->vertexBuffer_hdr));
-	GLCall(glBindBuffer(GL_ARRAY_BUFFER, this->vertexBuffer_hdr));
+	GLCall(glGenBuffers(1, &this->vertexBuffer_viewport));
+	GLCall(glBindBuffer(GL_ARRAY_BUFFER, this->vertexBuffer_viewport));
 	// GLCall(glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW));
 	{
 		GLuint vertex_position_layout = 0;
 		GLCall(glEnableVertexAttribArray(vertex_position_layout));					// size appart				// offset
-		GLCall(glVertexAttribPointer(vertex_position_layout, 4, GL_FLOAT, GL_FALSE, sizeof(HDRVertex), (const void *)offsetof(HDRVertex, coords)));
+		GLCall(glVertexAttribPointer(vertex_position_layout, 4, GL_FLOAT, GL_FALSE, sizeof(ViewportVertex), (const void *)offsetof(ViewportVertex, coords)));
 		// GLCall(glVertexAttribDivisor(vertex_position_layout, 0)); // values are per vertex
 
 		GLuint vertex_texcoord_layout = 1;
 		GLCall(glEnableVertexAttribArray(vertex_texcoord_layout));					// size appart				// offset
-		GLCall(glVertexAttribPointer(vertex_texcoord_layout, 2, GL_FLOAT, GL_FALSE, sizeof(HDRVertex), (const void *)offsetof(HDRVertex, tex_coord)));
+		GLCall(glVertexAttribPointer(vertex_texcoord_layout, 2, GL_FLOAT, GL_FALSE, sizeof(ViewportVertex), (const void *)offsetof(ViewportVertex, tex_coord)));
 		// GLCall(glVertexAttribDivisor(vertex_normal_layout, 0)); // values are per vertex
 	}
-
-	//////////////////////////// LOADING SHADERS ////////////////////////////	
 
 	//////////////////////////// LOADING SHADER UNIFORMS ///////////////////////////
 	lightingShader.use();
@@ -172,11 +178,19 @@ Renderer::Renderer(GLsizei viewport_width, GLsizei viewport_height)
 	loadTextures();
 
 
-	//////////////////////////// LOADING FRAMEBUFFER AND HDR TEXTURE ////////////////////////////
-	GLCall(glGenFramebuffers(1, &hdrFBO));
-	GLCall(glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO));
-	generate_HDR_texture();
-	GLCall(checkFrameBuffer(hdrFBO));
+	//////////////////////////// LOADING FRAMEBUFFERS AND TEXTURE ATTACHMENTS ////////////////////////////
+	GLCall(glGenFramebuffers(1, &lightingFBO));
+		GLCall(glBindFramebuffer(GL_FRAMEBUFFER, lightingFBO));
+		generate_FBO_texture(&lightingTexture, GL_COLOR_ATTACHMENT0);
+		generate_FBO_texture(&brightTexture, GL_COLOR_ATTACHMENT1);
+		GLCall(checkFrameBuffer());
+	GLCall(glGenFramebuffers(2, pingpongFBO));
+		GLCall(glBindFramebuffer(GL_FRAMEBUFFER, pingpongFBO[0]));
+		generate_FBO_texture(&pingpongTextures[0], GL_COLOR_ATTACHMENT0);
+		GLCall(checkFrameBuffer());
+		GLCall(glBindFramebuffer(GL_FRAMEBUFFER, pingpongFBO[1]));
+		generate_FBO_texture(&pingpongTextures[1], GL_COLOR_ATTACHMENT0);
+		GLCall(checkFrameBuffer());
 	GLCall(glBindFramebuffer(GL_FRAMEBUFFER, 0));
 
 
@@ -191,13 +205,19 @@ Renderer::Renderer(GLsizei viewport_width, GLsizei viewport_height)
 Renderer::~Renderer() {
 	GLCall(glDeleteBuffers(1, &vertexBuffer));
 	GLCall(glDeleteBuffers(1, &vertexBuffer_axis));
-	GLCall(glDeleteBuffers(1, &vertexBuffer_hdr));
+	GLCall(glDeleteBuffers(1, &vertexBuffer_viewport));
+
 	GLCall(glDeleteVertexArrays(1, &VAO));
 	GLCall(glDeleteVertexArrays(1, &VAO_axis));
-	GLCall(glDeleteVertexArrays(1, &VAO_hdr));
+	GLCall(glDeleteVertexArrays(1, &VAO_viewport));
+
 	GLCall(glBindTexture(GL_TEXTURE_2D, 0));
-	GLCall(glDeleteTextures(1, &hdrTexture));
-	GLCall(glDeleteFramebuffers(1, &hdrFBO));
+	GLCall(glDeleteTextures(1, &lightingTexture));
+	GLCall(glDeleteTextures(2, pingpongTextures));
+
+	GLCall(glDeleteFramebuffers(1, &lightingFBO));
+	GLCall(glDeleteFramebuffers(2, pingpongFBO));
+
 	GLCall(glDeleteBuffers(1, &UBO_materials));
 }
 
@@ -247,6 +267,7 @@ void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Cam
 	ImGui::InputFloat3("Position:", glm::value_ptr(camera.Position));
 	ImGui::SliderFloat("gamma", &gamma, 0.0f, 10.0f, "gamma = %.3f");
 	ImGui::SliderFloat("exposure", &exposure, 0.0f, 10.0f, "exposure = %.3f");
+	ImGui::SliderFloat("bloomThreshold", &bloomThreshold, 0.0f, 5.0f, "bloomThreshold = %.3f");
 
 	constexpr glm::mat4 model = glm::mat4(1.0f);
 	const glm::mat4 view = camera.GetViewMatrix();
@@ -268,6 +289,8 @@ void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Cam
 	lightingShader.setInt("u_TextureArraySlot", TEX_ARRAY_SLOT);
 	lightingShader.setMat4("u_View", view);
 
+	lightingShader.setFloat("u_BloomThreshold", bloomThreshold);
+
 	// load texture array for safety
 	this->textureArray.get()->setTextureArrayToSlot(TEX_ARRAY_SLOT);
 
@@ -277,7 +300,7 @@ void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Cam
 	materials[0].diffuse = glm::vec4(1.0f, 1.0f, 1.0f, 0.0f);
 	materials[0].ambient = glm::vec4(1.0f, 1.0f, 1.0f, 0.0f);
 	materials[0].specular = glm::vec4(1.0f, 1.0f, 1.0f, 0.0f);
-	materials[0].emissive = glm::vec4(0.99f, 0.72f, 0.0745f, 0.0f);
+	materials[0].emissive = glm::vec4(1.99f, 0.72f, 0.0745f, 0.0f);
 	materials[0].shininess = glm::vec4(32);
 	materials[0].texture_id = glm::vec4(1);
 	GLCall(glBindBuffer(GL_UNIFORM_BUFFER, UBO_materials));
@@ -296,39 +319,84 @@ void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Cam
 	lightingShader.setVec3("u_PointLight.diffuse", 0.0f, 0.0f, 0.0f);
 	lightingShader.setVec3("u_PointLight.specular", 0.0f, 0.0f, 0.0f);
 
-	// draw into the hdr framebuffer
-	glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  
-	// GLCall(glPolygonMode(GL_FRONT_AND_BACK,GL_LINE));
+	// the normal scene is drawn into the lighting framebuffer, where the bright colors are then separated
+	GLCall(glBindFramebuffer(GL_FRAMEBUFFER, lightingFBO));
+    	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  
+		// GLCall(glPolygonMode(GL_FRONT_AND_BACK,GL_LINE));
+
+		// specify 2 attachments
+		constexpr GLuint attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+		GLCall(glDrawBuffers(2, attachments));
+
+
 		GLCall(glDrawArrays(GL_TRIANGLES, 0, verts.size()));
-		drawAxis(MVP);
-	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-	// switch to hdr shader, and rerender
-	HDRVertex hdrvertices[] = {
-		{-1.0f, -1.0f, 0.0f, 0.0f, 0.0f},
-		{1.0f, -1.0f, 0.0f, 1.0f, 0.0f},
-		{1.0f, 1.0f, 0.0f, 1.0f, 1.0f},
-		{1.0f, 1.0f, 0.0f, 1.0f, 1.0f},
-		{-1.0f, 1.0f, 0.0f, 0.0f, 1.0f},
-		{-1.0f, -1.0f, 0.0f, 0.0f, 0.0f}
-	};
-	GLCall(glBindVertexArray(this->VAO_hdr));
-	GLCall(glBindBuffer(GL_ARRAY_BUFFER, this->vertexBuffer_hdr));
-
-	GLCall(glBufferData(GL_ARRAY_BUFFER, sizeof(hdrvertices), hdrvertices, GL_STATIC_DRAW));
+		// drawAxis(MVP);
 
 
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	// now, we run the ping pong gaussian blur several times
+	blurShader.use();
+	GLCall(glBindVertexArray(this->VAO_viewport));
+	GLCall(glBindBuffer(GL_ARRAY_BUFFER, this->vertexBuffer_viewport));
+	GLCall(glBufferData(GL_ARRAY_BUFFER, sizeof(viewportVertices), viewportVertices, GL_STATIC_DRAW));
+	constexpr GLint amount = 5; // 5 each
 
-	hdrShader.use();
-	GLCall(glActiveTexture(GL_TEXTURE0 + HDR_TEXTURE_SLOT));
-	GLCall(glBindTexture(GL_TEXTURE_2D, this->hdrTexture));
-	hdrShader.setInt("u_HdrBuffer", HDR_TEXTURE_SLOT);
-	hdrShader.setFloat("u_Gamma", gamma);
-	hdrShader.setFloat("u_Exposure", exposure);
+	// manually doing the first passes, since I need to get the texture from the scene
+	// horizontal pass
+	GLCall(glBindFramebuffer(GL_FRAMEBUFFER, pingpongFBO[0]));
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  
+		blurShader.setInt("u_Horizontal", 0);
+		GLCall(glActiveTexture(GL_TEXTURE0 + BRIGHT_TEXTURE_SLOT));
+		GLCall(glBindTexture(GL_TEXTURE_2D, this->brightTexture)); // use texture from scene
+		blurShader.setInt("u_BlurBuffer", BRIGHT_TEXTURE_SLOT);
+		GLCall(glDrawArrays(GL_TRIANGLES, 0, 6));
 
-	GLCall(glDrawArrays(GL_TRIANGLES, 0, 6));
+	// vertical pass
+	GLCall(glBindFramebuffer(GL_FRAMEBUFFER, pingpongFBO[1]));
+    	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  
+		blurShader.setInt("u_Horizontal", 1);
+		GLCall(glActiveTexture(GL_TEXTURE0 + BRIGHT_TEXTURE_SLOT));
+		GLCall(glBindTexture(GL_TEXTURE_2D, pingpongTextures[0])); // use texture from ping
+		blurShader.setInt("u_BlurBuffer", BRIGHT_TEXTURE_SLOT);
+		GLCall(glDrawArrays(GL_TRIANGLES, 0, 6));
+
+	for (GLint i = 0; i < amount - 1; i++) {
+		// horizontal pass
+		GLCall(glBindFramebuffer(GL_FRAMEBUFFER, pingpongFBO[0]));
+			blurShader.setInt("u_Horizontal", 0);
+			GLCall(glActiveTexture(GL_TEXTURE0 + BRIGHT_TEXTURE_SLOT));
+			GLCall(glBindTexture(GL_TEXTURE_2D, pingpongTextures[1])); // use texture from pong
+			blurShader.setInt("u_BlurBuffer", BRIGHT_TEXTURE_SLOT);
+			GLCall(glDrawArrays(GL_TRIANGLES, 0, 6));
+
+		// vertical pass
+		GLCall(glBindFramebuffer(GL_FRAMEBUFFER, pingpongFBO[1]));
+			blurShader.setInt("u_Horizontal", 1);
+			GLCall(glActiveTexture(GL_TEXTURE0 + BRIGHT_TEXTURE_SLOT));
+			GLCall(glBindTexture(GL_TEXTURE_2D, pingpongTextures[0])); // use texture from ping
+			blurShader.setInt("u_BlurBuffer", BRIGHT_TEXTURE_SLOT);
+			GLCall(glDrawArrays(GL_TRIANGLES, 0, 6));
+	}
+
+	// finally, we join the blur to the scene and apply gamma and exposure
+	GLCall(glBindFramebuffer(GL_FRAMEBUFFER, 0));
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		// GLCall(glBindVertexArray(this->VAO_viewport));
+		// GLCall(glBindBuffer(GL_ARRAY_BUFFER, this->vertexBuffer_viewport));
+		// GLCall(glBufferData(GL_ARRAY_BUFFER, sizeof(viewportVertices), viewportVertices, GL_STATIC_DRAW));
+
+		hdrBbloomMergeShader.use();
+		GLCall(glActiveTexture(GL_TEXTURE0 + SCENE_TEXTURE_SLOT));
+		GLCall(glBindTexture(GL_TEXTURE_2D, this->lightingTexture));
+		GLCall(glActiveTexture(GL_TEXTURE0 + BRIGHT_TEXTURE_SLOT));
+		GLCall(glBindTexture(GL_TEXTURE_2D, pingpongTextures[1]));
+
+		hdrBbloomMergeShader.setInt("u_SceneBuffer", SCENE_TEXTURE_SLOT);
+		hdrBbloomMergeShader.setInt("u_BrightBuffer", BRIGHT_TEXTURE_SLOT);
+		hdrBbloomMergeShader.setFloat("u_Gamma", gamma);
+		hdrBbloomMergeShader.setFloat("u_Exposure", exposure);
+
+		GLCall(glDrawArrays(GL_TRIANGLES, 0, 6));
 
 
 	ImGui::End();
@@ -339,15 +407,15 @@ void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Cam
 
 // this does NOT take into acount currently used textures slots etc, only here for organisation
 // make sure fbo is bound before calling this
-void Renderer::generate_HDR_texture() {
+void Renderer::generate_FBO_texture(GLuint *textureID, GLenum attachmentID) {
 	// delete existing texture, if needed
-	if (this->hdrTexture != 0) {
-		GLCall(glBindTexture(GL_TEXTURE_2D, 0)); // for safety
-		GLCall(glDeleteTextures(1, &hdrTexture));
+	if (*textureID != 0) { // for safety, delete the texture entirely. maybe does not need to be done
+		GLCall(glBindTexture(GL_TEXTURE_2D, 0));
+		GLCall(glDeleteTextures(1, textureID));
 	}
 
-	GLCall(glGenTextures(1, &this->hdrTexture));
-	GLCall(glBindTexture(GL_TEXTURE_2D, this->hdrTexture));
+	GLCall(glGenTextures(1, textureID));
+	GLCall(glBindTexture(GL_TEXTURE_2D, *textureID));
 	// you can get the default behaviour by either not using the framebuffer or setting this to GL_RGBA
 	GLCall(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, this->viewport_width, this->viewport_height, 0, GL_RGBA, GL_FLOAT, NULL));  // change to 32float if needed
 
@@ -355,22 +423,32 @@ void Renderer::generate_HDR_texture() {
 	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
 	GLCall(glBindTexture(GL_TEXTURE_2D, 0));
 
-	// attatch to fbo
-	GLCall(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, hdrTexture, 0));
+	// attach to fbo
+	GLCall(glFramebufferTexture2D(GL_FRAMEBUFFER, attachmentID, GL_TEXTURE_2D, *textureID, 0));
 }
 
-// regenerate the hdr texture
+// regenerate the textures for all the FBOs
 void Renderer::resizeViewport(GLsizei viewport_width, GLsizei viewport_height) {
 	this->viewport_width = viewport_width;
 	this->viewport_height = viewport_height;
 
-	GLCall(glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO));
-	generate_HDR_texture();
+	GLCall(glBindFramebuffer(GL_FRAMEBUFFER, lightingFBO));
+	generate_FBO_texture(&lightingTexture, GL_COLOR_ATTACHMENT0);
+	generate_FBO_texture(&brightTexture, GL_COLOR_ATTACHMENT1);
+	GLCall(checkFrameBuffer());
+
+	GLCall(glBindFramebuffer(GL_FRAMEBUFFER, pingpongFBO[0]));
+	generate_FBO_texture(&pingpongTextures[0], GL_COLOR_ATTACHMENT0);
+	GLCall(checkFrameBuffer());
+	GLCall(glBindFramebuffer(GL_FRAMEBUFFER, pingpongFBO[1]));
+	generate_FBO_texture(&pingpongTextures[1], GL_COLOR_ATTACHMENT0);
+	GLCall(checkFrameBuffer());
+
 	GLCall(glBindFramebuffer(GL_FRAMEBUFFER, 0));
 }
 
 // needs to be improved
-void Renderer::checkFrameBuffer(GLuint fbo) {
+void Renderer::checkFrameBuffer() {
 	GLCall(GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER));
 
 	if (status != GL_FRAMEBUFFER_COMPLETE) {
