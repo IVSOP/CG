@@ -88,7 +88,7 @@ void main() {
 	res_color.rgb += CalcPointLight(u_PointLight, normal, v_FragPos, viewDir, material);
 
 	// add emissive
-	res_color.rgb += material.emissive.rbg;
+	res_color.rgb += material.emissive.rgb;
 
 	color = res_color;
 }

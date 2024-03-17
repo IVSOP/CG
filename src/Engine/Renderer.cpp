@@ -277,7 +277,7 @@ void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Cam
 	materials[0].diffuse = glm::vec4(1.0f, 1.0f, 1.0f, 0.0f);
 	materials[0].ambient = glm::vec4(1.0f, 1.0f, 1.0f, 0.0f);
 	materials[0].specular = glm::vec4(1.0f, 1.0f, 1.0f, 0.0f);
-	materials[0].emissive = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
+	materials[0].emissive = glm::vec4(0.99f, 0.72f, 0.0745f, 0.0f);
 	materials[0].shininess = glm::vec4(32);
 	materials[0].texture_id = glm::vec4(1);
 	GLCall(glBindBuffer(GL_UNIFORM_BUFFER, UBO_materials));
@@ -289,9 +289,12 @@ void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Cam
 	lightingShader.setFloat("u_PointLight.linear", 0.09f);
 	lightingShader.setFloat("u_PointLight.quadratic", 0.032f);
 	lightingShader.setVec3("u_PointLight.position", 0.0f, 2.0f, 5.0f);
-	lightingShader.setVec3("u_PointLight.ambient", 0.2f, 0.2f, 0.0f);
-	lightingShader.setVec3("u_PointLight.diffuse", 0.78f, 0.78f, 0.0f);
-	lightingShader.setVec3("u_PointLight.specular", 1.0f, 1.0f, 1.0f);
+	// lightingShader.setVec3("u_PointLight.ambient", 0.2f, 0.2f, 0.0f);
+	// lightingShader.setVec3("u_PointLight.diffuse", 0.78f, 0.78f, 0.0f);
+	// lightingShader.setVec3("u_PointLight.specular", 1.0f, 1.0f, 1.0f);
+	lightingShader.setVec3("u_PointLight.ambient", 0.0f, 0.0f, 0.0f);
+	lightingShader.setVec3("u_PointLight.diffuse", 0.0f, 0.0f, 0.0f);
+	lightingShader.setVec3("u_PointLight.specular", 0.0f, 0.0f, 0.0f);
 
 	// draw into the hdr framebuffer
 	glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
