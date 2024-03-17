@@ -8,10 +8,11 @@ uniform sampler2D u_BlurBuffer;
 
 uniform bool u_Horizontal;
 uniform float u_Weight[5] = float[] (0.227027, 0.1945946, 0.1216216, 0.054054, 0.016216);
+uniform float u_TexOffsetCoeff = 1.0;
 
 void main()
 {             
-    vec2 tex_offset = 1.0 / textureSize(u_BlurBuffer, 0); // gets size of single texel
+    vec2 tex_offset = u_TexOffsetCoeff * (1.0 / textureSize(u_BlurBuffer, 0)); // gets size of single texel
     vec3 result = texture(u_BlurBuffer, v_TexCoord).rgb * u_Weight[0]; // current fragment's contribution
     if(u_Horizontal)
     {

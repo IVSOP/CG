@@ -268,6 +268,7 @@ void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Cam
 	ImGui::SliderFloat("gamma", &gamma, 0.0f, 10.0f, "gamma = %.3f");
 	ImGui::SliderFloat("exposure", &exposure, 0.0f, 10.0f, "exposure = %.3f");
 	ImGui::SliderFloat("bloomThreshold", &bloomThreshold, 0.0f, 5.0f, "bloomThreshold = %.3f");
+	ImGui::SliderFloat("texOffsetCoeff", &texOffsetCoeff, 0.0f, 10.0f, "texOffsetCoeff = %.3f");
 
 	constexpr glm::mat4 model = glm::mat4(1.0f);
 	const glm::mat4 view = camera.GetViewMatrix();
@@ -360,6 +361,8 @@ void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Cam
 		GLCall(glDrawArrays(GL_TRIANGLES, 0, 6));
 
 	for (GLint i = 0; i < amount - 1; i++) {
+		blurShader.setFloat("u_TexOffsetCoeff", texOffsetCoeff);
+
 		// horizontal pass
 		GLCall(glBindFramebuffer(GL_FRAMEBUFFER, pingpongFBO[0]));
 			blurShader.setInt("u_Horizontal", 0);

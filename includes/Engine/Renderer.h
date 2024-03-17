@@ -50,7 +50,7 @@ public:
 	// GLuint VAO_viewport;
 	// GLuint vertexBuffer_viewport;
 	Shader hdrBbloomMergeShader;
-	GLfloat gamma = 2.2, exposure = 1.0, bloomThreshold = 1.0;
+	GLfloat gamma = 2.2f, exposure = 1.0f, bloomThreshold = 1.0f, texOffsetCoeff = 1.0f;
 	// !! could have reused fbo and textures, but this is simpler and more flexible and less painful to manage
 
 
