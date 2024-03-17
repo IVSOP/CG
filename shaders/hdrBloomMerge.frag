@@ -30,7 +30,7 @@ uniform float u_Exposure;
 //     color = vec4(mapped, 1.0);
 // }
 
-// tone mapping with gamma and exposure
+// tone mapping with gamma and exposure and bloom
 void main()
 {
     // const float gamma = 2.2;

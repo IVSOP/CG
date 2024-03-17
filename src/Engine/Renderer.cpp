@@ -300,7 +300,7 @@ void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Cam
 	materials[0].diffuse = glm::vec4(1.0f, 1.0f, 1.0f, 0.0f);
 	materials[0].ambient = glm::vec4(1.0f, 1.0f, 1.0f, 0.0f);
 	materials[0].specular = glm::vec4(1.0f, 1.0f, 1.0f, 0.0f);
-	materials[0].emissive = glm::vec4(1.99f, 0.72f, 0.0745f, 0.0f);
+	materials[0].emissive = glm::vec4(2.99f, 0.72f, 0.0745f, 0.0f);
 	materials[0].shininess = glm::vec4(32);
 	materials[0].texture_id = glm::vec4(1);
 	GLCall(glBindBuffer(GL_UNIFORM_BUFFER, UBO_materials));
@@ -421,6 +421,8 @@ void Renderer::generate_FBO_texture(GLuint *textureID, GLenum attachmentID) {
 
 	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR));
 	GLCall(glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR));
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	GLCall(glBindTexture(GL_TEXTURE_2D, 0));
 
 	// attach to fbo
