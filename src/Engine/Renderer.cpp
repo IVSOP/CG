@@ -302,56 +302,60 @@ void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Cam
 	const glm::mat4 view = camera.GetViewMatrix();
 	const glm::mat4 MVP = projection * view * model; // nao so nao sei, como nao quero saber. vou assumir que a maneira que o glm faz as coisas influencia isto
 
-
-	// bind VAO, VBO
-	GLCall(glBindVertexArray(this->VAO));
-	GLCall(glBindBuffer(GL_ARRAY_BUFFER, this->vertexBuffer));
-
-	// load vertices
-	GLCall(glBufferData(GL_ARRAY_BUFFER, verts.size() * sizeof(Vertex), verts.data(), GL_STATIC_DRAW));
-
-	// bind program, load uniforms
-	lightingShader.use();
-
-	// load MVP, texture array and view
-	lightingShader.setMat4("u_MVP", MVP);
-	lightingShader.setInt("u_TextureArraySlot", TEX_ARRAY_SLOT);
-	lightingShader.setMat4("u_View", view);
-
-	lightingShader.setFloat("u_BloomThreshold", bloomThreshold);
-
-	// load texture array for safety
-	this->textureArray.get()->setTextureArrayToSlot(TEX_ARRAY_SLOT);
-
-	// load UBO
-	Material materials[8];
-
-	materials[0].diffuse = glm::vec4(1.0f, 1.0f, 1.0f, 0.0f);
-	materials[0].ambient = glm::vec4(1.0f, 1.0f, 1.0f, 0.0f);
-	materials[0].specular = glm::vec4(1.0f, 1.0f, 1.0f, 0.0f);
-	materials[0].emissive = glm::vec4(0.99f, 0.72f, 0.0745f, 0.0f);
-	materials[0].shininess = glm::vec4(32);
-	materials[0].texture_id = glm::vec4(1);
-	GLCall(glBindBuffer(GL_UNIFORM_BUFFER, UBO_materials));
-	GLCall(glBufferSubData(GL_UNIFORM_BUFFER, 0, MAX_MATERIALS * sizeof(Material), materials));
-	GLCall(glBindBuffer(GL_UNIFORM_BUFFER, 0));  // unbind
-
-	// load test light
-	lightingShader.setFloat("u_PointLight.constant", 1.0f);
-	lightingShader.setFloat("u_PointLight.linear", 0.09f);
-	lightingShader.setFloat("u_PointLight.quadratic", 0.032f);
-	lightingShader.setVec3("u_PointLight.position", 0.0f, 2.0f, 5.0f);
-	// lightingShader.setVec3("u_PointLight.ambient", 0.2f, 0.2f, 0.0f);
-	// lightingShader.setVec3("u_PointLight.diffuse", 0.78f, 0.78f, 0.0f);
-	// lightingShader.setVec3("u_PointLight.specular", 1.0f, 1.0f, 1.0f);
-	lightingShader.setVec3("u_PointLight.ambient", 0.0f, 0.0f, 0.0f);
-	lightingShader.setVec3("u_PointLight.diffuse", 0.0f, 0.0f, 0.0f);
-	lightingShader.setVec3("u_PointLight.specular", 0.0f, 0.0f, 0.0f);
-
-	// the normal scene is drawn into the lighting framebuffer, where the bright colors are then separated
+	//////////////////////////////////////////////// 1. the normal scene is drawn into the lighting framebuffer, where the bright colors are then separated
 	GLCall(glBindFramebuffer(GL_FRAMEBUFFER, lightingFBO));
-    	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  
+    	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		// GLCall(glPolygonMode(GL_FRONT_AND_BACK,GL_LINE));
+
+		if (showNormals) {
+			drawNormals(MVP, verts);
+		}
+		// drawAxis(MVP);
+
+		GLCall(glBindVertexArray(this->VAO));
+		GLCall(glBindBuffer(GL_ARRAY_BUFFER, this->vertexBuffer));
+
+		// load vertices
+		GLCall(glBufferData(GL_ARRAY_BUFFER, verts.size() * sizeof(Vertex), verts.data(), GL_STATIC_DRAW));
+
+		// bind program, load uniforms
+		lightingShader.use();
+
+		// load MVP, texture array and view
+		lightingShader.setMat4("u_MVP", MVP);
+		lightingShader.setInt("u_TextureArraySlot", TEX_ARRAY_SLOT);
+		lightingShader.setMat4("u_View", view);
+
+		lightingShader.setFloat("u_BloomThreshold", bloomThreshold);
+
+		// load texture array for safety
+		this->textureArray.get()->setTextureArrayToSlot(TEX_ARRAY_SLOT);
+
+		// load UBO
+		Material materials[8];
+
+		materials[0].diffuse = glm::vec4(1.0f, 1.0f, 1.0f, 0.0f);
+		materials[0].ambient = glm::vec4(1.0f, 1.0f, 1.0f, 0.0f);
+		materials[0].specular = glm::vec4(1.0f, 1.0f, 1.0f, 0.0f);
+		materials[0].emissive = glm::vec4(0.99f, 0.72f, 0.0745f, 0.0f);
+		materials[0].shininess = glm::vec4(32);
+		materials[0].texture_id = glm::vec4(1);
+		GLCall(glBindBuffer(GL_UNIFORM_BUFFER, UBO_materials));
+		GLCall(glBufferSubData(GL_UNIFORM_BUFFER, 0, MAX_MATERIALS * sizeof(Material), materials));
+		GLCall(glBindBuffer(GL_UNIFORM_BUFFER, 0));  // unbind
+
+		// load test light
+		lightingShader.setFloat("u_PointLight.constant", 1.0f);
+		lightingShader.setFloat("u_PointLight.linear", 0.09f);
+		lightingShader.setFloat("u_PointLight.quadratic", 0.032f);
+		lightingShader.setVec3("u_PointLight.position", 0.0f, 2.0f, 5.0f);
+		// lightingShader.setVec3("u_PointLight.ambient", 0.2f, 0.2f, 0.0f);
+		// lightingShader.setVec3("u_PointLight.diffuse", 0.78f, 0.78f, 0.0f);
+		// lightingShader.setVec3("u_PointLight.specular", 1.0f, 1.0f, 1.0f);
+		lightingShader.setVec3("u_PointLight.ambient", 0.0f, 0.0f, 0.0f);
+		lightingShader.setVec3("u_PointLight.diffuse", 0.0f, 0.0f, 0.0f);
+		lightingShader.setVec3("u_PointLight.specular", 0.0f, 0.0f, 0.0f);
+
 
 		// specify 2 attachments
 		constexpr GLuint attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
@@ -359,13 +363,9 @@ void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Cam
 
 
 		GLCall(glDrawArrays(GL_TRIANGLES, 0, verts.size()));
-		// drawAxis(MVP);
-		if (showNormals) {
-			drawNormals(MVP, verts);
-		}
 
 
-	// now, we run the ping pong gaussian blur several times
+	//////////////////////////////////////////////// 2. now, we run the ping pong gaussian blur several times
 	blurShader.use();
 	GLCall(glBindVertexArray(this->VAO_viewport));
 	GLCall(glBindBuffer(GL_ARRAY_BUFFER, this->vertexBuffer_viewport));
@@ -411,7 +411,7 @@ void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Cam
 			GLCall(glDrawArrays(GL_TRIANGLES, 0, 6));
 	}
 
-	// finally, we join the blur to the scene and apply gamma and exposure
+	//////////////////////////////////////////////// 3. finally, we join the blur to the scene and apply gamma and exposure
 	GLCall(glBindFramebuffer(GL_FRAMEBUFFER, 0));
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 

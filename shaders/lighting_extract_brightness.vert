@@ -23,5 +23,7 @@ void main()
 	v_Normal = mat3(transpose(inverse(u_View))) * aNormal; // inversion is costly and should be done on the CPU, this is temporary
 	v_FragPos = vec3(u_View * aPos); // is aPos.z always 1.0???????
 
-	gl_Position = u_MVP * aPos;
+	vec4 idk = aPos;
+	// idk +=  vec4(aNormal, 1.0);
+	gl_Position = u_MVP * idk;
 }
