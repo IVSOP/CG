@@ -83,5 +83,14 @@ std::vector<Vertex> Sphere::createSpherePoints(const float radius, const int sli
         ans2.emplace_back(0,-radius,0);
     }
 
+
+	// LOOP TEMPORARIO PARA OS VETORES NORMAIS
+	// basicamente vetor = angulo do centro ate ao vertice. nao deve estar 100% correto mas esta quase
+	for (Vertex &vertex : ans2) {
+		// assumo que centro e (0.0f, 0.0f, 0.0f)
+		glm::vec3 normal = glm::vec3(vertex.coords) - glm::vec3(0.0f, 0.0f, 0.0f);
+		vertex.normal = glm::normalize(normal);
+	}
+
     return ans2;
 }

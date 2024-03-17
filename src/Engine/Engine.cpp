@@ -272,7 +272,6 @@ int main(int argc, char **argv) {
     setWindow(window, static_cast<GLdouble>(windowWidth), static_cast<GLdouble>(windowHeight));
 
     points = xmlParser.getPoints();
-
     draw_points = points; // early copy to allow renderer to display something
 
     std::thread thread_object(physLoop, window);

@@ -9,7 +9,7 @@
 struct Vertex {
 	// meti aqui os valores default senao ficava uma confusao enorme nos construtores
 	glm::vec4 coords = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-	glm::vec3 normal = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+	glm::vec3 normal = glm::vec3(1.0f, 1.0f, 1.0f);
 	glm::vec2 tex_coord = glm::vec2(0.0f, 0.0f);
 	GLfloat material_id = 0.0f; // isto e uma float por simplicidade, vao ser poucos vertices e vao, senao podia ser uint8 ou 16
 

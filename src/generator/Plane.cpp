@@ -38,6 +38,11 @@ std::vector<Vertex> Plane::createPlanePoints(const float length, const int divis
         }
     }
 
+	// LOOP TEMPORARIO PARA ADICIONAR AS NORMAIS
+	for (Vertex &vertex : ans2) {
+		vertex.normal = glm::vec3(0.0f, 1.0f, 0.0f);
+	}
+
     return ans2;
 }
 
@@ -76,6 +81,11 @@ std::vector<Vertex> Plane::createPlanePointsNoTranslate(const float length, cons
             ans2.emplace_back(ans.at(right));
         }
     }
+
+		// LOOP TEMPORARIO PARA ADICIONAR AS NORMAIS
+	for (Vertex &vertex : ans2) {
+		vertex.normal = glm::vec3(0.0f, 1.0f, 0.0f);
+	}
 
     return ans2;
 }

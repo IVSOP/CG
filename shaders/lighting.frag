@@ -82,7 +82,7 @@ void main() {
 	// daqui para a frente vou tar sempre a fazer coisas manhosas com isto e a view matrix
 	// decidi usar view space em vez de world space, e por isso preciso da matriz em vez da posicao da camera. Vai dar tudo ao mesmo mas as contas sao mais manhosas, mas permite usar tecnicas igualmente manhosas no futuro
 	vec3 viewDir = normalize(-v_FragPos); // the viewer is always at (0,0,0) in view-space, so viewDir = (0,0,0) - FragPosition <=> viewDir = -FragPosition
-	vec3 normal = normalize(v_Normal); // do this here or in the vertex shader? normals should be the same in every vertex of the triangle
+	vec3 normal = normalize(v_Normal); // do this here or in the vertex shader?
 
 	// apply colors
 	res_color.rgb += CalcPointLight(u_PointLight, normal, v_FragPos, viewDir, material);
