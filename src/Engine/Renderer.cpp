@@ -68,6 +68,33 @@ void Renderer::drawAxis(const glm::mat4 &MVP) {
 	GLCall(glDrawArrays(GL_LINES, 0, 6)); // 6 pontos, 3 linhas
 }
 
+// the vertices are copied on purpose!!!
+void Renderer::drawNormals(const glm::mat4 &MVP, std::vector<Vertex> vertices) {
+	std::vector<AxisVertex> verticesToDraw(vertices.size() * 2);
+
+	// new array to draw are lines going from the vertex position to the position + normal
+	glm::vec3 oldpos, newpos;
+	for (unsigned int i = 0; i < vertices.size(); i++) {
+		oldpos = glm::vec3(vertices[i].coords);
+		newpos = oldpos + vertices[i].normal;
+		verticesToDraw[i * 2] = AxisVertex(oldpos.x, oldpos.y, oldpos.z, 0.0f, 0.0f, 1.0f);
+		verticesToDraw[(i * 2) + 1] = AxisVertex(newpos.x, newpos.y, newpos.z, 1.0f, 0.0f, 0.0f);
+	}
+
+	// bind VAO, VBO
+	GLCall(glBindVertexArray(this->VAO_axis));
+	GLCall(glBindBuffer(GL_ARRAY_BUFFER, this->vertexBuffer_axis));
+
+	// load vertices
+	GLCall(glBufferData(GL_ARRAY_BUFFER, verticesToDraw.size() * sizeof(AxisVertex), verticesToDraw.data(), GL_STATIC_DRAW));
+
+	// bind program, load MVP and texture array slot
+	axisShader.use();
+	axisShader.setMat4("u_MVP", MVP);
+
+	GLCall(glDrawArrays(GL_LINES, 0, verticesToDraw.size()));
+}
+
 Renderer::Renderer(GLsizei viewport_width, GLsizei viewport_height)
 : viewport_width(viewport_width), viewport_height(viewport_height), VAO(0), vertexBuffer(0),
   lightingShader("shaders/lighting_extract_brightness.vert", "shaders/lighting_extract_brightness.frag"), axisShader("shaders/basic.vert", "shaders/basic.frag"),
@@ -269,6 +296,7 @@ void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Cam
 	ImGui::SliderFloat("exposure", &exposure, 0.0f, 10.0f, "exposure = %.3f");
 	ImGui::SliderFloat("bloomThreshold", &bloomThreshold, 0.0f, 5.0f, "bloomThreshold = %.3f");
 	ImGui::SliderFloat("texOffsetCoeff", &texOffsetCoeff, 0.0f, 10.0f, "texOffsetCoeff = %.3f");
+	ImGui::Checkbox("Show normals", &showNormals);
 
 	constexpr glm::mat4 model = glm::mat4(1.0f);
 	const glm::mat4 view = camera.GetViewMatrix();
@@ -301,7 +329,7 @@ void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Cam
 	materials[0].diffuse = glm::vec4(1.0f, 1.0f, 1.0f, 0.0f);
 	materials[0].ambient = glm::vec4(1.0f, 1.0f, 1.0f, 0.0f);
 	materials[0].specular = glm::vec4(1.0f, 1.0f, 1.0f, 0.0f);
-	materials[0].emissive = glm::vec4(2.99f, 0.72f, 0.0745f, 0.0f);
+	materials[0].emissive = glm::vec4(0.99f, 0.72f, 0.0745f, 0.0f);
 	materials[0].shininess = glm::vec4(32);
 	materials[0].texture_id = glm::vec4(1);
 	GLCall(glBindBuffer(GL_UNIFORM_BUFFER, UBO_materials));
@@ -332,6 +360,9 @@ void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Cam
 
 		GLCall(glDrawArrays(GL_TRIANGLES, 0, verts.size()));
 		// drawAxis(MVP);
+		if (showNormals) {
+			drawNormals(MVP, verts);
+		}
 
 
 	// now, we run the ping pong gaussian blur several times

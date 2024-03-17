@@ -50,8 +50,11 @@ public:
 	// GLuint VAO_viewport;
 	// GLuint vertexBuffer_viewport;
 	Shader hdrBbloomMergeShader;
-	GLfloat gamma = 2.2f, exposure = 1.0f, bloomThreshold = 1.0f, texOffsetCoeff = 1.0f;
 	// !! could have reused fbo and textures, but this is simpler and more flexible and less painful to manage
+	
+
+	GLfloat gamma = 2.2f, exposure = 1.0f, bloomThreshold = 1.0f, texOffsetCoeff = 1.0f;
+	bool showNormals = false;
 
 
 
@@ -59,6 +62,7 @@ public:
 	// isto devia ser const vec mas nao foi por causa de encapsulamentos estupidos parabens aos envolvidos
 	void draw(std::vector<Vertex> &verts, const glm::mat4 &perspective, Camera &camera, GLFWwindow * window); // const
 	void drawAxis(const glm::mat4 &MVP);
+	void drawNormals(const glm::mat4 &MVP, std::vector<Vertex> vertices); // vector is copied over on purpose
 
 	std::unique_ptr<TextureArray> textureArray = nullptr; // pointer since it starts as null and gets initialized later. unique_ptr so it always gets deleted
 	void loadShader(const char path[], GLenum shaderType, GLuint program) const;
