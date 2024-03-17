@@ -19,9 +19,9 @@ void main()
 	v_TexCoord = aTexCoord;
 	v_MaterialID = aMaterialID;
 
-	// calculate these things into view space
-	v_Normal = mat3(transpose(inverse(u_View * mat4(1.0)))) * aNormal; // inversion is costly and should be done on the CPU, this is temporary
-	v_FragPos = vec3(u_View * mat4(1.0) * aPos); // is aPos.z always 1.0???????
+	// calculate these things into view space (multiply view my identity?????)
+	v_Normal = mat3(transpose(inverse(u_View))) * aNormal; // inversion is costly and should be done on the CPU, this is temporary
+	v_FragPos = vec3(u_View * aPos); // is aPos.z always 1.0???????
 
 	gl_Position = u_MVP * aPos;
 }

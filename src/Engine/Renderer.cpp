@@ -149,13 +149,13 @@ Renderer::Renderer(GLsizei viewport_width, GLsizei viewport_height)
 	// bind to 0
 	glUniformBlockBinding(lightingShader.programID, u_MaterialBufferBlockIndex, 0);
 	// generate the UBO
-	glGenBuffers(1, &UBO_materials);
+	GLCall(glGenBuffers(1, &UBO_materials));
 	
-	glBindBuffer(GL_UNIFORM_BUFFER, UBO_materials);
-	glBufferData(GL_UNIFORM_BUFFER, 8 * sizeof(Material), NULL, GL_DYNAMIC_DRAW); // pre alocate data. hardcoded 8 for now
-	glBindBuffer(GL_UNIFORM_BUFFER, 0);
+	GLCall(glBindBuffer(GL_UNIFORM_BUFFER, UBO_materials));
+	GLCall(glBufferData(GL_UNIFORM_BUFFER, MAX_MATERIALS * sizeof(Material), NULL, GL_DYNAMIC_DRAW)); // pre alocate data
+	GLCall(glBindBuffer(GL_UNIFORM_BUFFER, 0));
 	
-	glBindBufferRange(GL_UNIFORM_BUFFER, 0, UBO_materials, 0, 8 * sizeof(Material));
+	GLCall(glBindBufferRange(GL_UNIFORM_BUFFER, 0, UBO_materials, 0, MAX_MATERIALS * sizeof(Material)));
 
 
 
@@ -166,11 +166,7 @@ Renderer::Renderer(GLsizei viewport_width, GLsizei viewport_height)
 
 
 	// for hdr shader
-	hdrShader.use();
-				// GLCall(this->u_HdrBuffer = glGetUniformLocation(program_hdr, "u_HdrBuffer"));
-				// GLCall(this->u_Gamma = glGetUniformLocation(program_hdr, "u_Gamma"));
-				// GLCall(this->u_Exposure = glGetUniformLocation(program_hdr, "u_Exposure"));
-
+	// hdrShader.use();
 
 	//////////////////////////// LOADING TEXTURES ///////////////////////////
 	loadTextures();
@@ -202,7 +198,7 @@ Renderer::~Renderer() {
 	GLCall(glBindTexture(GL_TEXTURE_2D, 0));
 	GLCall(glDeleteTextures(1, &hdrTexture));
 	GLCall(glDeleteFramebuffers(1, &hdrFBO));
-	// TODO do I need to delete the material UBO?????
+	GLCall(glDeleteBuffers(1, &UBO_materials));
 }
 
 void Renderer::loadShader(const char path[], GLenum shaderType, GLuint _program) const {

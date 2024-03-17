@@ -13,6 +13,9 @@
 #define TEX_ARRAY_SLOT 0
 #define HDR_TEXTURE_SLOT 1
 
+#define MAX_MATERIALS 8
+#define MAX_LIGHTS 8
+
 class Renderer {
 public:
 
