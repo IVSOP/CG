@@ -1,17 +1,10 @@
 #include "Renderer.h"
 
-#include <glm/glm.hpp>
-
 #include <iostream>
 #include <vector>
 #include <cstdio>
-#include <filesystem>
 
 #include "Vertex.h"
-
-#include <glm/gtc/type_ptr.hpp>
-#include <fstream>
-
 #include "Camera.h"
 
 // TODO temporary
@@ -37,7 +30,7 @@ struct PointLight {
 };
 
 
-void Renderer::drawAxis(const glm::mat4 &MVP) const {
+void Renderer::drawAxis(const glm::mat4 &MVP) {
 	const AxisVertex vertices[] = {
 		// x
 		{-100.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f},
@@ -60,45 +53,16 @@ void Renderer::drawAxis(const glm::mat4 &MVP) const {
 	GLCall(glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW));
 
 	// bind program, load MVP and texture array slot
-	GLCall(glUseProgram(this->program_axis));
-	GLCall(glUniformMatrix4fv(this->u_MVP_axis, 1, GL_FALSE, glm::value_ptr(MVP)));
+	axisShader.use();
+	axisShader.setMat4("u_MVP", MVP);
 
 	GLCall(glDrawArrays(GL_LINES, 0, 6)); // 6 pontos, 3 linhas
 }
 
-// cursed, era so para ter uma forma rapida de ler os shaders
-const GLchar *readFromFile(const char *filepath) {
-    std::ifstream inFile(filepath, std::ios::binary);
-
-    if (inFile.is_open()) {
-        inFile.seekg(0, std::ios::end);
-        size_t fileSize = inFile.tellg();
-        inFile.seekg(0, std::ios::beg);
-
-
-        GLchar* ret = new GLchar[fileSize + 1];
-
-        inFile.read(reinterpret_cast<GLchar*>(ret), fileSize);
-
-        inFile.close();
-
-        ret[fileSize] = '\0';
-
-        /*if (charread. != fileSize) {
-            fprintf(stderr, "Did not read all chars: %ld vs %ld\n", size, charread);
-            exit(1);
-        }*/
-
-        return ret;
-    }
-
-    std::cerr << "Invalid file path " << filepath << std::endl;
-
-    exit(1);
-}
-
 Renderer::Renderer(GLsizei viewport_width, GLsizei viewport_height)
-: viewport_width(viewport_width), viewport_height(viewport_height), VAO(0), vertexBuffer(0), program(0), u_MVP(-1), u_TextureArraySlot(-1)
+: viewport_width(viewport_width), viewport_height(viewport_height), VAO(0), vertexBuffer(0),
+  lightingShader("shaders/lighting.vert", "shaders/lighting.frag"), axisShader("shaders/basic.vert", "shaders/basic.frag"),
+  hdrShader("shaders/hdr.vert", "shaders/hdr.frag")
 {
 
 	//////////////////////////// LOADING VAO ////////////////////////////
@@ -173,44 +137,17 @@ Renderer::Renderer(GLsizei viewport_width, GLsizei viewport_height)
 
 	//////////////////////////// LOADING SHADERS ////////////////////////////	
 
-	GLCall(this->program = glCreateProgram());
-	loadShader("shaders/lighting.vert", GL_VERTEX_SHADER, program);
-	loadShader("shaders/lighting.frag", GL_FRAGMENT_SHADER, program);
-	checkProgram(program);
-
-	GLCall(this->program_axis = glCreateProgram());
-	loadShader("shaders/basic.vert", GL_VERTEX_SHADER, program_axis);
-	loadShader("shaders/basic.frag", GL_FRAGMENT_SHADER, program_axis);
-	checkProgram(program_axis);
-
-	GLCall(this->program_hdr = glCreateProgram());
-	loadShader("shaders/hdr.vert", GL_VERTEX_SHADER, program_hdr);
-	loadShader("shaders/hdr.frag", GL_FRAGMENT_SHADER, program_hdr);
-	checkProgram(program_hdr);
-
 	//////////////////////////// LOADING SHADER UNIFORMS ///////////////////////////
-	GLCall(glUseProgram(program));
-	GLCall(this->u_MVP = glGetUniformLocation(program, "u_MVP")); // missing error checking, could be -1
-	GLCall(glUniformMatrix4fv(this->u_MVP, 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0f)))); // load identity just for safety
-
-	GLCall(this->u_TextureArraySlot = glGetUniformLocation(program, "u_TextureArraySlot")); // missing error checking, could be -1
-	GLCall(glUniform1i(u_TextureArraySlot, TEX_ARRAY_SLOT));
-
-	GLCall(this->u_View = glGetUniformLocation(program, "u_View")); // missing error checking, could be -1
-	GLCall(glUniformMatrix4fv(this->u_View, 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0f)))); // load identity just for safety
-
-	GLCall(this->u_PointLight_position = glGetUniformLocation(program, "u_PointLight.position")); // missing error checking, could be -1
-	GLCall(this->u_PointLight_constant = glGetUniformLocation(program, "u_PointLight.constant")); // missing error checking, could be -1
-	GLCall(this->u_PointLight_linear = glGetUniformLocation(program, "u_PointLight.linear")); // missing error checking, could be -1
-	GLCall(this->u_PointLight_quadratic = glGetUniformLocation(program, "u_PointLight.quadratic")); // missing error checking, could be -1
-	GLCall(this->u_PointLight_ambient = glGetUniformLocation(program, "u_PointLight.ambient")); // missing error checking, could be -1
-	GLCall(this->u_PointLight_diffuse = glGetUniformLocation(program, "u_PointLight.diffuse")); // missing error checking, could be -1
-	GLCall(this->u_PointLight_specular = glGetUniformLocation(program, "u_PointLight.specular")); // missing error checking, could be -1
+	lightingShader.use();
+	lightingShader.setMat4("u_MVP", glm::mat4(1.0f)); // load identity just for safety
+	lightingShader.setInt("u_TextureArraySlot", TEX_ARRAY_SLOT);
+	lightingShader.setMat4("u_View", glm::mat4(1.0f)); // load identity just for safety
 
 	// this is a UBO, not like other uniforms
-	GLCall(this->u_MaterialBufferBlockIndex = glGetUniformBlockIndex(program, "u_MaterialBuffer")); // missing error checking, could be -1
+	// TODO do this in shader class somehow, doing it here since it is never used after
+	GLCall(this->u_MaterialBufferBlockIndex = glGetUniformBlockIndex(lightingShader.programID, "u_MaterialBuffer")); // missing error checking, could be -1
 	// bind to 0
-	glUniformBlockBinding(program, u_MaterialBufferBlockIndex, 0);
+	glUniformBlockBinding(lightingShader.programID, u_MaterialBufferBlockIndex, 0);
 	// generate the UBO
 	glGenBuffers(1, &UBO_materials);
 	
@@ -223,17 +160,16 @@ Renderer::Renderer(GLsizei viewport_width, GLsizei viewport_height)
 
 
 	// for axis shader
-	GLCall(glUseProgram(program_axis));
-	GLCall(this->u_MVP_axis = glGetUniformLocation(program_axis, "u_MVP")); // missing error checking, could be -1
-	GLCall(glUniformMatrix4fv(this->u_MVP, 1, GL_FALSE, glm::value_ptr(glm::mat4(1.0f)))); // load identity just for safety
+	axisShader.use();
+	axisShader.setMat4("u_MVP", glm::mat4(1.0f)); // load identity just for safety
 
 
 
 	// for hdr shader
-	GLCall(glUseProgram(program_hdr));
-	GLCall(this->u_HdrBuffer = glGetUniformLocation(program_hdr, "u_HdrBuffer"));
-	GLCall(this->u_Gamma = glGetUniformLocation(program_hdr, "u_Gamma"));
-	GLCall(this->u_Exposure = glGetUniformLocation(program_hdr, "u_Exposure"));
+	hdrShader.use();
+				// GLCall(this->u_HdrBuffer = glGetUniformLocation(program_hdr, "u_HdrBuffer"));
+				// GLCall(this->u_Gamma = glGetUniformLocation(program_hdr, "u_Gamma"));
+				// GLCall(this->u_Exposure = glGetUniformLocation(program_hdr, "u_Exposure"));
 
 
 	//////////////////////////// LOADING TEXTURES ///////////////////////////
@@ -257,13 +193,16 @@ Renderer::Renderer(GLsizei viewport_width, GLsizei viewport_height)
 }
 
 Renderer::~Renderer() {
-	GLCall(glDeleteProgram(program));
-	GLCall(glDeleteProgram(program_axis));
 	GLCall(glDeleteBuffers(1, &vertexBuffer));
 	GLCall(glDeleteBuffers(1, &vertexBuffer_axis));
+	GLCall(glDeleteBuffers(1, &vertexBuffer_hdr));
 	GLCall(glDeleteVertexArrays(1, &VAO));
 	GLCall(glDeleteVertexArrays(1, &VAO_axis));
-	// TODO delete UBO, fbo, etc
+	GLCall(glDeleteVertexArrays(1, &VAO_hdr));
+	GLCall(glBindTexture(GL_TEXTURE_2D, 0));
+	GLCall(glDeleteTextures(1, &hdrTexture));
+	GLCall(glDeleteFramebuffers(1, &hdrFBO));
+	// TODO do I need to delete the material UBO?????
 }
 
 void Renderer::loadShader(const char path[], GLenum shaderType, GLuint _program) const {
@@ -326,14 +265,12 @@ void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Cam
 	GLCall(glBufferData(GL_ARRAY_BUFFER, verts.size() * sizeof(Vertex), verts.data(), GL_STATIC_DRAW));
 
 	// bind program, load uniforms
-	GLCall(glUseProgram(this->program));
+	lightingShader.use();
 
-	// load MVP
-	GLCall(glUniformMatrix4fv(this->u_MVP, 1, GL_FALSE, glm::value_ptr(MVP)));
-	GLCall(glUniform1i(u_TextureArraySlot, TEX_ARRAY_SLOT));
-
-	// load View
-	GLCall(glUniformMatrix4fv(this->u_View, 1, GL_FALSE, glm::value_ptr(view)));
+	// load MVP, texture array and view
+	lightingShader.setMat4("u_MVP", MVP);
+	lightingShader.setInt("u_TextureArraySlot", TEX_ARRAY_SLOT);
+	lightingShader.setMat4("u_View", view);
 
 	// load texture array for safety
 	this->textureArray.get()->setTextureArrayToSlot(TEX_ARRAY_SLOT);
@@ -346,10 +283,10 @@ void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Cam
 	// materials[0].ambient = glm::vec4(0.31f, 0.227f, 0.169f, 0.0f);
 	// materials[0].specular = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f); // dirt cannot have this
 	// materials[0].emissive = glm::vec4(0.31f, 0.227f, 0.169f, 0.0f);
-		materials[0].diffuse = glm::vec4(1.0f, 1.0f, 1.0f, 0.0f);
-		materials[0].ambient = glm::vec4(1.0f, 1.0f, 1.0f, 0.0f);
-		materials[0].specular = glm::vec4(1.0f, 1.0f, 1.0f, 0.0f); // dirt cannot have this
-		materials[0].emissive = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
+	materials[0].diffuse = glm::vec4(1.0f, 1.0f, 1.0f, 0.0f);
+	materials[0].ambient = glm::vec4(1.0f, 1.0f, 1.0f, 0.0f);
+	materials[0].specular = glm::vec4(1.0f, 1.0f, 1.0f, 0.0f);
+	materials[0].emissive = glm::vec4(0.0f, 0.0f, 0.0f, 0.0f);
 	materials[0].shininess = glm::vec4(32);
 	materials[0].texture_id = glm::vec4(1);
 	GLCall(glBindBuffer(GL_UNIFORM_BUFFER, UBO_materials));
@@ -364,13 +301,14 @@ void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Cam
 	// GLCall(glUniform3f(u_PointLight_ambient, 0.2f, 0.2f, 0.2f));
 	// GLCall(glUniform3f(u_PointLight_diffuse, 0.5f, 0.5f, 0.5f));
 	// GLCall(glUniform3f(u_PointLight_specular, 1.0f, 1.0f, 1.0f));
-		GLCall(glUniform1f(u_PointLight_constant, 1.0f));
-		GLCall(glUniform1f(u_PointLight_linear, 0.09f));
-		GLCall(glUniform1f(u_PointLight_quadratic, 0.032f));
-		GLCall(glUniform3f(u_PointLight_position, 0.0f, 2.0f, 2.0f));
-		GLCall(glUniform3f(u_PointLight_ambient, 0.2f, 0.2f, 0.0f));
-		GLCall(glUniform3f(u_PointLight_diffuse, 0.78f, 0.78f, 0.0f));
-		GLCall(glUniform3f(u_PointLight_specular, 0.0f, 0.0f, 0.0f));
+
+	lightingShader.setFloat("u_PointLight.constant", 1.0f);
+	lightingShader.setFloat("u_PointLight.linear", 0.09f);
+	lightingShader.setFloat("u_PointLight.quadratic", 0.032f);
+	lightingShader.setVec3("u_PointLight.position", 0.0f, 2.0f, 5.0f);
+	lightingShader.setVec3("u_PointLight.ambient", 0.2f, 0.2f, 0.0f);
+	lightingShader.setVec3("u_PointLight.diffuse", 0.78f, 0.78f, 0.0f);
+	lightingShader.setVec3("u_PointLight.specular", 0.0f, 0.0f, 0.0f);
 
 	// draw into the hdr framebuffer
 	glBindFramebuffer(GL_FRAMEBUFFER, hdrFBO);
@@ -397,12 +335,12 @@ void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Cam
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-	GLCall(glUseProgram(this->program_hdr));
+	hdrShader.use();
 	GLCall(glActiveTexture(GL_TEXTURE0 + HDR_TEXTURE_SLOT));
 	GLCall(glBindTexture(GL_TEXTURE_2D, this->hdrTexture));
-	GLCall(glUniform1i(u_HdrBuffer, HDR_TEXTURE_SLOT));
-	GLCall(glUniform1f(u_Gamma, gamma));
-	GLCall(glUniform1f(u_Exposure, exposure));
+	hdrShader.setInt("u_HdrBuffer", HDR_TEXTURE_SLOT);
+	hdrShader.setFloat("u_Gamma", gamma);
+	hdrShader.setFloat("u_Exposure", exposure);
 
 	GLCall(glDrawArrays(GL_TRIANGLES, 0, 6));
 

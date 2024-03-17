@@ -73,6 +73,8 @@ add_executable(Engine
 		src/Engine/Transformation.cpp
 		src/Engine/GLErrors.cpp
 		src/Engine/TextureArray.cpp
+		src/Engine/Shader.cpp
+		src/Engine/common.cpp
 		src/TinyXML2/tinyxml2.cpp
 		src/common/Vertex.cpp
 		src/common/Consts.cpp

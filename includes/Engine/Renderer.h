@@ -4,6 +4,7 @@
 #include "common.h"
 #include "Vertex.h"
 #include "Camera.h"
+#include "Shader.h"
 #include "TextureArray.h"
 #include <memory>
 
@@ -23,12 +24,10 @@ public:
 
 	GLuint VAO, VAO_axis, VAO_hdr;
 	GLuint vertexBuffer, vertexBuffer_axis, vertexBuffer_hdr;
-	GLuint program, program_axis, program_hdr;
+	Shader lightingShader, axisShader, hdrShader;
     
-	GLint u_MVP, u_View, u_MaterialBufferBlockIndex, u_TextureArraySlot, u_MVP_axis;
-	GLint u_PointLight_position, u_PointLight_constant, u_PointLight_linear, u_PointLight_quadratic, u_PointLight_ambient, u_PointLight_diffuse, u_PointLight_specular;
+	GLint u_MaterialBufferBlockIndex;
 	GLuint UBO_materials;
-	GLint u_HdrBuffer, u_Gamma, u_Exposure;
 
 	GLuint hdrTexture = 0;
 	GLuint hdrFBO = 0;
@@ -37,7 +36,7 @@ public:
 
 	// isto devia ser const vec mas nao foi por causa de encapsulamentos estupidos parabens aos envolvidos
 	void draw(std::vector<Vertex> &verts, const glm::mat4 &perspective, Camera &camera, GLFWwindow * window); // const
-	void drawAxis(const glm::mat4 &MVP) const;
+	void drawAxis(const glm::mat4 &MVP);
 
 	std::unique_ptr<TextureArray> textureArray = nullptr; // pointer since it starts as null and gets initialized later. unique_ptr so it always gets deleted
 	void loadShader(const char path[], GLenum shaderType, GLuint program) const;
