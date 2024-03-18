@@ -308,9 +308,6 @@ void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Cam
     	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		// GLCall(glPolygonMode(GL_FRONT_AND_BACK,GL_LINE));
 
-		if (showNormals) {
-			drawNormals(MVP, verts);
-		}
 		// drawAxis(MVP);
 
 		GLCall(glBindVertexArray(this->VAO));
@@ -364,7 +361,10 @@ void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Cam
 
 
 		GLCall(glDrawArrays(GL_TRIANGLES, 0, verts.size()));
-
+	
+		if (showNormals) {
+			drawNormals(MVP, verts);
+		}
 
 	//////////////////////////////////////////////// 2. now, we run the ping pong gaussian blur several times
 	blurShader.use();

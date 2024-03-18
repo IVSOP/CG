@@ -10,6 +10,7 @@ struct Shader { // this is actually a program but whatever
 public:
 	Shader() = delete;
 	Shader(const char vertFile[], const char fragFile[]);
+	Shader(const char vertFile[], const char fragFile[], const char geoFile[]);
 	~Shader();
 
 	void use() const;
