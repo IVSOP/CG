@@ -265,7 +265,16 @@ int main(int argc, char **argv) {
     GLdouble cameraZUp = xmlParser.getCameraZUp();
 
     Camera camera = Camera(glm::vec3(cameraXPos, cameraYPos, cameraZPos), glm::vec3(cameraXLook, cameraYLook, cameraZLook), glm::vec3(cameraXUp, cameraYUp, cameraZUp));
-    Renderer renderer(static_cast<GLsizei>(windowWidth), static_cast<GLsizei>(windowHeight));
+
+	// por qualquer razao especificamente no mac nao da para criar shaders sem ter um VAO
+#ifdef __APPLE__
+	GLuint tempVAO;
+	GLCall(glGenVertexArrays(1, &tempVAO));
+#endif
+	Renderer renderer(static_cast<GLsizei>(windowWidth), static_cast<GLsizei>(windowHeight));
+#ifdef __APPLE__
+	GLCall(glDeleteVertexArrays(1, &tempVAO));
+#endif
 	renderer_windowWidth = windowWidth;
 	renderer_windowHeight = windowHeight;
 
