@@ -270,7 +270,7 @@ int main(int argc, char **argv) {
 #ifdef __APPLE__
 	GLuint tempVAO;
 	GLCall(glGenVertexArrays(1, &tempVAO));
-	GLCall(glBindVertexArray(tempVao));
+	GLCall(glBindVertexArray(tempVAO));
 #endif
 	Renderer renderer(static_cast<GLsizei>(windowWidth), static_cast<GLsizei>(windowHeight));
 #ifdef __APPLE__
