@@ -71,39 +71,24 @@ void Renderer::drawAxis(const glm::mat4 &model, const glm::mat4 &view, const glm
 }
 
 // the vertices are copied on purpose!!!
-void Renderer::drawNormals(const glm::mat4 &model, const glm::mat4 &view, const glm::mat4 &projection, std::vector<Vertex> vertices) {
-	std::vector<AxisVertex> verticesToDraw(vertices.size() * 2);
+void Renderer::drawNormals(const glm::mat4 &model, const glm::mat4 &view, const glm::mat4 &projection, const std::vector<Vertex> &vertices) {
 
-	// new array to draw are lines going from the vertex position to the position + normal
-	glm::vec3 oldpos, newpos;
-	for (unsigned int i = 0; i < vertices.size(); i++) {
-		oldpos = glm::vec3(vertices[i].coords);
-		newpos = oldpos + vertices[i].normal;
-		verticesToDraw[i * 2] = AxisVertex(oldpos.x, oldpos.y, oldpos.z, 0.0f, 0.0f, 1.0f);
-		verticesToDraw[(i * 2) + 1] = AxisVertex(newpos.x, newpos.y, newpos.z, 1.0f, 0.0f, 0.0f);
-	}
+	// VAO and VBO are the same as the normal ones, so I will not rebind them
 
-	// bind VAO, VBO
-	GLCall(glBindVertexArray(this->VAO_axis));
-	GLCall(glBindBuffer(GL_ARRAY_BUFFER, this->vertexBuffer_axis));
-
-	// load vertices
-	GLCall(glBufferData(GL_ARRAY_BUFFER, verticesToDraw.size() * sizeof(AxisVertex), verticesToDraw.data(), GL_STATIC_DRAW));
-
-	axisShader.use();
-	// axisShader.setMat4("u_Model", model);
-	// axisShader.setMat4("u_View", view);
-	// axisShader.setMat4("u_Projection", projection);
-	axisShader.setMat4("u_MVP", projection * view * model);
+	normalsShader.use();
+	normalsShader.setMat4("u_Model", model);
+	normalsShader.setMat4("u_View", view);
+	normalsShader.setMat4("u_Projection", projection);
 
 
-	GLCall(glDrawArrays(GL_LINES, 0, verticesToDraw.size()));
+	GLCall(glDrawArrays(GL_TRIANGLES, 0, vertices.size()));
 }
 
 Renderer::Renderer(GLsizei viewport_width, GLsizei viewport_height)
 : viewport_width(viewport_width), viewport_height(viewport_height), VAO(0), vertexBuffer(0),
   lightingShader("shaders/lighting_extract_brightness_with_gs.vert", "shaders/lighting_extract_brightness_with_gs.frag", "shaders/explode.gs"),
   axisShader("shaders/basic.vert", "shaders/basic.frag"),
+  normalsShader("shaders/normals.vert", "shaders/normals.frag", "shaders/normals.gs"),
   blurShader("shaders/blur.vert", "shaders/blur.frag"),
   hdrBbloomMergeShader("shaders/hdrBloomMerge.vert", "shaders/hdrBloomMerge.frag")
 {

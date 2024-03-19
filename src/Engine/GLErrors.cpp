@@ -130,16 +130,21 @@ void checkProgramLinking(const GLuint program) {
 		GLint maxLength = 0;
 		glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
 
-		// The maxLength includes the NULL character
-		// GLchar infoLog[maxLength];
-		GLchar *infoLog = static_cast<GLchar *>(alloca(maxLength * sizeof(GLchar)));
-		glGetProgramInfoLog(program, maxLength, &maxLength, &infoLog[0]);
+		if (maxLength > 0) {
 
+			// The maxLength includes the NULL character???
+			// GLchar infoLog[maxLength];
+			GLchar *infoLog = static_cast<GLchar *>(alloca((maxLength + 1) * sizeof(GLchar)));
+			glGetProgramInfoLog(program, maxLength, &maxLength, &infoLog[0]);
+
+			// got lazy
+			print_error(infoLog);
+		} else {
+			fprintf(stderr, "No error log available\n");
+		}
 		// The program is useless now. So delete it.
 		glDeleteProgram(program);
 
-		// got lazy
-		print_error(infoLog);
 
 		raise(SIGINT);
 	}
