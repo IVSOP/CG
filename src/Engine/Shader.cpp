@@ -8,6 +8,15 @@ Shader::Shader(const char vertFile[], const char fragFile[]) {
 	checkProgram();
 }
 
+Shader::Shader(const char vertFile[], const char fragFile[], const char geoFile[]) {
+	GLCall(this->programID = glCreateProgram());
+	loadShader(vertFile, GL_VERTEX_SHADER, programID);
+	loadShader(fragFile, GL_FRAGMENT_SHADER, programID);
+	loadShader(geoFile, GL_GEOMETRY_SHADER, programID);
+	GLCall(glLinkProgram(programID));
+	checkProgram();
+}
+
 Shader::~Shader() {
 	GLCall(glDeleteProgram(programID));
 }

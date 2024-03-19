@@ -53,8 +53,9 @@ public:
 	// !! could have reused fbo and textures, but this is simpler and more flexible and less painful to manage
 	
 
-	GLfloat gamma = 2.2f, exposure = 1.0f, bloomThreshold = 1.0f, texOffsetCoeff = 1.0f;
+	GLfloat gamma = 2.2f, exposure = 1.0f, bloomThreshold = 1.0f, texOffsetCoeff = 1.0f, explodeCoeff = 0.0f;
 	bool showNormals = false;
+	bool explode = false;
 
 
 

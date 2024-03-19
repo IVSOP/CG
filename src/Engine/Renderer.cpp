@@ -97,8 +97,10 @@ void Renderer::drawNormals(const glm::mat4 &MVP, std::vector<Vertex> vertices) {
 
 Renderer::Renderer(GLsizei viewport_width, GLsizei viewport_height)
 : viewport_width(viewport_width), viewport_height(viewport_height), VAO(0), vertexBuffer(0),
-  lightingShader("shaders/lighting_extract_brightness.vert", "shaders/lighting_extract_brightness.frag"), axisShader("shaders/basic.vert", "shaders/basic.frag"),
-  blurShader("shaders/blur.vert", "shaders/blur.frag"), hdrBbloomMergeShader("shaders/hdrBloomMerge.vert", "shaders/hdrBloomMerge.frag")
+  lightingShader("shaders/lighting_extract_brightness_with_gs.vert", "shaders/lighting_extract_brightness_with_gs.frag", "shaders/explode.gs"),
+  axisShader("shaders/basic.vert", "shaders/basic.frag"),
+  blurShader("shaders/blur.vert", "shaders/blur.frag"),
+  hdrBbloomMergeShader("shaders/hdrBloomMerge.vert", "shaders/hdrBloomMerge.frag")
 {
 	//////////////////////////// LOADING VAO ////////////////////////////
 	GLCall(glGenVertexArrays(1, &this->VAO));
@@ -298,6 +300,7 @@ void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Cam
 	// texOffsetCoeff = static_cast<GLfloat>(rand()) / static_cast<GLfloat>(RAND_MAX) * 10.0f;
 	ImGui::SliderFloat("texOffsetCoeff", &texOffsetCoeff, 0.0f, 10.0f, "texOffsetCoeff = %.3f");
 	ImGui::Checkbox("Show normals", &showNormals);
+	ImGui::Checkbox("Explode", &explode);
 
 	constexpr glm::mat4 model = glm::mat4(1.0f);
 	const glm::mat4 view = camera.GetViewMatrix();
@@ -359,6 +362,14 @@ void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Cam
 		constexpr GLuint attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
 		GLCall(glDrawBuffers(2, attachments));
 
+		lightingShader.setFloat("u_ExplodeCoeff", explodeCoeff);
+		if (explode) {
+			ImGui::SliderFloat("explodeCoeff", &explodeCoeff, 0.0f, 10.0f, "explodeCoeff = %.3f");
+		} else {
+			if (explodeCoeff > 0.0f) {
+				lightingShader.setFloat("u_ExplodeCoeff", 0.0f);
+			}
+		}
 
 		GLCall(glDrawArrays(GL_TRIANGLES, 0, verts.size()));
 	
