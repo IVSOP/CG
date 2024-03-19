@@ -11,6 +11,7 @@ in VS_OUT {
 	vec2 v_TexCoord;
 	flat float v_MaterialID; // flat since it is always the same between all vertices
 	vec3 v_Normal;
+	vec3 v_FragPos;
 } gs_in[];
 
 out GS_OUT {
@@ -21,7 +22,6 @@ out GS_OUT {
 } gs_out;
 
 uniform float u_ExplodeCoeff = 1.0;
-uniform mat4 u_View; // view from the MVP
 
 vec4 explode(vec4 position, vec3 normal) {
 	position.xyz += u_ExplodeCoeff * normal;
@@ -44,8 +44,8 @@ void main() {
     gs_out.g_TexCoord = gs_in[0].v_TexCoord;
 	gs_out.g_MaterialID = gs_in[0].v_MaterialID;
 	// calculate these things into view space
-	gs_out.g_Normal = mat3(transpose(inverse(u_View))) * gs_in[0].v_Normal; // inversion is costly and should be done on the CPU, this is temporary
-	gs_out.g_FragPos = vec3(u_View * gl_Position);
+	gs_out.g_Normal = gs_in[0].v_Normal;
+	gs_out.g_FragPos = gs_in[0].v_FragPos;
 
     
 	EmitVertex();
@@ -56,8 +56,8 @@ void main() {
     gs_out.g_TexCoord = gs_in[1].v_TexCoord;
 	gs_out.g_MaterialID = gs_in[1].v_MaterialID;
 	// calculate these things into view space
-	gs_out.g_Normal = mat3(transpose(inverse(u_View))) * gs_in[0].v_Normal; // inversion is costly and should be done on the CPU, this is temporary
-	gs_out.g_FragPos = vec3(u_View * gl_Position);
+	gs_out.g_Normal = gs_in[1].v_Normal;
+	gs_out.g_FragPos = gs_in[1].v_FragPos;
     
 	EmitVertex();
     
@@ -67,8 +67,8 @@ void main() {
     gs_out.g_TexCoord = gs_in[2].v_TexCoord;
 	gs_out.g_MaterialID = gs_in[2].v_MaterialID;
 	// calculate these things into view space
-	gs_out.g_Normal = mat3(transpose(inverse(u_View))) * gs_in[0].v_Normal; // inversion is costly and should be done on the CPU, this is temporary
-	gs_out.g_FragPos = vec3(u_View * gl_Position);
+	gs_out.g_Normal = gs_in[2].v_Normal;
+	gs_out.g_FragPos = gs_in[2].v_FragPos;
     
 	EmitVertex();
     
