@@ -27,7 +27,7 @@ uniform mat4 u_View;
 uniform mat4 u_Projection;
 
 vec4 explode(vec4 position, vec3 normal) {
-	position += vec4(u_ExplodeCoeff * normal, 1.0);
+	position.xyz += u_ExplodeCoeff * normal;
 	return position;
 }
 
