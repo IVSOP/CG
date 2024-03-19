@@ -39,7 +39,7 @@ ViewportVertex viewportVertices[] = {
 	{-1.0f, -1.0f, 0.0f, 0.0f, 0.0f}
 };
 
-void Renderer::drawAxis(const glm::mat4 &MVP) {
+void Renderer::drawAxis(const glm::mat4 &model, const glm::mat4 &view, const glm::mat4 &projection) {
 	const AxisVertex vertices[] = {
 		// x
 		{-100.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f},
@@ -61,15 +61,16 @@ void Renderer::drawAxis(const glm::mat4 &MVP) {
 	// load vertices
 	GLCall(glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW));
 
-	// bind program, load MVP and texture array slot
 	axisShader.use();
-	axisShader.setMat4("u_MVP", MVP);
+	axisShader.setMat4("u_Model", model);
+	axisShader.setMat4("u_View", view);
+	axisShader.setMat4("u_Projection", projection);
 
 	GLCall(glDrawArrays(GL_LINES, 0, 6)); // 6 pontos, 3 linhas
 }
 
 // the vertices are copied on purpose!!!
-void Renderer::drawNormals(const glm::mat4 &MVP, std::vector<Vertex> vertices) {
+void Renderer::drawNormals(const glm::mat4 &model, const glm::mat4 &view, const glm::mat4 &projection, std::vector<Vertex> vertices) {
 	std::vector<AxisVertex> verticesToDraw(vertices.size() * 2);
 
 	// new array to draw are lines going from the vertex position to the position + normal
@@ -88,9 +89,10 @@ void Renderer::drawNormals(const glm::mat4 &MVP, std::vector<Vertex> vertices) {
 	// load vertices
 	GLCall(glBufferData(GL_ARRAY_BUFFER, verticesToDraw.size() * sizeof(AxisVertex), verticesToDraw.data(), GL_STATIC_DRAW));
 
-	// bind program, load MVP and texture array slot
 	axisShader.use();
-	axisShader.setMat4("u_MVP", MVP);
+	axisShader.setMat4("u_Model", model);
+	axisShader.setMat4("u_View", view);
+	axisShader.setMat4("u_Projection", projection);
 
 	GLCall(glDrawArrays(GL_LINES, 0, verticesToDraw.size()));
 }
@@ -174,9 +176,10 @@ Renderer::Renderer(GLsizei viewport_width, GLsizei viewport_height)
 
 	//////////////////////////// LOADING SHADER UNIFORMS ///////////////////////////
 	lightingShader.use();
-	lightingShader.setMat4("u_MVP", glm::mat4(1.0f)); // load identity just for safety
 	lightingShader.setInt("u_TextureArraySlot", TEX_ARRAY_SLOT);
+	lightingShader.setMat4("u_Model", glm::mat4(1.0f)); // load identity just for safety
 	lightingShader.setMat4("u_View", glm::mat4(1.0f)); // load identity just for safety
+	lightingShader.setMat4("u_Projection", glm::mat4(1.0f)); // load identity just for safety
 
 	// this is a UBO, not like other uniforms
 	// TODO do this in shader class somehow, doing it here since it is never used after
@@ -196,12 +199,10 @@ Renderer::Renderer(GLsizei viewport_width, GLsizei viewport_height)
 
 	// for axis shader
 	axisShader.use();
-	axisShader.setMat4("u_MVP", glm::mat4(1.0f)); // load identity just for safety
+	axisShader.setMat4("u_Model", glm::mat4(1.0f)); // load identity just for safety
+	axisShader.setMat4("u_View", glm::mat4(1.0f)); // load identity just for safety
+	axisShader.setMat4("u_Projection", glm::mat4(1.0f)); // load identity just for safety
 
-
-
-	// for hdr shader
-	// hdrShader.use();
 
 	//////////////////////////// LOADING TEXTURES ///////////////////////////
 	loadTextures();
@@ -304,7 +305,7 @@ void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Cam
 
 	constexpr glm::mat4 model = glm::mat4(1.0f);
 	const glm::mat4 view = camera.GetViewMatrix();
-	const glm::mat4 MVP = projection * view * model; // nao so nao sei, como nao quero saber. vou assumir que a maneira que o glm faz as coisas influencia isto
+	// const glm::mat4 MVP = projection * view * model;
 
 	//////////////////////////////////////////////// 1. the normal scene is drawn into the lighting framebuffer, where the bright colors are then separated
 	GLCall(glBindFramebuffer(GL_FRAMEBUFFER, lightingFBO));
@@ -323,9 +324,10 @@ void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Cam
 		lightingShader.use();
 
 		// load MVP, texture array and view
-		lightingShader.setMat4("u_MVP", MVP);
 		lightingShader.setInt("u_TextureArraySlot", TEX_ARRAY_SLOT);
+		lightingShader.setMat4("u_Model", model);
 		lightingShader.setMat4("u_View", view);
+		lightingShader.setMat4("u_Projection", projection);
 
 		lightingShader.setFloat("u_BloomThreshold", bloomThreshold);
 
@@ -375,7 +377,7 @@ void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Cam
 		GLCall(glDrawArrays(GL_TRIANGLES, 0, verts.size()));
 	
 		if (showNormals) {
-			drawNormals(MVP, verts);
+			drawNormals(model, view, projection, verts);
 		}
 
 	//////////////////////////////////////////////// 2. now, we run the ping pong gaussian blur several times
