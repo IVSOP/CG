@@ -11,7 +11,7 @@ in VS_OUT {
 	vec2 v_TexCoord;
 	flat float v_MaterialID; // flat since it is always the same between all vertices
 	vec3 v_Normal;
-	vec3 v_FragPos;
+	// vec3 v_FragPos;
 } gs_in[];
 
 out GS_OUT {
@@ -22,53 +22,59 @@ out GS_OUT {
 } gs_out;
 
 uniform float u_ExplodeCoeff = 1.0;
+uniform mat4 u_Model;
+uniform mat4 u_View;
+uniform mat4 u_Projection;
 
 vec4 explode(vec4 position, vec3 normal) {
-	position.xyz += u_ExplodeCoeff * normal;
+	position += vec4(u_ExplodeCoeff * normal, 1.0);
 	return position;
 }
 
 vec3 getAvgNormal()
 {
-   vec3 a = vec3(gl_in[0].gl_Position) - vec3(gl_in[1].gl_Position);
-   vec3 b = vec3(gl_in[2].gl_Position) - vec3(gl_in[1].gl_Position);
-   return normalize(cross(a, b));
-}  
+    vec3 a = vec3(gl_in[0].gl_Position) - vec3(gl_in[1].gl_Position);
+    vec3 b = vec3(gl_in[2].gl_Position) - vec3(gl_in[1].gl_Position);
+	// No setimo dia, descansou e disse: se aqui ainda estiveres em world space, vais ter de trocar a ordem aqui senao o cross product da a seta para baixo e nao para cima
+	return normalize(cross(b, a));
+}
 
 void main() {
 	vec3 normal = getAvgNormal();
 	vec4 res;
 
-    gl_Position = explode(gl_in[0].gl_Position, normal);
+	res = explode(gl_in[0].gl_Position, normal);
+    gl_Position = u_Projection * u_View * u_Model * res;
 
     gs_out.g_TexCoord = gs_in[0].v_TexCoord;
 	gs_out.g_MaterialID = gs_in[0].v_MaterialID;
 	// calculate these things into view space
 	gs_out.g_Normal = gs_in[0].v_Normal;
-	gs_out.g_FragPos = gs_in[0].v_FragPos;
+	gs_out.g_FragPos = vec3(u_View * res);
 
-    
+
 	EmitVertex();
 
-    
-	gl_Position = explode(gl_in[1].gl_Position, normal);
+	res = explode(gl_in[1].gl_Position, normal);
+	gl_Position = u_Projection * u_View * u_Model * res;
 
     gs_out.g_TexCoord = gs_in[1].v_TexCoord;
 	gs_out.g_MaterialID = gs_in[1].v_MaterialID;
 	// calculate these things into view space
 	gs_out.g_Normal = gs_in[1].v_Normal;
-	gs_out.g_FragPos = gs_in[1].v_FragPos;
+	gs_out.g_FragPos = vec3(u_View * res);
     
 	EmitVertex();
-    
 
-	gl_Position = explode(gl_in[2].gl_Position, normal);
+
+	res = explode(gl_in[2].gl_Position, normal);
+	gl_Position = u_Projection * u_View * u_Model * res;
     
     gs_out.g_TexCoord = gs_in[2].v_TexCoord;
 	gs_out.g_MaterialID = gs_in[2].v_MaterialID;
 	// calculate these things into view space
 	gs_out.g_Normal = gs_in[2].v_Normal;
-	gs_out.g_FragPos = gs_in[2].v_FragPos;
+	gs_out.g_FragPos = vec3(u_View * res);
     
 	EmitVertex();
     

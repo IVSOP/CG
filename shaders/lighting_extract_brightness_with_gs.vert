@@ -10,13 +10,12 @@ out VS_OUT {
 	vec2 v_TexCoord;
 	flat float v_MaterialID; // flat since it is always the same between all vertices
 	vec3 v_Normal;
-	vec3 v_FragPos;
+	// vec3 v_FragPos;
 } vs_out;
 
 
 uniform mat4 u_Model;
 uniform mat4 u_View;
-uniform mat4 u_Projection;
 
 void main()
 {
@@ -24,7 +23,10 @@ void main()
 	vs_out.v_MaterialID = aMaterialID;
 
 	vs_out.v_Normal = mat3(transpose(inverse(u_View * u_Model))) * aNormal; // inversion is costly and should be done on the CPU, this is temporary
-	vs_out.v_FragPos = vec3(u_View * aPos);
 
-	gl_Position = u_Projection * u_View * u_Model * aPos;
+
+	// I left these values untouched since the geometry shader will change the position of the vertices, this way it takes care of everything at once
+	// vs_out.v_FragPos = vec3(u_View * aPos);
+	// gl_Position = u_Projection * u_View * u_Model * aPos;
+	gl_Position = aPos;
 }
