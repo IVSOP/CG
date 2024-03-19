@@ -62,9 +62,10 @@ void Renderer::drawAxis(const glm::mat4 &model, const glm::mat4 &view, const glm
 	GLCall(glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW));
 
 	axisShader.use();
-	axisShader.setMat4("u_Model", model);
-	axisShader.setMat4("u_View", view);
-	axisShader.setMat4("u_Projection", projection);
+	// axisShader.setMat4("u_Model", model);
+	// axisShader.setMat4("u_View", view);
+	// axisShader.setMat4("u_Projection", projection);
+	axisShader.setMat4("u_MVP", projection * view * model);
 
 	GLCall(glDrawArrays(GL_LINES, 0, 6)); // 6 pontos, 3 linhas
 }
@@ -90,9 +91,11 @@ void Renderer::drawNormals(const glm::mat4 &model, const glm::mat4 &view, const 
 	GLCall(glBufferData(GL_ARRAY_BUFFER, verticesToDraw.size() * sizeof(AxisVertex), verticesToDraw.data(), GL_STATIC_DRAW));
 
 	axisShader.use();
-	axisShader.setMat4("u_Model", model);
-	axisShader.setMat4("u_View", view);
-	axisShader.setMat4("u_Projection", projection);
+	// axisShader.setMat4("u_Model", model);
+	// axisShader.setMat4("u_View", view);
+	// axisShader.setMat4("u_Projection", projection);
+	axisShader.setMat4("u_MVP", projection * view * model);
+
 
 	GLCall(glDrawArrays(GL_LINES, 0, verticesToDraw.size()));
 }
@@ -199,10 +202,10 @@ Renderer::Renderer(GLsizei viewport_width, GLsizei viewport_height)
 
 	// for axis shader
 	axisShader.use();
-	axisShader.setMat4("u_Model", glm::mat4(1.0f)); // load identity just for safety
-	axisShader.setMat4("u_View", glm::mat4(1.0f)); // load identity just for safety
-	axisShader.setMat4("u_Projection", glm::mat4(1.0f)); // load identity just for safety
-
+	// axisShader.setMat4("u_Model", glm::mat4(1.0f)); // load identity just for safety
+	// axisShader.setMat4("u_View", glm::mat4(1.0f)); // load identity just for safety
+	// axisShader.setMat4("u_Projection", glm::mat4(1.0f)); // load identity just for safety
+	axisShader.setMat4("u_MVP", glm::mat4(1.0f));
 
 	//////////////////////////// LOADING TEXTURES ///////////////////////////
 	loadTextures();
