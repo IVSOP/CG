@@ -16,9 +16,9 @@ struct Material {
 	// GLuint texture_id;
 	GLfloat texture_id;
 
-	// problem: acessing this data in the shader is done through a texture buffer, which can only read vec4s
+	// problem: acessing this data in the shader is done through a texture buffer, which can only(???) read vec4s
 	// since there are 14 floats, the last vec4 reading ends in .y, if it is material [0]. but what if it is material [1]??
-	// because I cant do wizardry with glsl, it is easier to pad this so that all acesses are consistent
+	// because I cant do wizardry with glsl, it is easier to pad this so that all accesses are consistent
 	// this means adding 2 more floats
 	// since this is extremely cursed and uncomfortable I will add an assertion below to make sure this manual padding has worked, so I can sleep at night
 	GLfloat padding_1;
