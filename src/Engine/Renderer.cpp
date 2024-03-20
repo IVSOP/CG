@@ -7,7 +7,6 @@
 #include "Vertex.h"
 #include "Camera.h"
 
-// TODO temporary
 struct Material {
 	glm::vec3 diffuse;
 	glm::vec3 ambient;
@@ -15,8 +14,17 @@ struct Material {
 	glm::vec3 emissive;
 	GLfloat shininess;
 	// GLuint texture_id;
-	GLfloat texture_id; // to be used as an int
+	GLfloat texture_id;
+
+	// problem: acessing this data in the shader is done through a texture buffer, which can only read vec4s
+	// since there are 14 floats, the last vec4 reading ends in .y, if it is material [0]. but what if it is material [1]??
+	// because I cant do wizardry with glsl, it is easier to pad this so that all acesses are consistent
+	// this means adding 2 more floats
+	// since this is extremely cursed and uncomfortable I will add an assertion below to make sure this manual padding has worked, so I can sleep at night
+	GLfloat padding_1;
+	GLfloat padding_2;
 };
+static_assert(sizeof(Material) == 4 * sizeof(glm::vec4), "Error: Material has unexpected size");
 
 struct PointLight {
     glm::vec3 position;
@@ -80,7 +88,6 @@ void Renderer::drawNormals(const glm::mat4 &model, const glm::mat4 &view, const 
 	normalsShader.setMat4("u_Model", model);
 	normalsShader.setMat4("u_View", view);
 	normalsShader.setMat4("u_Projection", projection);
-
 
 	GLCall(glDrawArrays(GL_TRIANGLES, 0, vertices.size()));
 }
@@ -263,9 +270,6 @@ void Renderer::loadTextures() {
 }
 
 void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Camera &camera, GLFWwindow * window) {
-    // Clear buffers // isto funcionava em baixo do ImGui::Begin, buguei
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();

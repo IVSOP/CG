@@ -3,16 +3,18 @@
 layout(location = 0) out vec4 color;
 layout(location = 1) out vec4 brightColor;
 
-struct Material { // !!!! IMPORTANT everything vec4 so that cpu matches gpu layout, opengl being stupid and me being lazy
+struct Material {
 	vec3 diffuse;
 	vec3 ambient;
 	vec3 specular;
 	vec3 emissive;
 	float shininess;
 	float texture_id;
+
+	// there are 2 padding floats here. please see Material struct in the source code to understand
 };
-// basicaly how many float32s would fit in a material (3+3+3+3+1+1)
-#define INDICES_IN_MATERIAL 14
+// basicaly how many vec4s would fit in a material (14 + 2 padding =  4 * vec4)
+#define VEC4_IN_MATERIAL 4
 
 struct DirLight {
     vec3 direction;
@@ -85,15 +87,15 @@ void main() {
 
 	// segurem se que vao haver manhosidades a ocorrer
 	Material material;
-	material.diffuse = texelFetch(u_MaterialTBO, 0 + (int(trunc(fs_in.g_MaterialID) * INDICES_IN_MATERIAL))).xyz;
-	material.ambient.x = texelFetch(u_MaterialTBO, 0 + (int(trunc(fs_in.g_MaterialID) * INDICES_IN_MATERIAL))).w;
-	material.ambient.yz = texelFetch(u_MaterialTBO, 1 + (int(trunc(fs_in.g_MaterialID) * INDICES_IN_MATERIAL))).xy;
-	material.specular.xy = texelFetch(u_MaterialTBO, 1 + (int(trunc(fs_in.g_MaterialID) * INDICES_IN_MATERIAL))).zw;
-	material.specular.z = texelFetch(u_MaterialTBO, 2 + (int(trunc(fs_in.g_MaterialID) * INDICES_IN_MATERIAL))).x;
-	material.emissive.xyz = texelFetch(u_MaterialTBO, 2 + (int(trunc(fs_in.g_MaterialID) * INDICES_IN_MATERIAL))).yzw;
-	material.shininess = texelFetch(u_MaterialTBO, 3 + (int(trunc(fs_in.g_MaterialID) * INDICES_IN_MATERIAL))).x;
-	// material.texture_id = uintBitsToFloat(floatBitsToInt( texelFetch(u_MaterialTBO, 3 + (int(trunc(fs_in.g_MaterialID) * INDICES_IN_MATERIAL))).y ));
-	material.texture_id = trunc( texelFetch(u_MaterialTBO, 3 + (int(trunc(fs_in.g_MaterialID) * INDICES_IN_MATERIAL))).y );
+	material.diffuse = texelFetch(u_MaterialTBO, 0 + (int(trunc(fs_in.g_MaterialID) * VEC4_IN_MATERIAL))).xyz;
+	material.ambient.x = texelFetch(u_MaterialTBO, 0 + (int(trunc(fs_in.g_MaterialID) * VEC4_IN_MATERIAL))).w;
+	material.ambient.yz = texelFetch(u_MaterialTBO, 1 + (int(trunc(fs_in.g_MaterialID) * VEC4_IN_MATERIAL))).xy;
+	material.specular.xy = texelFetch(u_MaterialTBO, 1 + (int(trunc(fs_in.g_MaterialID) * VEC4_IN_MATERIAL))).zw;
+	material.specular.z = texelFetch(u_MaterialTBO, 2 + (int(trunc(fs_in.g_MaterialID) * VEC4_IN_MATERIAL))).x;
+	material.emissive.xyz = texelFetch(u_MaterialTBO, 2 + (int(trunc(fs_in.g_MaterialID) * VEC4_IN_MATERIAL))).yzw;
+	material.shininess = texelFetch(u_MaterialTBO, 3 + (int(trunc(fs_in.g_MaterialID) * VEC4_IN_MATERIAL))).x;
+	// material.texture_id = uintBitsToFloat(floatBitsToInt( texelFetch(u_MaterialTBO, 3 + (int(trunc(fs_in.g_MaterialID) * VEC4_IN_MATERIAL))).y ));
+	material.texture_id = trunc( texelFetch(u_MaterialTBO, 3 + (int(trunc(fs_in.g_MaterialID) * VEC4_IN_MATERIAL))).y );
 	
 
 
