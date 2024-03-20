@@ -5,6 +5,7 @@
 #include "GLErrors.h"
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 struct Shader { // this is actually a program but whatever
 public:
@@ -25,7 +26,11 @@ public:
 
 	// helper functions
 	void loadShader(const char path[], GLenum shaderType, GLuint _program) const; // loads shader, not the program (eg fragment shader)
-	void checkProgram() const;
+	
+	// this should be called optionaly before rendering, if you have any issues. if the program is not ready to go it might fail
+	// for example (since I am using 4.1 and cant specify the layout binding point) if I have 2 samplers and dont initialize them to texture slots with a texture it will throw an error (idfk)
+	void validate() const;
+
 	GLint getUniformLocation(const std::string &uniformName);
 	// if needed make a getter for uniformCache
 };

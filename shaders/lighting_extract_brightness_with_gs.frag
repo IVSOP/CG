@@ -4,13 +4,15 @@ layout(location = 0) out vec4 color;
 layout(location = 1) out vec4 brightColor;
 
 struct Material { // !!!! IMPORTANT everything vec4 so that cpu matches gpu layout, opengl being stupid and me being lazy
-	vec4 diffuse;
-	vec4 ambient;
-	vec4 specular;
-	vec4 emissive;
-	vec4 shininess; // float
-	uvec4 texture_id; // uint
+	vec3 diffuse;
+	vec3 ambient;
+	vec3 specular;
+	vec3 emissive;
+	float shininess;
+	float texture_id;
 };
+// basicaly how many float32s would fit in a material (3+3+3+3+1+1)
+#define INDICES_IN_MATERIAL 14
 
 struct DirLight {
     vec3 direction;
@@ -50,10 +52,10 @@ struct SpotLight {
 #define MAX_LIGHTS 8
 #define MAX_MATERIALS 8
 
-// lookup buffer for materials
-layout(std140) uniform u_MaterialBuffer { // binding 0
-    Material materials[8];
-};
+// // lookup buffer for materials
+// layout(std140) uniform u_MaterialBuffer { // binding 0
+//     Material materials[8];
+// };
 
 // TEMPORARY
 uniform PointLight u_PointLight;
@@ -67,6 +69,7 @@ in GS_OUT {
 } fs_in;
 
 uniform sampler2DArray u_TextureArraySlot;
+uniform samplerBuffer u_MaterialTBO;
 uniform mat4 u_View; // view from the MVP
 
 uniform float u_BloomThreshold = 1.0;
@@ -77,10 +80,26 @@ vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir, Mat
 
 void main() {
 	// get material from material array
-	Material material = materials[int(trunc(fs_in.g_MaterialID))]; // careful with this cast, need to change it out of a float
+	// Material material = materials[int(trunc(fs_in.g_MaterialID))]; // careful with this cast, need to change it out of a float
+
+
+	// segurem se que vao haver manhosidades a ocorrer
+	Material material;
+	material.diffuse = texelFetch(u_MaterialTBO, 0 + (int(trunc(fs_in.g_MaterialID) * INDICES_IN_MATERIAL))).xyz;
+	material.ambient.x = texelFetch(u_MaterialTBO, 0 + (int(trunc(fs_in.g_MaterialID) * INDICES_IN_MATERIAL))).w;
+	material.ambient.yz = texelFetch(u_MaterialTBO, 1 + (int(trunc(fs_in.g_MaterialID) * INDICES_IN_MATERIAL))).xy;
+	material.specular.xy = texelFetch(u_MaterialTBO, 1 + (int(trunc(fs_in.g_MaterialID) * INDICES_IN_MATERIAL))).zw;
+	material.specular.z = texelFetch(u_MaterialTBO, 2 + (int(trunc(fs_in.g_MaterialID) * INDICES_IN_MATERIAL))).x;
+	material.emissive.xyz = texelFetch(u_MaterialTBO, 2 + (int(trunc(fs_in.g_MaterialID) * INDICES_IN_MATERIAL))).yzw;
+	material.shininess = texelFetch(u_MaterialTBO, 3 + (int(trunc(fs_in.g_MaterialID) * INDICES_IN_MATERIAL))).x;
+	// material.texture_id = uintBitsToFloat(floatBitsToInt( texelFetch(u_MaterialTBO, 3 + (int(trunc(fs_in.g_MaterialID) * INDICES_IN_MATERIAL))).y ));
+	material.texture_id = trunc( texelFetch(u_MaterialTBO, 3 + (int(trunc(fs_in.g_MaterialID) * INDICES_IN_MATERIAL))).y );
+	
+
+
 
 	// get texture from texture array
-	vec4 res_color = texture(u_TextureArraySlot, vec3(fs_in.g_TexCoord.xy, material.texture_id.x));
+	vec4 res_color = texture(u_TextureArraySlot, vec3(fs_in.g_TexCoord.xy, material.texture_id));
 
 	// normal and viewDir
 	// !!!!!!!!!!!!!!!!!!!!!!!!!! IMPORTANTE
@@ -120,7 +139,7 @@ vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir, Material material)
 
     // specular
     vec3 reflectDir = reflect(-lightDir, normal);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess.x);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
     vec3 specular = light.specular * (spec * material.specular.xyz);
 
     return (ambient + diffuse + specular);
@@ -135,7 +154,7 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, M
     float diff = max(dot(normal, lightDir), 0.0);
     // specular shading
     vec3 reflectDir = reflect(-lightDir, normal);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess.x);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
     // attenuation
     float distance    = length(viewSpace_position - fragPos);
     float attenuation = 1.0 / (light.constant + light.linear * distance + 
@@ -162,7 +181,7 @@ vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir, Mat
     float diff = max(dot(normal, lightDir), 0.0);
     // specular shading
     vec3 reflectDir = reflect(-lightDir, normal);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess.x);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
     // attenuation
     float distance = length(viewSpace_position - fragPos);
     float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));    

@@ -5,20 +5,16 @@ Shader::Shader(const char vertFile[], const char fragFile[]) {
 	loadShader(vertFile, GL_VERTEX_SHADER, programID);
 	loadShader(fragFile, GL_FRAGMENT_SHADER, programID);
 	GLCall(glLinkProgram(programID));
-	checkProgram();
+	checkProgramLinking(programID);
 }
 
 Shader::Shader(const char vertFile[], const char fragFile[], const char geoFile[]) {
-	puts("\n\n\n\nloading");
-	puts(vertFile);
 	GLCall(this->programID = glCreateProgram());
 	loadShader(vertFile, GL_VERTEX_SHADER, programID);
 	loadShader(fragFile, GL_FRAGMENT_SHADER, programID);
 	loadShader(geoFile, GL_GEOMETRY_SHADER, programID);
 	GLCall(glLinkProgram(programID));
-	checkProgram();
-	puts(vertFile);
-	puts("finished\n\n\n\n");
+	checkProgramLinking(programID);
 }
 
 Shader::~Shader() {
@@ -29,8 +25,7 @@ void Shader::use() const {
 	GLCall(glUseProgram(programID));
 }
 
-void Shader::checkProgram() const {
-	checkProgramLinking(programID);
+void Shader::validate() const {
 	validateProgram(programID);
 }
 

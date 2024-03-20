@@ -9,12 +9,13 @@
 
 // TODO temporary
 struct Material {
-	glm::vec4 diffuse;
-	glm::vec4 ambient;
-	glm::vec4 specular;
-	glm::vec4 emissive;
-	glm::vec4 shininess;
-	glm::uvec4 texture_id;
+	glm::vec3 diffuse;
+	glm::vec3 ambient;
+	glm::vec3 specular;
+	glm::vec3 emissive;
+	GLfloat shininess;
+	// GLuint texture_id;
+	GLfloat texture_id; // to be used as an int
 };
 
 struct PointLight {
@@ -169,20 +170,10 @@ Renderer::Renderer(GLsizei viewport_width, GLsizei viewport_height)
 	lightingShader.setMat4("u_View", glm::mat4(1.0f)); // load identity just for safety
 	lightingShader.setMat4("u_Projection", glm::mat4(1.0f)); // load identity just for safety
 
-	// this is a UBO, not like other uniforms
-	// TODO do this in shader class somehow, doing it here since it is never used after
-	GLCall(this->u_MaterialBufferBlockIndex = glGetUniformBlockIndex(lightingShader.programID, "u_MaterialBuffer")); // missing error checking, could be -1
-	// bind to 0
-	glUniformBlockBinding(lightingShader.programID, u_MaterialBufferBlockIndex, 0);
-	// generate the UBO
-	GLCall(glGenBuffers(1, &UBO_materials));
-	
-	GLCall(glBindBuffer(GL_UNIFORM_BUFFER, UBO_materials));
-	GLCall(glBufferData(GL_UNIFORM_BUFFER, MAX_MATERIALS * sizeof(Material), NULL, GL_DYNAMIC_DRAW)); // pre alocate data
-	GLCall(glBindBuffer(GL_UNIFORM_BUFFER, 0));
-	
-	GLCall(glBindBufferRange(GL_UNIFORM_BUFFER, 0, UBO_materials, 0, MAX_MATERIALS * sizeof(Material)));
 
+	GLCall(glGenBuffers(1, &materialBuffer));
+	GLCall(glBindBuffer(GL_TEXTURE_BUFFER, materialBuffer));
+	GLCall(glGenTextures(1, &materialTBO));
 
 
 	// for axis shader
@@ -222,6 +213,7 @@ Renderer::Renderer(GLsizei viewport_width, GLsizei viewport_height)
 
 Renderer::~Renderer() {
 	GLCall(glDeleteBuffers(1, &vertexBuffer));
+	GLCall(glDeleteBuffers(1, &materialBuffer));
 	GLCall(glDeleteBuffers(1, &vertexBuffer_axis));
 	GLCall(glDeleteBuffers(1, &vertexBuffer_viewport));
 
@@ -231,12 +223,11 @@ Renderer::~Renderer() {
 
 	GLCall(glBindTexture(GL_TEXTURE_2D, 0));
 	GLCall(glDeleteTextures(1, &lightingTexture));
+	GLCall(glDeleteTextures(1, &materialBuffer));
 	GLCall(glDeleteTextures(2, pingpongTextures));
 
 	GLCall(glDeleteFramebuffers(1, &lightingFBO));
 	GLCall(glDeleteFramebuffers(2, pingpongFBO));
-
-	GLCall(glDeleteBuffers(1, &UBO_materials));
 }
 
 void Renderer::loadShader(const char path[], GLenum shaderType, GLuint _program) const {
@@ -312,6 +303,7 @@ void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Cam
 		lightingShader.use();
 
 		// load MVP, texture array and view
+		this->textureArray.get()->setTextureArrayToSlot(TEX_ARRAY_SLOT);
 		lightingShader.setInt("u_TextureArraySlot", TEX_ARRAY_SLOT);
 		lightingShader.setMat4("u_Model", model);
 		lightingShader.setMat4("u_View", view);
@@ -319,22 +311,23 @@ void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Cam
 
 		lightingShader.setFloat("u_BloomThreshold", bloomThreshold);
 
-		// load texture array for safety
-		this->textureArray.get()->setTextureArrayToSlot(TEX_ARRAY_SLOT);
-
 		// load UBO
 		Material materials[8];
 
-		materials[0].diffuse = glm::vec4(1.0f, 1.0f, 1.0f, 0.0f);
-		materials[0].ambient = glm::vec4(1.0f, 1.0f, 1.0f, 0.0f);
-		materials[0].specular = glm::vec4(1.0f, 1.0f, 1.0f, 0.0f);
-		// materials[0].emissive = glm::vec4(2.99f, 0.72f, 0.0745f, 0.0f);
+		materials[0].diffuse = glm::vec3(1.0f, 1.0f, 1.0f);
+		materials[0].ambient = glm::vec3(1.0f, 1.0f, 1.0f);
+		materials[0].specular = glm::vec3(1.0f, 1.0f, 1.0f);
+		// materials[0].emissive = glm::vec3(2.99f, 0.72f, 0.0745f);
 		materials[0].emissive = glm::vec4(0.1f);
-		materials[0].shininess = glm::vec4(32);
-		materials[0].texture_id = glm::vec4(1);
-		GLCall(glBindBuffer(GL_UNIFORM_BUFFER, UBO_materials));
-		GLCall(glBufferSubData(GL_UNIFORM_BUFFER, 0, MAX_MATERIALS * sizeof(Material), materials));
-		GLCall(glBindBuffer(GL_UNIFORM_BUFFER, 0));  // unbind
+		materials[0].shininess = 32.0f;
+		materials[0].texture_id = 1;
+
+		GLCall(glBindBuffer(GL_TEXTURE_BUFFER, materialBuffer));
+		GLCall(glBufferData(GL_TEXTURE_BUFFER, MAX_MATERIALS * sizeof(Material), materials, GL_STATIC_DRAW));
+		GLCall(glActiveTexture(GL_TEXTURE0 + MATERIAL_TEXTURE_BUFFER_SLOT));
+		GLCall(glBindTexture(GL_TEXTURE_BUFFER, materialTBO));
+		GLCall(glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, materialBuffer)); // bind the buffer to the texture
+		lightingShader.setInt("u_MaterialTBO", MATERIAL_TEXTURE_BUFFER_SLOT);
 
 		// load test light
 		lightingShader.setFloat("u_PointLight.constant", 1.0f);
@@ -347,7 +340,6 @@ void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Cam
 		// lightingShader.setVec3("u_PointLight.ambient", 0.0f, 0.0f, 0.0f);
 		// lightingShader.setVec3("u_PointLight.diffuse", 0.0f, 0.0f, 0.0f);
 		// lightingShader.setVec3("u_PointLight.specular", 0.0f, 0.0f, 0.0f);
-
 
 		// specify 2 attachments
 		constexpr GLuint attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
@@ -362,6 +354,7 @@ void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Cam
 			}
 		}
 
+		// lightingShader.validate();
 		GLCall(glDrawArrays(GL_TRIANGLES, 0, verts.size()));
 	
 		if (showNormals) {
@@ -433,6 +426,7 @@ void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Cam
 		hdrBbloomMergeShader.setFloat("u_Gamma", gamma);
 		hdrBbloomMergeShader.setFloat("u_Exposure", exposure);
 
+		// hdrBbloomMergeShader.validate();
 		GLCall(glDrawArrays(GL_TRIANGLES, 0, 6));
 
 
