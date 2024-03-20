@@ -5,26 +5,8 @@
 #include <cstdio>
 
 #include "Vertex.h"
+#include "Material.h"
 #include "Camera.h"
-
-struct Material {
-	glm::vec3 diffuse;
-	glm::vec3 ambient;
-	glm::vec3 specular;
-	glm::vec3 emissive;
-	GLfloat shininess;
-	// GLuint texture_id;
-	GLfloat texture_id;
-
-	// problem: acessing this data in the shader is done through a texture buffer, which can only(???) read vec4s
-	// since there are 14 floats, the last vec4 reading ends in .y, if it is material [0]. but what if it is material [1]??
-	// because I cant do wizardry with glsl, it is easier to pad this so that all accesses are consistent
-	// this means adding 2 more floats
-	// since this is extremely cursed and uncomfortable I will add an assertion below to make sure this manual padding has worked, so I can sleep at night
-	GLfloat padding_1;
-	GLfloat padding_2;
-};
-static_assert(sizeof(Material) == 4 * sizeof(glm::vec4), "Error: Material has unexpected size");
 
 struct PointLight {
     glm::vec3 position;
@@ -317,14 +299,15 @@ void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Cam
 
 		// load UBO
 		Material materials[8];
-
-		materials[0].diffuse = glm::vec3(1.0f, 1.0f, 1.0f);
-		materials[0].ambient = glm::vec3(1.0f, 1.0f, 1.0f);
-		materials[0].specular = glm::vec3(1.0f, 1.0f, 1.0f);
-		// materials[0].emissive = glm::vec3(2.99f, 0.72f, 0.0745f);
-		materials[0].emissive = glm::vec4(0.1f);
-		materials[0].shininess = 32.0f;
-		materials[0].texture_id = 1;
+		materials[0] = {
+			glm::vec3(1.0f, 1.0f, 1.0f),
+			glm::vec3(1.0f, 1.0f, 1.0f),
+			glm::vec3(1.0f, 1.0f, 1.0f),
+			// glm::vec3(2.99f, 0.72f, 0.0745f),
+			glm::vec3(0.1f),
+			32.0f,
+			1
+		};
 
 		GLCall(glBindBuffer(GL_TEXTURE_BUFFER, materialBuffer));
 		GLCall(glBufferData(GL_TEXTURE_BUFFER, MAX_MATERIALS * sizeof(Material), materials, GL_STATIC_DRAW));

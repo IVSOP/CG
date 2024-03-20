@@ -12,6 +12,7 @@ struct Vertex {
 	glm::vec3 normal = glm::vec3(1.0f, 1.0f, 1.0f);
 	glm::vec2 tex_coord = glm::vec2(0.0f, 0.0f);
 	GLfloat material_id = 0.0f; // isto e uma float por simplicidade, vao ser poucos vertices e vao, senao podia ser uint8 ou 16
+	GLfloat transf_id = 0.0f; // same
 
     friend std::ostream &operator<<(std::ostream &os, const Vertex &p) {
         os << "Vertex: { x: " << p.coords.x << ", y: " << p.coords.y << ", z: " << p.coords.z << " }";

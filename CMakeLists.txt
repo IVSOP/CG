@@ -78,6 +78,7 @@ add_executable(Engine
 		src/TinyXML2/tinyxml2.cpp
 		src/common/Vertex.cpp
 		src/common/Consts.cpp
+		src/common/Material.cpp
 		src/windows/windows_unistd.cpp
 
 		external/imgui/imgui.cpp
