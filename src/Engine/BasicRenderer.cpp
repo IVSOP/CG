@@ -64,7 +64,7 @@ void BasicRenderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection
 	for (Vertex& vert : verts) {
 		basic_verts.emplace_back(
 			vert.coords,
-			glm::vec4(1.0f),
+			glm::vec4(1.0f, 1.0f, 1.0f, 1.0f),
 			vert.tex_coord,
 			5.0f
 		);
@@ -85,6 +85,8 @@ void BasicRenderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection
 
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	// GLCall(glPolygonMode(GL_FRONT_AND_BACK,GL_LINE));
+
 
 	GLCall(glBindVertexArray(this->VAO));
 	GLCall(glBindBuffer(GL_ARRAY_BUFFER, this->vertexBuffer));
