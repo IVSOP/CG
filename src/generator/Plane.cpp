@@ -63,10 +63,6 @@ std::vector<Vertex> Plane::createPlanePoints_TextWholeObj(const float length, co
         }
     }
 
-    for(Vertex v: ans){
-        std::cout << v << std::endl;
-    }
-
     for(int i = 0; i < divisions * (divisions +1) ; i += (divisions + 1)) {
         for (int j = i; j < i + divisions; j += 1) {
             int right = j + divisions + 1;
@@ -114,7 +110,7 @@ std::vector<Vertex> Plane::createPlanePointsNoTranslate(const float length, cons
 
     for(int i = 0; i <= divisions; i++) { // lines (x)
         for(int j = 0; j <= divisions; j++) { // columns (z)
-            ans.emplace_back(static_cast<float>(i) * step, 0.0f, static_cast<float>(j) * step);
+            ans.emplace_back(static_cast<float>(i) * step, 0.0f, static_cast<float>(j) * step, 0.0f, 1.0f, 0.0f, 1.0f - (step * static_cast<float>(i) / length), 1.0f - (step * static_cast<float>(j) / length));
         }
     }
 
