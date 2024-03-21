@@ -24,6 +24,10 @@
 #pragma comment(lib, "legacy_stdio_definitions")
 #endif
 
+
+#undef BASIC_RENDER
+
+
 ///////////////////////////////////////////////////////// main objects. temporario, depois vai sair daqui
 InputHandler inputHandler;
 XmlParser xmlParser;
@@ -158,7 +162,7 @@ auto physLoop = [](GLFWwindow *window) {
 		// points[i].tex_id = 1.0f;
 	// }
 	
-    while (!glfwWindowShouldClose(window)) {
+    while (true) {
         lastFrameTime = glfwGetTime();
         // perform calculations............................
 
@@ -301,8 +305,13 @@ int main(int argc, char **argv) {
 	GLCall(glGenVertexArrays(1, &tempVAO));
 	GLCall(glBindVertexArray(tempVAO));
 #endif
-	// Renderer renderer(static_cast<GLsizei>(windowWidth), static_cast<GLsizei>(windowHeight));
-	BasicRenderer renderer = BasicRenderer();
+
+	#ifdef BASIC_RENDER
+		BasicRenderer renderer = BasicRenderer();
+	#else
+		Renderer renderer(static_cast<GLsizei>(windowWidth), static_cast<GLsizei>(windowHeight));
+	#endif
+
 #ifdef __APPLE__
 	GLCall(glDeleteVertexArrays(1, &tempVAO));
 #endif
@@ -314,10 +323,14 @@ int main(int argc, char **argv) {
     points = xmlParser.getPoints();
     draw_points = points; // early copy to allow renderer to display something
 
-    std::thread thread_object(physLoop, window);
+    std::thread physThread(physLoop, window);
+	physThread.detach();
 
-    // renderLoop(window, camera, renderer);
-	basicRenderLoop(window, camera, renderer);
+	#ifdef BASIC_RENDER
+		basicRenderLoop(window, camera, renderer);
+	#else
+    	renderLoop(window, camera, renderer);
+	#endif
 
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
