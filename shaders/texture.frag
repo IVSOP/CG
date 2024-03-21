@@ -3,6 +3,7 @@
 layout(location = 0) out vec4 color;
 
 in vec2 v_TexCoord;
+in vec4 v_Color;
 flat in float v_TexLayer;
 uniform sampler2DArray u_TextureArraySlot;
 
@@ -12,5 +13,5 @@ void main() {
 
 
 	// color = vec4(1.0);
-	color = texture_color;
+	color = v_Color * texture_color;
 }

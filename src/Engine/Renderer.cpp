@@ -9,6 +9,14 @@
 #include "Camera.h"
 #include "Consts.h"
 
+#define TEX_ARRAY_SLOT 0
+#define BRIGHT_TEXTURE_SLOT 1 // slot to go into blur shader and final bloom shader
+#define SCENE_TEXTURE_SLOT 2 // slot to go into final bloom shader
+#define MATERIAL_TEXTURE_BUFFER_SLOT 3
+
+#define MAX_MATERIALS 8
+#define MAX_LIGHTS 8
+
 struct PointLight {
     glm::vec3 position;
 
@@ -220,18 +228,6 @@ Renderer::~Renderer() {
 
 	GLCall(glDeleteFramebuffers(1, &lightingFBO));
 	GLCall(glDeleteFramebuffers(2, pingpongFBO));
-}
-
-void Renderer::loadShader(const char path[], GLenum shaderType, GLuint _program) const {
-	const GLchar *buff = readFromFile(path);
-	GLCall(GLuint shader = glCreateShader(shaderType));
-	GLCall(glShaderSource(shader, 1, &buff, NULL)); // ??? why &buff? does it set it to null on error??
-	GLCall(glCompileShader(shader));
-	GLCall(checkErrorInShader(shader));
-	GLCall(glAttachShader(_program, shader));
-	delete[] buff;
-
-	GLCall(glDeleteShader(shader));
 }
 
 void Renderer::checkProgram(GLuint program) {

@@ -10,14 +10,6 @@
 
 #include <vector>
 
-#define TEX_ARRAY_SLOT 0
-#define BRIGHT_TEXTURE_SLOT 1 // slot to go into blur shader and final bloom shader
-#define SCENE_TEXTURE_SLOT 2 // slot to go into final bloom shader
-#define MATERIAL_TEXTURE_BUFFER_SLOT 3
-
-#define MAX_MATERIALS 8
-#define MAX_LIGHTS 8
-
 class Renderer {
 public:
 
@@ -59,6 +51,7 @@ public:
 	bool showNormals = false;
 	bool explode = false;
 
+	std::unique_ptr<TextureArray> textureArray = nullptr; // pointer since it starts as null and gets initialized later. unique_ptr so it always gets deleted
 
 
 
@@ -67,14 +60,11 @@ public:
 	void drawAxis(const glm::mat4 &model, const glm::mat4 &view, const glm::mat4 &projection);
 	void drawNormals(const glm::mat4 &model, const glm::mat4 &view, const glm::mat4 &projection, const std::vector<Vertex> &vertices); // vector is copied over on purpose
 
-	std::unique_ptr<TextureArray> textureArray = nullptr; // pointer since it starts as null and gets initialized later. unique_ptr so it always gets deleted
-	void loadShader(const char path[], GLenum shaderType, GLuint program) const;
 	void loadTextures();
 	void checkProgram(GLuint program);
 	void resizeViewport(GLsizei viewport_width, GLsizei viewport_height);
 	void generate_FBO_texture(GLuint *textureID, GLenum attachmentID); // makes the texture, needs to be called whenever viewport is resized (for now)
 	void checkFrameBuffer();
 };
-
 
 #endif
