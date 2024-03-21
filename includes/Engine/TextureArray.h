@@ -5,8 +5,8 @@
 
 // these are for convenience outside this class and are never used here
 #define TEXTURE_LAYERS 64
-#define TEXTURE_WIDTH 16
-#define TEXTURE_HEIGHT 16
+#define TEXTURE_WIDTH 1024
+#define TEXTURE_HEIGHT 1024
 
 class TextureArray {
 	public:

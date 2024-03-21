@@ -250,6 +250,7 @@ void Renderer::loadTextures() {
 	tex->addTexture("textures/grass.png"); // 2
 	tex->addTexture("textures/oak_log.png"); // 3
 	tex->addTexture("textures/white.png"); // 4
+	tex->addTexture("test_files_phase_4/earth.jpg"); // 5
 
 	tex->setTextureArrayToSlot(TEX_ARRAY_SLOT);
 }
@@ -308,7 +309,7 @@ void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Cam
 			// glm::vec3(2.99f, 0.72f, 0.0745f),
 			glm::vec3(0.1f),
 			32.0f,
-			2
+			5
 		};
 
 		GLCall(glBindBuffer(GL_TEXTURE_BUFFER, materialBuffer));
