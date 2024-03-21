@@ -21,7 +21,7 @@ std::vector<Vertex> Box::createBoxPoints(float length, int divisions) {
     for (auto point: planeFacingDown) {
         currPoint = point.getCoords();
         currPoint -= shift;
-        res.emplace_back(currPoint.x, currPoint.y, currPoint.z);
+        res.emplace_back(currPoint.x, currPoint.y, currPoint.z,0.0f,-1.0f,0.0f);
     }
 
     //Left face
@@ -31,14 +31,14 @@ std::vector<Vertex> Box::createBoxPoints(float length, int divisions) {
         currPoint = rotZMatrix * point.getCoords();
         currPoint -= shift;
 
-        res.emplace_back(currPoint.x, currPoint.y, currPoint.z);
+        res.emplace_back(currPoint.x, currPoint.y, currPoint.z,-1.0f,0.0f,0.0f);
     }
 
     //Right face
     for (auto point: planeFacingDown) {
         currPoint = rotZMatrix * point.getCoords();
         currPoint -= shift;
-        res.emplace_back(currPoint.x + float(length), currPoint.y, currPoint.z);
+        res.emplace_back(currPoint.x + float(length), currPoint.y, currPoint.z,1.0f,0.0f,0.0f);
     }
 
     //Back face
@@ -47,22 +47,26 @@ std::vector<Vertex> Box::createBoxPoints(float length, int divisions) {
     for (auto point: planeFacingUp) {
         currPoint = rotXMatrix * point.getCoords();
         currPoint -= shift;
-        res.emplace_back(currPoint.x, currPoint.y, currPoint.z);
+        res.emplace_back(currPoint.x, currPoint.y, currPoint.z,0.0f,0.0f,-1.0f);
     }
 
     //Front face
     for (auto point: planeFacingDown) {
         currPoint = rotXMatrix * point.getCoords();
         currPoint -= shift;
-        res.emplace_back(currPoint.x, currPoint.y, currPoint.z + float(length));
+        res.emplace_back(currPoint.x, currPoint.y, currPoint.z + float(length), 0.0f,0.0f,1.0f);
     }
 
     //Up face
     for (auto point: planeFacingUp) {
         currPoint = point.getCoords();
         currPoint -= shift;
-        res.emplace_back(currPoint.x, currPoint.y + float(length), currPoint.z);
+        res.emplace_back(currPoint.x, currPoint.y + float(length), currPoint.z,0.0f,1.0f,0.0f);
     }
 
+    for(auto vertex: res) {
+        vertex.tex_coord[0] = asin(vertex.getX()) / M_PI + 0.5f;
+        vertex.tex_coord[1] = asin(vertex.getY()) / M_PI + 0.5f;
+    }
     return res;
 }
