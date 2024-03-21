@@ -7,6 +7,7 @@
 #include "Vertex.h"
 #include "Material.h"
 #include "Camera.h"
+#include "Consts.h"
 
 struct PointLight {
     glm::vec3 position;
@@ -163,6 +164,8 @@ Renderer::Renderer(GLsizei viewport_width, GLsizei viewport_height)
 	GLCall(glGenBuffers(1, &materialBuffer));
 	GLCall(glBindBuffer(GL_TEXTURE_BUFFER, materialBuffer));
 	GLCall(glGenTextures(1, &materialTBO));
+	GLCall(glBindTexture(GL_TEXTURE_BUFFER, materialTBO));
+	GLCall(glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, materialBuffer)); // bind the buffer to the texture
 
 
 	// for axis shader
@@ -313,7 +316,7 @@ void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Cam
 		GLCall(glBufferData(GL_TEXTURE_BUFFER, MAX_MATERIALS * sizeof(Material), materials, GL_STATIC_DRAW));
 		GLCall(glActiveTexture(GL_TEXTURE0 + MATERIAL_TEXTURE_BUFFER_SLOT));
 		GLCall(glBindTexture(GL_TEXTURE_BUFFER, materialTBO));
-		GLCall(glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, materialBuffer)); // bind the buffer to the texture
+		// GLCall(glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, materialBuffer)); // bind the buffer to the texture (has been done while setting up)
 		lightingShader.setInt("u_MaterialTBO", MATERIAL_TEXTURE_BUFFER_SLOT);
 
 		// load test light
