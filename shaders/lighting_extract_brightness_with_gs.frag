@@ -65,7 +65,7 @@ uniform PointLight u_PointLight;
 // output from geometry shader and not vertex shader
 in GS_OUT {
 	vec2 g_TexCoord;
-	flat float g_MaterialID; // flat since it is always the same between all vertices
+	flat uint g_MaterialID; // flat since it is always the same between all vertices
 	vec3 g_Normal;
 	vec3 g_FragPos;
 } fs_in;
@@ -82,7 +82,7 @@ vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir, Mat
 
 void main() {
 	// get material from material array
-	// Material material = materials[int(trunc(fs_in.g_MaterialID))]; // careful with this cast, need to change it out of a float
+	// Material material = materials[fs_in.g_MaterialID]; // careful with this cast, need to change it out of a float
 
 
 	// segurem se que vao haver manhosidades a ocorrer

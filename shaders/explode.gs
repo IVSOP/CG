@@ -9,14 +9,14 @@ layout (triangle_strip, max_vertices = 3) out;
 // info received from vertex shader. it is just passed through by the out below
 in VS_OUT {
 	vec2 v_TexCoord;
-	flat float v_MaterialID; // flat since it is always the same between all vertices
+	flat uint v_MaterialID; // flat since it is always the same between all vertices
 	vec3 v_Normal;
 	// vec3 v_FragPos;
 } gs_in[];
 
 out GS_OUT {
 	vec2 g_TexCoord;
-	flat float g_MaterialID; // flat since it is always the same between all vertices
+	flat uint g_MaterialID; // flat since it is always the same between all vertices
 	vec3 g_Normal;
 	vec3 g_FragPos;
 } gs_out;

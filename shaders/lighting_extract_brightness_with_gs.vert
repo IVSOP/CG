@@ -4,11 +4,11 @@
 layout (location = 0) in vec4 aPos;
 layout (location = 1) in vec3 aNormal;
 layout (location = 2) in vec2 aTexCoord;
-layout (location = 3) in float aMaterialID;
+layout (location = 3) in uint aMaterialID;
 
 out VS_OUT {
 	vec2 v_TexCoord;
-	flat float v_MaterialID; // flat since it is always the same between all vertices
+	flat uint v_MaterialID; // flat since it is always the same between all vertices
 	vec3 v_Normal;
 	// vec3 v_FragPos;
 } vs_out;

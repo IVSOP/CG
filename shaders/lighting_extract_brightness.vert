@@ -4,7 +4,7 @@
 layout (location = 0) in vec4 aPos;
 layout (location = 1) in vec3 aNormal;
 layout (location = 2) in vec2 aTexCoord;
-layout (location = 3) in float aMaterialID;
+layout (location = 3) in uint aMaterialID;
 
 out vec2 v_TexCoord;
 flat out float v_MaterialID; // flat since it is always the same between all vertices
