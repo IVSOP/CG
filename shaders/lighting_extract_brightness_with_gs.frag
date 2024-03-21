@@ -96,7 +96,7 @@ void main() {
 	material.shininess = texelFetch(u_MaterialTBO, 3 + (int(trunc(fs_in.g_MaterialID) * VEC4_IN_MATERIAL))).x;
 	// material.texture_id = uintBitsToFloat(floatBitsToInt( texelFetch(u_MaterialTBO, 3 + (int(trunc(fs_in.g_MaterialID) * VEC4_IN_MATERIAL))).y ));
 	material.texture_id = trunc( texelFetch(u_MaterialTBO, 3 + (int(trunc(fs_in.g_MaterialID) * VEC4_IN_MATERIAL))).y );
-	
+
 
 
 

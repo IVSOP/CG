@@ -55,6 +55,7 @@ public:
 	
 
 	GLfloat gamma = 2.2f, exposure = 1.0f, bloomThreshold = 1.0f, texOffsetCoeff = 1.0f, explodeCoeff = 0.0f;
+	bool showAxis = false;
 	bool showNormals = false;
 	bool explode = false;
 
