@@ -108,7 +108,7 @@ Renderer::Renderer(GLsizei viewport_width, GLsizei viewport_height)
 
 		GLuint vertex_matid_layout = 3;
 		GLCall(glEnableVertexAttribArray(vertex_matid_layout));					// size appart				// offset
-		GLCall(glVertexAttribPointer(vertex_matid_layout, 1, GL_UNSIGNED_INT, GL_FALSE, sizeof(Vertex), (const void *)offsetof(Vertex, material_id)));
+		GLCall(glVertexAttribPointer(vertex_matid_layout, 1, GL_UNSIGNED_INT, GL_FALSE, sizeof(Vertex), (const void *)offsetof(Vertex, object_id)));
 		// GLCall(glVertexAttribDivisor(vertex_color_layout, 0)); // values are per triangle, but I am not using instancing
 	}
 

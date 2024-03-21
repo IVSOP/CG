@@ -7,20 +7,26 @@
 #include <GL/glew.h> // GLfloat
 
 struct Vertex {
-	// meti aqui os valores default senao ficava uma confusao enorme nos construtores
+	// Meti aqui os valores default senao ficava uma confusao enorme nos construtores
 	glm::vec4 coords = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 	glm::vec3 normal = glm::vec3(1.0f, 1.0f, 1.0f);
 	glm::vec2 tex_coord = glm::vec2(0.0f, 0.0f);
-	GLuint material_id = 0;
-	GLfloat transf_id = 0.0f; // same
+	GLuint object_id = 0;
 
     friend std::ostream &operator<<(std::ostream &os, const Vertex &p) {
-        os << "Vertex: { x: " << p.coords.x << ", y: " << p.coords.y << ", z: " << p.coords.z << " }";
+        os << "Vertex: { x: " << p.coords.x << ", y: " << p.coords.y << ", z: " << p.coords.z << ", n_x: " << p.normal.x << ", n_y: " << p.normal.y << ", n_z: " << p.normal.z << ", t_x: " << p.tex_coord.x << ", t_y: " << p.tex_coord.y << " }";
         return os;
     }
 
-	Vertex(float x, float y, float z, float normal_x, float normal_y, float normal_z, float tex_x, float tex_y, GLuint _material_id)
-	: coords(x, y, z, 1.0f), normal(normal_x, normal_y, normal_z), tex_coord(tex_x, tex_y), material_id(_material_id) {}
+	Vertex(float x, float y, float z, float normal_x, float normal_y, float normal_z, float tex_x, float tex_y, GLuint _object_id)
+	: coords(x, y, z, 1.0f), normal(normal_x, normal_y, normal_z), tex_coord(tex_x, tex_y), object_id(_object_id) {}
+
+    Vertex(float x, float y, float z, float normal_x, float normal_y, float normal_z, float tex_x, float tex_y)
+            : coords(x, y, z, 1.0f), normal(normal_x, normal_y, normal_z), tex_coord(tex_x, tex_y) {}
+
+    Vertex(float x, float y, float z, float normal_x, float normal_y, float normal_z)
+            : coords(x, y, z, 1.0f), normal(normal_x, normal_y, normal_z) {}
+
     Vertex(float x, float y, float z) : coords(x, y, z, 1.0f) {}
     Vertex() = default;
 
