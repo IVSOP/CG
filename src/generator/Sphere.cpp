@@ -64,7 +64,12 @@ std::vector<Vertex> Sphere::createSpherePoints(const float radius, const int sli
         texV = 1.0f;
         ans2.emplace_back(0.0f,radius,0.0f,0.0f,1.0f,0.0f, texU, texV); // normal do ponto do topo é vetor vertical virado para cima
         ans2.emplace_back(ans[i]);
-        ans2.emplace_back(ans[(i+1) % slices]);
+        
+        Vertex lastVertex = ans[(i+1) % slices];
+        if (i + 1 == slices) {
+            lastVertex.tex_coord.x = 1.0f;
+        }
+        ans2.emplace_back(lastVertex);
     }
 
     // Criar triângulos
@@ -99,9 +104,14 @@ std::vector<Vertex> Sphere::createSpherePoints(const float radius, const int sli
     }
 
     int lastPos = ans.size() - 1;
-    for (int i=0; i < slices; i++) { // ligar o ponto no fundo da esfera aos pontos da última camada
+    for (int i = 0; i < slices; i++) { // ligar o ponto no fundo da esfera aos pontos da última camada
+
+        Vertex lastVertex = ans[lastPos - ((i+1) % slices)];
+        if (i + 1 == slices) {
+            lastVertex.tex_coord.x = 1.0f;
+        }
         ans2.emplace_back(ans[lastPos - i]);
-        ans2.emplace_back(ans[lastPos - ((i+1) % slices)]);
+        ans2.emplace_back(lastVertex);
 
         texU = static_cast<float>(i)/slices;
         texV = 0.0f; // última linha da textura
