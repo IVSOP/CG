@@ -268,6 +268,7 @@ void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Cam
 	ImGui::SliderFloat("bloomThreshold", &bloomThreshold, 0.0f, 5.0f, "bloomThreshold = %.3f");
 	// texOffsetCoeff = static_cast<GLfloat>(rand()) / static_cast<GLfloat>(RAND_MAX) * 10.0f;
 	ImGui::SliderFloat("texOffsetCoeff", &texOffsetCoeff, 0.0f, 10.0f, "texOffsetCoeff = %.3f");
+	ImGui::Checkbox("Show axis", &showAxis);
 	ImGui::Checkbox("Show normals", &showNormals);
 	ImGui::Checkbox("Explode", &explode);
 
@@ -279,8 +280,6 @@ void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Cam
 	GLCall(glBindFramebuffer(GL_FRAMEBUFFER, lightingFBO));
     	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		// GLCall(glPolygonMode(GL_FRONT_AND_BACK,GL_LINE));
-
-		// drawAxis(MVP);
 
 		GLCall(glBindVertexArray(this->VAO));
 		GLCall(glBindBuffer(GL_ARRAY_BUFFER, this->vertexBuffer));
@@ -350,6 +349,11 @@ void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Cam
 		if (showNormals) {
 			drawNormals(model, view, projection, verts);
 		}
+
+		if (showAxis) {
+			drawAxis(glm::mat4(1.0f), view, projection);
+		}
+
 
 	//////////////////////////////////////////////// 2. now, we run the ping pong gaussian blur several times
 	blurShader.use();
