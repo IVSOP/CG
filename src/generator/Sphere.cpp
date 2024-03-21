@@ -84,12 +84,16 @@ std::vector<Vertex> Sphere::createSpherePoints(const float radius, const int sli
     }
 
 
-	// LOOP TEMPORARIO PARA OS VETORES NORMAIS
-	// basicamente vetor = angulo do centro ate ao vertice. nao deve estar 100% correto mas esta quase
+	// LOOP VETORES NORMAIS
+	// normal = angulo do centro ate ao vertice. nao deve estar 100% correto mas esta quase
 	for (Vertex &vertex : ans2) {
 		// assumo que centro e (0.0f, 0.0f, 0.0f)
 		glm::vec3 normal = glm::vec3(vertex.coords) - glm::vec3(0.0f, 0.0f, 0.0f);
 		vertex.normal = glm::normalize(normal);
+
+        //LOOP TEXTURAS
+        vertex.tex_coord[0] = asin(vertex.normal.x)/ M_PI + 0.5;
+        vertex.tex_coord[1] = asin(vertex.normal.y) / M_PI + 0.5;
 	}
 
     return ans2;
