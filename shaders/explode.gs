@@ -50,7 +50,7 @@ void main() {
 	gs_out.g_MaterialID = gs_in[0].v_MaterialID;
 	// calculate these things into view space
 	gs_out.g_Normal = gs_in[0].v_Normal;
-	gs_out.g_FragPos = vec3(u_View * res);
+	gs_out.g_FragPos = vec3(u_View * u_Model * res);
 
 
 	EmitVertex();
@@ -62,7 +62,7 @@ void main() {
 	gs_out.g_MaterialID = gs_in[1].v_MaterialID;
 	// calculate these things into view space
 	gs_out.g_Normal = gs_in[1].v_Normal;
-	gs_out.g_FragPos = vec3(u_View * res);
+	gs_out.g_FragPos = vec3(u_View * u_Model * res);
     
 	EmitVertex();
 
@@ -74,7 +74,7 @@ void main() {
 	gs_out.g_MaterialID = gs_in[2].v_MaterialID;
 	// calculate these things into view space
 	gs_out.g_Normal = gs_in[2].v_Normal;
-	gs_out.g_FragPos = vec3(u_View * res);
+	gs_out.g_FragPos = vec3(u_View * u_Model * res);
     
 	EmitVertex();
     

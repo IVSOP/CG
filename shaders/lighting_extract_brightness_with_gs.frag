@@ -52,12 +52,6 @@ struct SpotLight {
 };
 
 #define MAX_LIGHTS 8
-#define MAX_MATERIALS 8
-
-// // lookup buffer for materials
-// layout(std140) uniform u_MaterialBuffer { // binding 0
-//     Material materials[8];
-// };
 
 // TEMPORARY
 uniform PointLight u_PointLight;
@@ -108,7 +102,7 @@ void main() {
 	// daqui para a frente vou tar sempre a fazer coisas manhosas com isto e a view matrix
 	// decidi usar view space em vez de world space, e por isso preciso da matriz em vez da posicao da camera. Vai dar tudo ao mesmo mas as contas sao mais manhosas, mas permite usar tecnicas igualmente manhosas no futuro
 	vec3 viewDir = normalize(-fs_in.g_FragPos); // the viewer is always at (0,0,0) in view-space, so viewDir = (0,0,0) - FragPosition <=> viewDir = -FragPosition
-	vec3 normal = normalize(fs_in.g_Normal); // do this here or in the vertex shader?
+	vec3 normal = normalize(fs_in.g_Normal);
 
 	// apply colors
 	res_color.rgb += CalcPointLight(u_PointLight, normal, fs_in.g_FragPos, viewDir, material);
@@ -150,15 +144,16 @@ vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir, Material material)
 vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, Material material)
 {
 	vec3 viewSpace_position = vec3(u_View * vec4(light.position, 1.0));
+	vec3 fragToLight = viewSpace_position - fragPos;
 
-    vec3 lightDir = normalize(viewSpace_position - fragPos);
+    vec3 lightDir = normalize(fragToLight);
     // diffuse shading
-    float diff = max(dot(normal, lightDir), 0.0);
+	float diff = max(dot(normal, lightDir), 0.0);
     // specular shading
     vec3 reflectDir = reflect(-lightDir, normal);
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
     // attenuation
-    float distance    = length(viewSpace_position - fragPos);
+    float distance    = length(fragToLight);
     float attenuation = 1.0 / (light.constant + light.linear * distance + 
   			    			  light.quadratic * (distance * distance));    
 
@@ -177,15 +172,16 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, M
 vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir, Material material)
 {
 	vec3 viewSpace_position = vec3(u_View * vec4(light.position, 1.0));
+	vec3 fragToLight = viewSpace_position - fragPos;
 
-    vec3 lightDir = normalize(viewSpace_position - fragPos);
+    vec3 lightDir = normalize(fragToLight);
     // diffuse shading
     float diff = max(dot(normal, lightDir), 0.0);
     // specular shading
     vec3 reflectDir = reflect(-lightDir, normal);
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
     // attenuation
-    float distance = length(viewSpace_position - fragPos);
+    float distance = length(fragToLight);
     float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));    
     // spotlight intensity
     float theta = dot(lightDir, normalize(-light.direction)); 
