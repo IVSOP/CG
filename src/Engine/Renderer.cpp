@@ -272,7 +272,7 @@ void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Cam
 	ImGui::Checkbox("Show normals", &showNormals);
 	ImGui::Checkbox("Explode", &explode);
 
-	// constexpr glm::mat4 model = glm::mat4(1.0f);
+	constexpr glm::mat4 model = glm::mat4(1.0f);
 	const glm::mat4 view = camera.GetViewMatrix();
 	// const glm::mat4 MVP = projection * view * model;
 
@@ -293,7 +293,6 @@ void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Cam
 		// load MVP, texture array and view
 		this->textureArray.get()->setTextureArrayToSlot(TEX_ARRAY_SLOT);
 		lightingShader.setInt("u_TextureArraySlot", TEX_ARRAY_SLOT);
-		glm::mat4 model = Consts::rotMatrixVector(45, 1, 0 ,0);
 		lightingShader.setMat4("u_Model", model);
 		lightingShader.setMat4("u_View", view);
 		lightingShader.setMat4("u_Projection", projection);
@@ -327,9 +326,6 @@ void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Cam
 		lightingShader.setVec3("u_PointLight.ambient", 0.2f, 0.2f, 0.0f);
 		lightingShader.setVec3("u_PointLight.diffuse", 0.78f, 0.78f, 0.0f);
 		lightingShader.setVec3("u_PointLight.specular", 1.0f, 1.0f, 1.0f);
-
-		lightingShader.setVec3("u_PointLight.specular", 0.0f, 0.0f, 0.0f);
-		lightingShader.setVec3("u_PointLight.ambient", 0.0f, 0.0f, 0.0f);
 		// lightingShader.setVec3("u_PointLight.ambient", 0.0f, 0.0f, 0.0f);
 		// lightingShader.setVec3("u_PointLight.diffuse", 0.0f, 0.0f, 0.0f);
 		// lightingShader.setVec3("u_PointLight.specular", 0.0f, 0.0f, 0.0f);
