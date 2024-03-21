@@ -27,9 +27,10 @@ std::vector<Vertex> Sphere::createSpherePoints(const float radius, const int sli
     float currPhi;
     float currTheta;
 
-    float currX;
-    float currY;
-    float currZ;
+    float currX, currY, currZ; // coords pontos
+    float normX, normY, normZ; // coords normal
+    float texU, texV; // coords texturas
+    float normFactor = 1.0f / radius; // basta dividir por raio os pontos, "resto" da ormalização já é obtida das coordenadas esféricas
     float midXZCalc;
 
     //obter os pontos que constituem a esfera
@@ -43,14 +44,25 @@ std::vector<Vertex> Sphere::createSpherePoints(const float radius, const int sli
             currZ = midXZCalc * std::cos(currTheta);
             currX = midXZCalc * std::sin(currTheta);
 
-            ans.emplace_back(currX,currY,currZ);
+            normX = currX * normFactor;
+            normY = currY * normFactor;
+            normZ = currZ * normFactor;
+
+            texU = static_cast<float>(currSlice) / slices;
+            texV = 1 - static_cast<float>(currStack) / stacks; // em openGL, origem de imagem é canto esq. inferior, logo ir de 1 até 0 na coord V!
+
+            ans.emplace_back(currX,currY,currZ,normX,normY,normZ,texU,texV);
         }
     }
 
     int currLinePoints, nextLinePoints;
+    
+    // ligar o ponto no topo da esfera aos pontos da primeira camada
+    for (int i=0; i < slices; i++) { 
 
-    for (int i=0; i < slices; i++) { // ligar o ponto no topo da esfera aos pontos da primeira camada
-        ans2.emplace_back(0,radius,0);
+        texU = static_cast<float>(i) / slices;
+        texV = 1.0f;
+        ans2.emplace_back(0.0f,radius,0.0f,0.0f,1.0f,0.0f, texU, texV); // normal do ponto do topo é vetor vertical virado para cima
         ans2.emplace_back(ans[i]);
         ans2.emplace_back(ans[(i+1) % slices]);
     }
@@ -61,18 +73,28 @@ std::vector<Vertex> Sphere::createSpherePoints(const float radius, const int sli
         nextLinePoints = (i+1) * slices; // início da próxima linha de pontos
         
         for (int j=0; j < slices; j++) {
+            Vertex lastVertexCurrLine = ans[currLinePoints + ((j + 1) % slices)];
+            Vertex lastVertexNextLine = ans[nextLinePoints + ((j + 1) % slices)];
+
+            if (j + 1 == slices) { // preciso de explicitamente meter o text_V da última coordenada da linha a 1, para nao dar texture seams!
+                lastVertexCurrLine.tex_coord.x = 1.0f;
+                lastVertexNextLine.tex_coord.x = 1.0f;
+            }
             // printf("%d %d\n",currLinePoints, nextLinePoints);
             // para cada quadrado do círculo fazem-se dois triangulos:
             /* |\
                |_\ */
             ans2.emplace_back(ans[currLinePoints + j]);
             ans2.emplace_back(ans[nextLinePoints + j]);
-            ans2.emplace_back(ans[nextLinePoints + ((j + 1) % slices)]);
+            ans2.emplace_back(lastVertexNextLine);
+
+
+
             /*  /|
                /_| */
             ans2.emplace_back(ans[currLinePoints + j]);
-            ans2.emplace_back(ans[nextLinePoints + ((j + 1) % slices)]);
-            ans2.emplace_back(ans[currLinePoints + ((j + 1) % slices)]);
+            ans2.emplace_back(lastVertexNextLine);
+            ans2.emplace_back(lastVertexCurrLine);
         }
     }
 
@@ -80,21 +102,11 @@ std::vector<Vertex> Sphere::createSpherePoints(const float radius, const int sli
     for (int i=0; i < slices; i++) { // ligar o ponto no fundo da esfera aos pontos da última camada
         ans2.emplace_back(ans[lastPos - i]);
         ans2.emplace_back(ans[lastPos - ((i+1) % slices)]);
-        ans2.emplace_back(0,-radius,0);
+
+        texU = static_cast<float>(i)/slices;
+        texV = 0.0f; // última linha da textura
+        ans2.emplace_back(0.0f, -radius, 0.0f, 0.0f, -1.0f, 0.0f, texU , texV);
     }
-
-
-	// LOOP VETORES NORMAIS
-	// normal = angulo do centro ate ao vertice. nao deve estar 100% correto mas esta quase
-	for (Vertex &vertex : ans2) {
-		// assumo que centro e (0.0f, 0.0f, 0.0f)
-		glm::vec3 normal = glm::vec3(vertex.coords) - glm::vec3(0.0f, 0.0f, 0.0f);
-		vertex.normal = glm::normalize(normal);
-
-        //LOOP TEXTURAS
-        vertex.tex_coord[0] = asin(vertex.normal.x)/ M_PI + 0.5;
-        vertex.tex_coord[1] = asin(vertex.normal.y) / M_PI + 0.5;
-	}
 
     return ans2;
 }

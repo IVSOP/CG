@@ -64,6 +64,7 @@ std::vector<Vertex> Box::createBoxPoints(float length, int divisions) {
         res.emplace_back(currPoint.x, currPoint.y + float(length), currPoint.z,0.0f,1.0f,0.0f);
     }
 
+    // TEXT COORDINATES - em fase de teste
     for(auto vertex: res) {
         vertex.tex_coord[0] = asin(vertex.getX()) / M_PI + 0.5f;
         vertex.tex_coord[1] = asin(vertex.getY()) / M_PI + 0.5f;
