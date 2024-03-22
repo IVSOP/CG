@@ -32,15 +32,15 @@ std::vector<Vertex> Cylinder::createCylinderPoints(float radius, float height, i
             else currCoords = basePoints[1].getCoords();
 
             if(i == 0){
-                ans.emplace_back(baseCoords.x, baseCoords.y, baseCoords.z);
-                ans.emplace_back(prevCoords.x, prevCoords.y, prevCoords.z);
-                ans.emplace_back(currCoords.x, currCoords.y, currCoords.z);
+                ans.emplace_back(baseCoords.x, baseCoords.y, baseCoords.z,0.0f,-1.0f,0.0f);
+                ans.emplace_back(prevCoords.x, prevCoords.y, prevCoords.z,0.0f,-1.0f,0.0f);
+                ans.emplace_back(currCoords.x, currCoords.y, currCoords.z,0.0f,-1.0f,0.0f);
             }
 
             if(i == stacks){
-                ans.emplace_back(currCoords.x, currCoords.y, currCoords.z);
-                ans.emplace_back(prevCoords.x, prevCoords.y, prevCoords.z);
-                ans.emplace_back(baseCoords.x, baseCoords.y, baseCoords.z);
+                ans.emplace_back(currCoords.x, currCoords.y, currCoords.z,0.0f,1.0f,0.0f);
+                ans.emplace_back(prevCoords.x, prevCoords.y, prevCoords.z,0.0f,1.0f,0.0f);
+                ans.emplace_back(baseCoords.x, baseCoords.y, baseCoords.z,0.0f,1.0f,0.0f);
             }
 
             if(i > 0) {
@@ -48,19 +48,24 @@ std::vector<Vertex> Cylinder::createCylinderPoints(float radius, float height, i
                 glm::vec4 rightDownCoords = prevBasePoints[j].getCoords();
                 glm::vec4 downCoords = prevBasePoints[j+1].getCoords();
 
+                //Normais dos pontos
+                glm::vec3 rightDownCoordsNormal = glm::normalize(glm::vec3(rightDownCoords.x,0.0f,rightDownCoords.z));
+                glm::vec3 rightCoordsNormal = glm::normalize(glm::vec3(rightCoords.x,0.0f,rightCoords.z));
+                glm::vec3 currCoordsNormal = glm::normalize(glm::vec3(currCoords.x,0.0f,currCoords.z));
+                glm::vec3 downCoordsNormal = glm::normalize(glm::vec3(downCoords.x,0.0f,downCoords.z));
                 // Triangle  |‾/
                 //           |/
 
-                ans.emplace_back(rightDownCoords.x, rightDownCoords.y, rightDownCoords.z);
-                ans.emplace_back(rightCoords.x, rightCoords.y, rightCoords.z);
-                ans.emplace_back(currCoords.x, currCoords.y, currCoords.z);
+                ans.emplace_back(rightDownCoords.x, rightDownCoords.y, rightDownCoords.z,rightDownCoordsNormal.x,0.0f,rightDownCoordsNormal.z);
+                ans.emplace_back(rightCoords.x, rightCoords.y, rightCoords.z,rightCoordsNormal.x,0.0f,rightCoordsNormal.z);
+                ans.emplace_back(currCoords.x, currCoords.y, currCoords.z,currCoordsNormal.x,0.0f,currCoordsNormal.z);
 
                 // Triangle  /|
                 //          /_|
 
-                ans.emplace_back(currCoords.x, currCoords.y, currCoords.z);
-                ans.emplace_back(downCoords.x, downCoords.y, downCoords.z);
-                ans.emplace_back(rightDownCoords.x, rightDownCoords.y, rightDownCoords.z);
+                ans.emplace_back(currCoords.x, currCoords.y, currCoords.z,currCoordsNormal.x,0.0f,currCoordsNormal.z);
+                ans.emplace_back(downCoords.x, downCoords.y, downCoords.z,downCoordsNormal.x,0.0f,downCoordsNormal.z);
+                ans.emplace_back(rightDownCoords.x, rightDownCoords.y, rightDownCoords.z, rightDownCoordsNormal.x,0.0f,rightDownCoordsNormal.z);
             }
 
             basePoints.emplace_back(currCoords.x, currCoords.y, currCoords.z);
