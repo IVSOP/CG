@@ -35,6 +35,7 @@ struct PointLight {
     vec3 diffuse;
     vec3 specular;
 };
+#define VEC4_IN_POINTLIGHTS 4
 
 struct SpotLight {
     vec3 position;
@@ -51,11 +52,6 @@ struct SpotLight {
     vec3 specular;       
 };
 
-#define MAX_LIGHTS 8
-
-// TEMPORARY
-uniform PointLight u_PointLight;
-
 // output from geometry shader and not vertex shader
 in GS_OUT {
 	vec2 g_TexCoord;
@@ -66,6 +62,7 @@ in GS_OUT {
 
 uniform sampler2DArray u_TextureArraySlot;
 uniform samplerBuffer u_MaterialTBO;
+uniform samplerBuffer u_PointLightTBO;
 uniform mat4 u_View; // view from the MVP
 
 uniform float u_BloomThreshold = 1.0;
@@ -76,9 +73,6 @@ vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir, Mat
 
 void main() {
 	// get material from material array
-	// Material material = materials[fs_in.g_MaterialID]; // careful with this cast, need to change it out of a float
-
-
 	// segurem se que vao haver manhosidades a ocorrer
 	Material material;
 	material.diffuse = texelFetch(u_MaterialTBO, 0 + (int(trunc(fs_in.g_MaterialID) * VEC4_IN_MATERIAL))).xyz;
@@ -105,7 +99,19 @@ void main() {
 	vec3 normal = normalize(fs_in.g_Normal);
 
 	// apply colors
-	res_color.rgb += CalcPointLight(u_PointLight, normal, fs_in.g_FragPos, viewDir, material);
+	// for now, there is only one point light, we need to get it from the array.
+	// its index is hardcoded as 0
+	PointLight pointLight;
+	pointLight.position = texelFetch(u_PointLightTBO, 0 + (0 * VEC4_IN_POINTLIGHTS)).xyz;
+    pointLight.constant = texelFetch(u_PointLightTBO, 0 + (0 * VEC4_IN_POINTLIGHTS)).w;
+    pointLight.linear = texelFetch(u_PointLightTBO, 1 + (0 * VEC4_IN_POINTLIGHTS)).x;
+    pointLight.quadratic = texelFetch(u_PointLightTBO, 1 + (0 * VEC4_IN_POINTLIGHTS)).y;
+    pointLight.ambient.xy = texelFetch(u_PointLightTBO, 1 + (0 * VEC4_IN_POINTLIGHTS)).zw;
+	pointLight.ambient.z = texelFetch(u_PointLightTBO, 2 + (0 * VEC4_IN_POINTLIGHTS)).x;
+    pointLight.diffuse = texelFetch(u_PointLightTBO, 2 + (0 * VEC4_IN_POINTLIGHTS)).yzw;
+    pointLight.specular = texelFetch(u_PointLightTBO, 3 + (0 * VEC4_IN_POINTLIGHTS)).xyz;
+
+	res_color.rgb += CalcPointLight(pointLight, normal, fs_in.g_FragPos, viewDir, material);
 
 	// add emissive
 	res_color.rgb += material.emissive.rgb;

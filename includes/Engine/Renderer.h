@@ -20,6 +20,7 @@ public:
 	GLsizei viewport_width, viewport_height;
     
 	GLuint materialBuffer, materialTBO;
+	GLuint pointLightBuffer, pointLightTBO;
 
 
 	// TODO test: apply gamma and exposure and only then extract colors

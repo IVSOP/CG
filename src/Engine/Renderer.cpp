@@ -13,6 +13,7 @@
 #define BRIGHT_TEXTURE_SLOT 1 // slot to go into blur shader and final bloom shader
 #define SCENE_TEXTURE_SLOT 2 // slot to go into final bloom shader
 #define MATERIAL_TEXTURE_BUFFER_SLOT 3
+#define POINTLIGHT_TEXTURE_BUFFER_SLOT 4
 
 #define MAX_MATERIALS 8
 #define MAX_LIGHTS 8
@@ -22,12 +23,18 @@ struct PointLight {
 
     GLfloat constant;
     GLfloat linear;
-    GLfloat quadratic;  
+    GLfloat quadratic; 
 
     glm::vec3 ambient;
     glm::vec3 diffuse;
     glm::vec3 specular;
+
+	// need one extra float for 16. read Material.h
+	GLfloat padding_1;
 };
+static_assert(sizeof(PointLight) == 4 * sizeof(glm::vec4), "Error: Material has unexpected size");
+
+
 
 // quad filling entire screen
 ViewportVertex viewportVertices[] = {
@@ -175,6 +182,12 @@ Renderer::Renderer(GLsizei viewport_width, GLsizei viewport_height)
 	GLCall(glBindTexture(GL_TEXTURE_BUFFER, materialTBO));
 	GLCall(glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, materialBuffer)); // bind the buffer to the texture
 
+	GLCall(glGenBuffers(1, &pointLightBuffer));
+	GLCall(glBindBuffer(GL_TEXTURE_BUFFER, pointLightBuffer));
+	GLCall(glGenTextures(1, &pointLightTBO));
+	GLCall(glBindTexture(GL_TEXTURE_BUFFER, pointLightTBO));
+	GLCall(glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, pointLightBuffer)); // bind the buffer to the texture
+
 
 	// for axis shader
 	axisShader.use();
@@ -316,16 +329,24 @@ void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Cam
 		lightingShader.setInt("u_MaterialTBO", MATERIAL_TEXTURE_BUFFER_SLOT);
 
 		// load test light
-		lightingShader.setFloat("u_PointLight.constant", 1.0f);
-		lightingShader.setFloat("u_PointLight.linear", 0.09f);
-		lightingShader.setFloat("u_PointLight.quadratic", 0.032f);
-		lightingShader.setVec3("u_PointLight.position", 0.0f, 2.0f, 5.0f);
-		lightingShader.setVec3("u_PointLight.ambient", 0.2f, 0.2f, 0.0f);
-		lightingShader.setVec3("u_PointLight.diffuse", 0.78f, 0.78f, 0.0f);
-		lightingShader.setVec3("u_PointLight.specular", 1.0f, 1.0f, 1.0f);
-		// lightingShader.setVec3("u_PointLight.ambient", 0.0f, 0.0f, 0.0f);
-		// lightingShader.setVec3("u_PointLight.diffuse", 0.0f, 0.0f, 0.0f);
-		// lightingShader.setVec3("u_PointLight.specular", 0.0f, 0.0f, 0.0f);
+		PointLight pointLights[8];
+		pointLights[0] = {
+			.position = glm::vec3(0.0f, 2.0f, 5.0f),
+			.constant = 1.0f,
+			.linear = 0.09f,
+			.quadratic = 0.032f,
+			.ambient = glm::vec3(0.2f, 0.2f, 0.0f),
+			.diffuse = glm::vec3(0.78f, 0.78f, 0.0f),
+			.specular = glm::vec3(1.0f, 1.0f, 1.0f),
+			.padding_1 = 0.0f
+		};
+
+		GLCall(glBindBuffer(GL_TEXTURE_BUFFER, pointLightBuffer));
+		GLCall(glBufferData(GL_TEXTURE_BUFFER, MAX_LIGHTS * sizeof(PointLight), pointLights, GL_STATIC_DRAW));
+		GLCall(glActiveTexture(GL_TEXTURE0 + POINTLIGHT_TEXTURE_BUFFER_SLOT));
+		GLCall(glBindTexture(GL_TEXTURE_BUFFER, pointLightTBO));
+		// GLCall(glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, pointLightBuffer)); // bind the buffer to the texture (has been done while setting up)
+		lightingShader.setInt("u_PointLightTBO", POINTLIGHT_TEXTURE_BUFFER_SLOT);
 
 		// specify 2 attachments
 		constexpr GLuint attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
