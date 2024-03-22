@@ -319,7 +319,7 @@ void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Cam
 			// glm::vec3(2.99f, 0.72f, 0.0745f),
 			glm::vec3(0.1f),
 			32.0f,
-			5
+			2
 		};
 
 		GLCall(glBindBuffer(GL_TEXTURE_BUFFER, materialBuffer));

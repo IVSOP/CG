@@ -85,3 +85,18 @@ glm::mat4 Consts::scaleMatrix(float x, float y, float z) {
 
     return translateYMatrix;
 }
+
+glm::mat2 Consts::rotMatrix2D(float angle){
+    glm::mat2 ans = glm::mat2 (1);
+
+    float rad_angle = angle * (M_PI / 180);
+    double c = cos(rad_angle);
+    double s = sin(rad_angle);
+
+    ans[0][0] = c ;
+    ans[0][1] = s;
+    ans[1][0] = -s;
+    ans[1][1] = c;
+
+    return ans;
+}
