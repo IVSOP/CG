@@ -296,7 +296,7 @@ void Renderer::drawLighting(std::vector<Vertex> &verts, const glm::mat4 &project
 	//////////////////////////////////////////////// he normal scene is drawn into the lighting framebuffer, where the bright colors are then separated
 	GLCall(glBindFramebuffer(GL_FRAMEBUFFER, lightingFBO));
     	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		// GLCall(glPolygonMode(GL_FRONT_AND_BACK,GL_LINE));
+		// GLCall(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
 
 		GLCall(glBindVertexArray(this->VAO));
 		GLCall(glBindBuffer(GL_ARRAY_BUFFER, this->vertexBuffer));
@@ -378,6 +378,8 @@ void Renderer::drawLighting(std::vector<Vertex> &verts, const glm::mat4 &project
 		if (showAxis) {
 			drawAxis(glm::mat4(1.0f), view, projection);
 		}
+
+		// GLCall(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
 }
 
 void Renderer::bloomBlur(int passes) {
@@ -478,6 +480,21 @@ void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Cam
 	drawLighting(verts, projection, view, window);
 	bloomBlur(this->bloomBlurPasses);
 	merge();
+
+	// On mac, glfw's vsync does not work at all
+	// So I added a frame limiter here
+	ImGui::Checkbox("Limit FPS", &limitFPS);
+	if (limitFPS) {
+		const double f64_min = 0.0, f64_max = 240.0;
+		ImGui::SliderScalar("Target FPS", ImGuiDataType_Double, &fps, &f64_min, &f64_max, "Target FPS = %.0f");
+		double fps_time = 1.0f / fps;
+		if (deltaTime < fps_time) {
+			const double sleepTime = (fps_time - deltaTime) * 10E5; // multiply to get from seconds to microseconds, this is prob platform dependent and very bad
+			usleep(sleepTime);
+		}
+	}
+
+
 	endFrame(window);
 }
 

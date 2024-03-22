@@ -52,6 +52,8 @@ public:
 	bool showAxis = false;
 	bool showNormals = false;
 	bool explode = false;
+	bool limitFPS = false;
+	double fps = 60.0f;
 
 	std::unique_ptr<TextureArray> textureArray = nullptr; // pointer since it starts as null and gets initialized later. unique_ptr so it always gets deleted
 
