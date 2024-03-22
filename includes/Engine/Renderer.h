@@ -47,7 +47,8 @@ public:
 	// !! could have reused fbo and textures, but this is simpler and more flexible and less painful to manage
 	
 
-	GLfloat gamma = 2.2f, exposure = 1.0f, bloomThreshold = 1.0f, texOffsetCoeff = 1.0f, explodeCoeff = 0.0f;
+	GLfloat gamma = 2.2f, exposure = 1.0f, bloomThreshold = 1.0f, bloomOffset = 1.0f, explodeCoeff = 0.0f;
+	GLuint bloomBlurPasses = 5;
 	bool showAxis = false;
 	bool showNormals = false;
 	bool explode = false;
@@ -57,7 +58,7 @@ public:
 
 
 	// isto devia ser const vec mas nao foi por causa de encapsulamentos estupidos parabens aos envolvidos
-	void draw(std::vector<Vertex> &verts, const glm::mat4 &perspective, Camera &camera, GLFWwindow * window, GLfloat deltatime); // const
+	void draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Camera &camera, GLFWwindow * window, GLfloat deltatime); // const
 	void drawAxis(const glm::mat4 &model, const glm::mat4 &view, const glm::mat4 &projection);
 	void drawNormals(const glm::mat4 &model, const glm::mat4 &view, const glm::mat4 &projection, const std::vector<Vertex> &vertices); // vector is copied over on purpose
 
@@ -66,6 +67,13 @@ public:
 	void resizeViewport(GLsizei viewport_width, GLsizei viewport_height);
 	void generate_FBO_texture(GLuint *textureID, GLenum attachmentID); // makes the texture, needs to be called whenever viewport is resized (for now)
 	void checkFrameBuffer();
+
+private:
+	void prepareFrame(Camera &camera, GLfloat deltatime);
+	void drawLighting(std::vector<Vertex> &verts, const glm::mat4 &projection, const glm::mat4 &view, GLFWwindow * window);
+	void bloomBlur(GLuint passes);
+	void merge();
+	void endFrame(GLFWwindow * window);
 };
 
 #endif

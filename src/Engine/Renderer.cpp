@@ -266,7 +266,7 @@ void Renderer::loadTextures() {
 	tex->setTextureArrayToSlot(TEX_ARRAY_SLOT);
 }
 
-void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Camera &camera, GLFWwindow * window, GLfloat deltaTime) {
+void Renderer::prepareFrame(Camera &camera, GLfloat deltaTime) {
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
@@ -280,16 +280,18 @@ void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Cam
 	ImGui::SliderFloat("exposure", &exposure, 0.0f, 10.0f, "exposure = %.3f");
 	ImGui::SliderFloat("bloomThreshold", &bloomThreshold, 0.0f, 5.0f, "bloomThreshold = %.3f");
 	// texOffsetCoeff = static_cast<GLfloat>(rand()) / static_cast<GLfloat>(RAND_MAX) * 10.0f;
-	ImGui::SliderFloat("texOffsetCoeff", &texOffsetCoeff, 0.0f, 10.0f, "texOffsetCoeff = %.3f");
+	ImGui::SliderFloat("bloomOffset", &bloomOffset, 0.0f, 10.0f, "bloomOffset = %.3f");
 	ImGui::Checkbox("Show axis", &showAxis);
 	ImGui::Checkbox("Show normals", &showNormals);
 	ImGui::Checkbox("Explode", &explode);
 
+}
+
+void Renderer::drawLighting(std::vector<Vertex> &verts, const glm::mat4 &projection, const glm::mat4 &view, GLFWwindow * window) {
 	constexpr glm::mat4 model = glm::mat4(1.0f);
-	const glm::mat4 view = camera.GetViewMatrix();
 	// const glm::mat4 MVP = projection * view * model;
 
-	//////////////////////////////////////////////// 1. the normal scene is drawn into the lighting framebuffer, where the bright colors are then separated
+	//////////////////////////////////////////////// he normal scene is drawn into the lighting framebuffer, where the bright colors are then separated
 	GLCall(glBindFramebuffer(GL_FRAMEBUFFER, lightingFBO));
     	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		// GLCall(glPolygonMode(GL_FRONT_AND_BACK,GL_LINE));
@@ -374,9 +376,10 @@ void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Cam
 		if (showAxis) {
 			drawAxis(glm::mat4(1.0f), view, projection);
 		}
+}
 
-
-	//////////////////////////////////////////////// 2. now, we run the ping pong gaussian blur several times
+void Renderer::bloomBlur(GLuint passes) {
+	//////////////////////////////////////////////// run the ping pong gaussian blur several times
 	blurShader.use();
 	GLCall(glBindVertexArray(this->VAO_viewport));
 	GLCall(glBindBuffer(GL_ARRAY_BUFFER, this->vertexBuffer_viewport));
@@ -403,7 +406,7 @@ void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Cam
 		GLCall(glDrawArrays(GL_TRIANGLES, 0, 6));
 
 	for (GLint i = 0; i < amount - 1; i++) {
-		blurShader.setFloat("u_TexOffsetCoeff", texOffsetCoeff);
+		blurShader.setFloat("u_TexOffsetCoeff", bloomOffset);
 
 		// horizontal pass
 		GLCall(glBindFramebuffer(GL_FRAMEBUFFER, pingpongFBO[0]));
@@ -421,8 +424,10 @@ void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Cam
 			blurShader.setInt("u_BlurBuffer", BRIGHT_TEXTURE_SLOT);
 			GLCall(glDrawArrays(GL_TRIANGLES, 0, 6));
 	}
+}
 
-	//////////////////////////////////////////////// 3. finally, we join the blur to the scene and apply gamma and exposure
+void Renderer::merge() {
+	//////////////////////////////////////////////// join the blur to the scene and apply gamma and exposure
 	GLCall(glBindFramebuffer(GL_FRAMEBUFFER, 0));
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
@@ -443,12 +448,22 @@ void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Cam
 
 		// hdrBbloomMergeShader.validate();
 		GLCall(glDrawArrays(GL_TRIANGLES, 0, 6));
+}
 
-
+void Renderer::endFrame(GLFWwindow * window) {
 	ImGui::End();
 	ImGui::Render();
 	ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
     glfwSwapBuffers(window);
+}
+
+void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Camera &camera, GLFWwindow * window, GLfloat deltaTime) {
+	prepareFrame(camera, deltaTime);
+	const glm::mat4 view = camera.GetViewMatrix();
+	drawLighting(verts, projection, view, window);
+	bloomBlur(this->bloomBlurPasses);
+	merge();
+	endFrame(window);
 }
 
 // this does NOT take into acount currently used textures slots etc, only here for organisation
