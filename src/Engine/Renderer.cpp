@@ -278,7 +278,9 @@ void Renderer::prepareFrame(Camera &camera, GLfloat deltaTime) {
 	ImGui::InputFloat3("Position:", glm::value_ptr(camera.Position));
 	ImGui::SliderFloat("gamma", &gamma, 0.0f, 10.0f, "gamma = %.3f");
 	ImGui::SliderFloat("exposure", &exposure, 0.0f, 10.0f, "exposure = %.3f");
-	ImGui::SliderFloat("bloomThreshold", &bloomThreshold, 0.0f, 5.0f, "bloomThreshold = %.3f");
+	ImGui::InputInt("bloomPasses", &bloomBlurPasses, 1, 1); if (bloomBlurPasses < 0) bloomBlurPasses = 0;
+	// ImGui::InputInt("bloomPasses", &bloomBlurPasses, 1, 1, "bloomPasses = %d");
+	ImGui::SliderFloat("bloomThreshold", &bloomThreshold, 0.0f, 5.0f);
 	// texOffsetCoeff = static_cast<GLfloat>(rand()) / static_cast<GLfloat>(RAND_MAX) * 10.0f;
 	ImGui::SliderFloat("bloomOffset", &bloomOffset, 0.0f, 10.0f, "bloomOffset = %.3f");
 	ImGui::Checkbox("Show axis", &showAxis);
@@ -378,18 +380,31 @@ void Renderer::drawLighting(std::vector<Vertex> &verts, const glm::mat4 &project
 		}
 }
 
-void Renderer::bloomBlur(GLuint passes) {
+void Renderer::bloomBlur(int passes) {
 	//////////////////////////////////////////////// run the ping pong gaussian blur several times
 	blurShader.use();
 	GLCall(glBindVertexArray(this->VAO_viewport));
 	GLCall(glBindBuffer(GL_ARRAY_BUFFER, this->vertexBuffer_viewport));
 	GLCall(glBufferData(GL_ARRAY_BUFFER, sizeof(viewportVertices), viewportVertices, GL_STATIC_DRAW));
-	constexpr GLint amount = 5; // 5 each
+
+	if (passes == 0) {
+		// if this happens, instead of switching verything just clear pingpongTextures[1], which will be used in merging the textures
+		// bind FBO, attach texture, clear color buffer
+		GLCall(glBindFramebuffer(GL_FRAMEBUFFER, pingpongFBO[1]));
+		GLCall(glActiveTexture(GL_TEXTURE0 + BRIGHT_TEXTURE_SLOT));
+		GLCall(glActiveTexture(GL_TEXTURE0 + BRIGHT_TEXTURE_SLOT));
+		GLCall(glBindTexture(GL_TEXTURE_2D, pingpongTextures[1])); // use texture from pong
+		blurShader.setInt("u_BlurBuffer", BRIGHT_TEXTURE_SLOT);
+
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		return;
+	}
+
 
 	// manually doing the first passes, since I need to get the texture from the scene
 	// horizontal pass
 	GLCall(glBindFramebuffer(GL_FRAMEBUFFER, pingpongFBO[0]));
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // isto devia ser chamado sequer???????????????????????????????????? acho que a imagem e 100% overwritten
 		blurShader.setInt("u_Horizontal", 0);
 		GLCall(glActiveTexture(GL_TEXTURE0 + BRIGHT_TEXTURE_SLOT));
 		GLCall(glBindTexture(GL_TEXTURE_2D, this->brightTexture)); // use texture from scene
@@ -398,14 +413,14 @@ void Renderer::bloomBlur(GLuint passes) {
 
 	// vertical pass
 	GLCall(glBindFramebuffer(GL_FRAMEBUFFER, pingpongFBO[1]));
-    	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  
+    	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		blurShader.setInt("u_Horizontal", 1);
 		GLCall(glActiveTexture(GL_TEXTURE0 + BRIGHT_TEXTURE_SLOT));
 		GLCall(glBindTexture(GL_TEXTURE_2D, pingpongTextures[0])); // use texture from ping
 		blurShader.setInt("u_BlurBuffer", BRIGHT_TEXTURE_SLOT);
 		GLCall(glDrawArrays(GL_TRIANGLES, 0, 6));
 
-	for (GLint i = 0; i < amount - 1; i++) {
+	for (GLint i = 0; i < passes - 1; i++) {
 		blurShader.setFloat("u_TexOffsetCoeff", bloomOffset);
 
 		// horizontal pass

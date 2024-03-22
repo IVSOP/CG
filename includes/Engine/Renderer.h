@@ -48,7 +48,7 @@ public:
 	
 
 	GLfloat gamma = 2.2f, exposure = 1.0f, bloomThreshold = 1.0f, bloomOffset = 1.0f, explodeCoeff = 0.0f;
-	GLuint bloomBlurPasses = 5;
+	int bloomBlurPasses = 5;
 	bool showAxis = false;
 	bool showNormals = false;
 	bool explode = false;
@@ -71,7 +71,7 @@ public:
 private:
 	void prepareFrame(Camera &camera, GLfloat deltatime);
 	void drawLighting(std::vector<Vertex> &verts, const glm::mat4 &projection, const glm::mat4 &view, GLFWwindow * window);
-	void bloomBlur(GLuint passes);
+	void bloomBlur(int passes);
 	void merge();
 	void endFrame(GLFWwindow * window);
 };

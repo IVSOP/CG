@@ -37,7 +37,7 @@ void main()
 	// const float exposure = 1.0;
     vec3 hdrColor = texture(u_SceneBuffer, v_TexCoord).rgb;
 	vec3 bloomColor = texture(u_BrightBuffer, v_TexCoord).rgb;
-  
+
 	hdrColor += bloomColor; // additive blending
 
     // exposure tone mapping
