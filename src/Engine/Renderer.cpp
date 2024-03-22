@@ -260,6 +260,8 @@ void Renderer::loadTextures() {
 	tex->addTexture("textures/oak_log.png"); // 3
 	tex->addTexture("textures/white.png"); // 4
 	tex->addTexture("test_files_phase_4/earth.jpg"); // 5
+	tex->addTexture("textures/rainbow.png"); // 6
+	tex->addTexture("textures/stripes.png"); // 7
 
 	tex->setTextureArrayToSlot(TEX_ARRAY_SLOT);
 }
