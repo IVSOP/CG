@@ -138,7 +138,7 @@ void renderLoop(GLFWwindow *window, Camera &camera, Renderer &renderer) {
         std::unique_lock<std::mutex> lock = std::unique_lock<std::mutex>(mtx);
         // auto s = draw_points.size();
         // printf("%f %f %f %lu\n", draw_points[s -1].getX(), draw_points[s -1].getY(), draw_points[s -1].getZ(), s);
-        renderer.draw(draw_points, projection, camera, window);
+        renderer.draw(draw_points, projection, camera, window, deltaTime);
         lock.unlock();
 
         currentFrameTime = glfwGetTime();
@@ -201,7 +201,7 @@ int main(int argc, char **argv) {
     int windowWidth = xmlParser.getWindowWidth();
     int windowHeight = xmlParser.getWindowHeight();
 
-    glfwSetErrorCallback(glfw_error_callback);
+    glfwSetErrorCallback(glfw_error_callback); // ?? isto nao devia tar depois??
     if (!glfwInit()) {
         perror("GLFW window failed to initiate");
     }

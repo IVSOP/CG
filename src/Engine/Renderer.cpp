@@ -264,13 +264,14 @@ void Renderer::loadTextures() {
 	tex->setTextureArrayToSlot(TEX_ARRAY_SLOT);
 }
 
-void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Camera &camera, GLFWwindow * window) {
+void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Camera &camera, GLFWwindow * window, GLfloat deltaTime) {
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
 
 	ImGui::Begin("Debug");
 	// ImGui::ShowDemoWindow();
+	ImGui::Text("FPS: %lf", 1.0f / deltaTime);
 	ImGui::Text("Facing x:%f y:%f z:%f", camera.Front.x, camera.Front.y, camera.Front.z);
 	ImGui::InputFloat3("Position:", glm::value_ptr(camera.Position));
 	ImGui::SliderFloat("gamma", &gamma, 0.0f, 10.0f, "gamma = %.3f");
