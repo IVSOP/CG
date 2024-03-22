@@ -9,8 +9,6 @@
 #include "Camera.h"
 #include "Consts.h"
 
-#include "windows_unistd.h"
-
 #define TEX_ARRAY_SLOT 0
 #define BRIGHT_TEXTURE_SLOT 1 // slot to go into blur shader and final bloom shader
 #define SCENE_TEXTURE_SLOT 2 // slot to go into final bloom shader
@@ -483,17 +481,10 @@ void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Cam
 	bloomBlur(this->bloomBlurPasses);
 	merge();
 
-	// On mac, glfw's vsync does not work at all
-	// So I added a frame limiter here
 	ImGui::Checkbox("Limit FPS", &limitFPS);
 	if (limitFPS) {
 		const double f64_min = 0.0, f64_max = 240.0;
 		ImGui::SliderScalar("Target FPS", ImGuiDataType_Double, &fps, &f64_min, &f64_max, "Target FPS = %.0f");
-		double fps_time = 1.0f / fps;
-		if (deltaTime < fps_time) {
-			const double sleepTime = (fps_time - deltaTime) * 10E5; // multiply to get from seconds to microseconds, this is prob platform dependent and very bad
-			usleep(sleepTime);
-		}
 	}
 
 

@@ -122,14 +122,15 @@ void renderLoop(GLFWwindow *window, Camera &camera, Renderer &renderer) {
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents(); // at the start due to imgui (??) test moving it to after the unlock()
 
+		lastFrameTime = glfwGetTime();
+        int windowWidth = xmlParser.getWindowWidth();
+        int windowHeight = xmlParser.getWindowHeight();
+
 		if (renderer_resize_flag) {
 			renderer.resizeViewport(renderer_windowWidth, renderer_windowHeight);
 			renderer_resize_flag = false;
 		}
 
-        lastFrameTime = glfwGetTime();
-        int windowWidth = xmlParser.getWindowWidth();
-        int windowHeight = xmlParser.getWindowHeight();
 
         // printf("delta is %f (%f fps)\n", deltaTime, 1.0f / deltaTime);
         inputHandler.applyToCamera(camera, windowWidth, windowHeight, static_cast<GLfloat>(deltaTime));
@@ -146,6 +147,16 @@ void renderLoop(GLFWwindow *window, Camera &camera, Renderer &renderer) {
         lastFrameTime = currentFrameTime;
 
         // no need for sleep, vsync takes care of mantaining timings
+		// HOWEVER macbooks as per usual do not work properly
+		// so I made this bandaid fix
+		if (renderer.limitFPS) {
+			const double fps_time = 1.0f / renderer.fps;
+			if (deltaTime < fps_time) {
+				const double sleepTime = (fps_time - deltaTime) * 10E5; // multiply to get from seconds to microseconds, this is prob platform dependent and very bad
+				usleep(sleepTime);
+				deltaTime = fps_time;
+			}
+		}
     }
 }
 
