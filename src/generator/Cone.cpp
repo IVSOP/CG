@@ -2,6 +2,7 @@
 #include "Cone.h"
 #include "Consts.h"
 
+#define _USE_MATH_DEFINES
 #include <math.h>
 
 std::vector<Vertex> Cone::createConePoints(float radius, float height, int slices, int stacks) {
@@ -12,6 +13,7 @@ std::vector<Vertex> Cone::createConePoints(float radius, float height, int slice
     float angle = 360.0f / static_cast<float>(slices);
     float stackStep = height / static_cast<float>(stacks);
     float radiusStep = radius / static_cast<float>(stacks);
+    float cone_face_prep_tang = height / radius / 2.0f;
 
     glm::vec4 currCoords;
     glm::vec4 prevCoords;
@@ -21,7 +23,10 @@ std::vector<Vertex> Cone::createConePoints(float radius, float height, int slice
 
     for(int i = 0; i < stacks; i++) {
         basePoints.emplace_back(0.0f , static_cast<float>(i) * stackStep, 0.0f);
-        basePoints.emplace_back(radius - (static_cast<float>(i) * radiusStep) , static_cast<float>(i) * stackStep, 0.0f);
+
+        glm::vec3 base_normal = glm::normalize(glm::vec3(1.0f, cone_face_prep_tang, 0.0f));
+
+        basePoints.emplace_back(radius - (static_cast<float>(i) * radiusStep) , static_cast<float>(i) * stackStep, 0.0f, base_normal.x, base_normal.y, base_normal.z);
 
         for (int j = 1; j <= slices; j++) {
             baseCoords = basePoints[0].getCoords();
@@ -30,33 +35,49 @@ std::vector<Vertex> Cone::createConePoints(float radius, float height, int slice
             if(j != slices) currCoords = rotYMatrix * prevCoords;
             else currCoords = basePoints[1].getCoords();
 
+            glm::vec3 cur_normal = glm::normalize(glm::vec3(cos(glm::radians(angle * static_cast<float>(j))), cone_face_prep_tang, sin(glm::radians(angle * static_cast<float>(j)))));
+
             if(i == 0){
-                ans.emplace_back(baseCoords.x, baseCoords.y, baseCoords.z);
-                ans.emplace_back(prevCoords.x, prevCoords.y, prevCoords.z);
-                ans.emplace_back(currCoords.x, currCoords.y, currCoords.z);
+                ans.emplace_back(baseCoords.x, baseCoords.y, baseCoords.z, 0.0f, -1.0f, 0.0f);
+                ans.emplace_back(prevCoords.x, prevCoords.y, prevCoords.z, 0.0f, -1.0f, 0.0f);
+                ans.emplace_back(currCoords.x, currCoords.y, currCoords.z, 0.0f, -1.0f, 0.0f);
             }
 
             if(i > 0) {
-                glm::vec4 rightCoords = basePoints[j].getCoords();
-                glm::vec4 rightDownCoords = prevBasePoints[j].getCoords();
-                glm::vec4 downCoords = prevBasePoints[j+1].getCoords();
+                Vertex right_v = basePoints[j];
+                Vertex rightDown_v = prevBasePoints[j];
+                Vertex down_v = prevBasePoints[j+1];
+
+                glm::vec4 rightCoords = right_v.getCoords();
+                glm::vec4 rightDownCoords = rightDown_v.getCoords();
+                glm::vec4 downCoords = down_v.getCoords();
 
                 // Triangle  |‾/
                 //           |/
 
-                ans.emplace_back(rightDownCoords.x, rightDownCoords.y, rightDownCoords.z);
-                ans.emplace_back(rightCoords.x, rightCoords.y, rightCoords.z);
-                ans.emplace_back(currCoords.x, currCoords.y, currCoords.z);
+                ans.emplace_back(rightDown_v);
+                ans.emplace_back(right_v);
+
+                if(j != slices) {
+                    ans.emplace_back(currCoords.x, currCoords.y, currCoords.z, cur_normal.x, cur_normal.y, cur_normal.z);
+                }
+                else ans.emplace_back(basePoints[1]);
 
                 // Triangle  /|
                 //          /_|
 
-                ans.emplace_back(currCoords.x, currCoords.y, currCoords.z);
-                ans.emplace_back(downCoords.x, downCoords.y, downCoords.z);
-                ans.emplace_back(rightDownCoords.x, rightDownCoords.y, rightDownCoords.z);
+                if(j != slices) {
+                    ans.emplace_back(currCoords.x, currCoords.y, currCoords.z, cur_normal.x, cur_normal.y, cur_normal.z);
+                }
+
+                else ans.emplace_back(basePoints[1]);
+
+                ans.emplace_back(down_v);
+                ans.emplace_back(rightDown_v);
             }
 
-            basePoints.emplace_back(currCoords.x, currCoords.y, currCoords.z);
+            if(j != slices) basePoints.emplace_back(currCoords.x, currCoords.y, currCoords.z, cur_normal.x, cur_normal.y, cur_normal.z);
+            else basePoints.emplace_back(basePoints[1]);
         }
 
         prevBasePoints.clear();
@@ -66,14 +87,16 @@ std::vector<Vertex> Cone::createConePoints(float radius, float height, int slice
     }
 
 
-    for(unsigned int i = 1; i < prevBasePoints.size(); i++){
-        glm::vec4 leftCoords = prevBasePoints[i].getCoords();
-        glm::vec4 rightCoords = prevBasePoints[i-1].getCoords();
+    for(unsigned int i = 2; i < prevBasePoints.size(); i++){
+        Vertex leftCoords = prevBasePoints[i];
+        Vertex rightCoords = prevBasePoints[i-1];
 
-        ans.emplace_back(rightCoords.x, rightCoords.y, rightCoords.z);
-        ans.emplace_back(0.0f, height, 0.0f);
-        ans.emplace_back(leftCoords.x, leftCoords.y, leftCoords.z);
+        ans.emplace_back(rightCoords);
+        ans.emplace_back(0.0f, height, 0.0f, 0.0f, 1.0f, 0.0f);
+        ans.emplace_back(leftCoords);
     }
+
+    for(Vertex v : ans) std::cout << v << std::endl;
 
     return ans;
 }

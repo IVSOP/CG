@@ -28,6 +28,9 @@ struct Vertex {
             : coords(x, y, z, 1.0f), normal(normal_x, normal_y, normal_z) {}
 
     Vertex(float x, float y, float z) : coords(x, y, z, 1.0f) {}
+
+    Vertex(Vertex const &v) : coords(v.coords), normal(v.normal), tex_coord(v.tex_coord) {}
+
     Vertex() = default;
 
     //getters
