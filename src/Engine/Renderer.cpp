@@ -3,7 +3,7 @@
 #include <iostream>
 #include <vector>
 #include <cstdio>
-
+#include <unistd.h>
 #include "Vertex.h"
 #include "Material.h"
 #include "Camera.h"
@@ -325,7 +325,7 @@ void Renderer::drawLighting(std::vector<Vertex> &verts, const glm::mat4 &project
 			// glm::vec3(2.99f, 0.72f, 0.0745f),
 			glm::vec3(0.1f),
 			32.0f,
-			2
+			7
 		};
 
 		GLCall(glBindBuffer(GL_TEXTURE_BUFFER, materialBuffer));
