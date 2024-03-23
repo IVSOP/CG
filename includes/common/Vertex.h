@@ -29,6 +29,8 @@ struct Vertex {
 
     Vertex(float x, float y, float z) : coords(x, y, z, 1.0f) {}
 
+    Vertex(glm::vec4 coords, glm::vec3 normal, glm::vec2 tex_coord) : coords(coords), normal(normal), tex_coord(tex_coord) {}
+
     Vertex(Vertex const &v) : coords(v.coords), normal(v.normal), tex_coord(v.tex_coord) {}
 
     Vertex() = default;
