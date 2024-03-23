@@ -23,6 +23,7 @@ struct DirLight {
     vec3 diffuse;
     vec3 specular;
 };
+#define VEC4_IN_DIRLIGHTS 3
 
 struct PointLight {
     vec3 position;
@@ -49,8 +50,9 @@ struct SpotLight {
   
     vec3 ambient;
     vec3 diffuse;
-    vec3 specular;       
+    vec3 specular;
 };
+#define VEC4_IN_SPOTLIGHTS 5
 
 // output from geometry shader and not vertex shader
 in GS_OUT {
@@ -63,7 +65,12 @@ in GS_OUT {
 uniform sampler2DArray u_TextureArraySlot;
 uniform samplerBuffer u_MaterialTBO;
 uniform samplerBuffer u_PointLightTBO;
+uniform samplerBuffer u_DirLightTBO;
+uniform samplerBuffer u_SpotLightTBO;
 uniform mat4 u_View; // view from the MVP
+uniform int u_NumPointLights = 0;
+uniform int u_NumDirLights = 0;
+uniform int u_NumSpotLights = 0;
 
 uniform float u_BloomThreshold = 1.0;
 
@@ -89,7 +96,7 @@ void main() {
 
 
 	// get texture from texture array
-	vec4 res_color = texture(u_TextureArraySlot, vec3(fs_in.g_TexCoord.xy, material.texture_id));
+	vec4 res_color = vec4(0.0, 0.0, 0.0, 1.0);
 
 	// normal and viewDir
 	// !!!!!!!!!!!!!!!!!!!!!!!!!! IMPORTANTE
@@ -98,25 +105,57 @@ void main() {
 	vec3 viewDir = normalize(-fs_in.g_FragPos); // the viewer is always at (0,0,0) in view-space, so viewDir = (0,0,0) - FragPosition <=> viewDir = -FragPosition
 	vec3 normal = normalize(fs_in.g_Normal);
 
-	// apply colors
-	// for now, there is only one point light, we need to get it from the array.
-	// its index is hardcoded as 0
+	
+	// apply pointlights
 	PointLight pointLight;
-	pointLight.position = texelFetch(u_PointLightTBO, 0 + (0 * VEC4_IN_POINTLIGHTS)).xyz;
-    pointLight.constant = texelFetch(u_PointLightTBO, 0 + (0 * VEC4_IN_POINTLIGHTS)).w;
-    pointLight.linear = texelFetch(u_PointLightTBO, 1 + (0 * VEC4_IN_POINTLIGHTS)).x;
-    pointLight.quadratic = texelFetch(u_PointLightTBO, 1 + (0 * VEC4_IN_POINTLIGHTS)).y;
-    pointLight.ambient.xy = texelFetch(u_PointLightTBO, 1 + (0 * VEC4_IN_POINTLIGHTS)).zw;
-	pointLight.ambient.z = texelFetch(u_PointLightTBO, 2 + (0 * VEC4_IN_POINTLIGHTS)).x;
-    pointLight.diffuse = texelFetch(u_PointLightTBO, 2 + (0 * VEC4_IN_POINTLIGHTS)).yzw;
-    pointLight.specular = texelFetch(u_PointLightTBO, 3 + (0 * VEC4_IN_POINTLIGHTS)).xyz;
+	for (int i = 0; i < u_NumPointLights; i++) {
+		pointLight.position = texelFetch(u_PointLightTBO, 0 + (i * VEC4_IN_POINTLIGHTS)).xyz;
+		pointLight.constant = texelFetch(u_PointLightTBO, 0 + (i * VEC4_IN_POINTLIGHTS)).w;
+		pointLight.linear = texelFetch(u_PointLightTBO, 1 + (i * VEC4_IN_POINTLIGHTS)).x;
+		pointLight.quadratic = texelFetch(u_PointLightTBO, 1 + (i * VEC4_IN_POINTLIGHTS)).y;
+		pointLight.ambient.xy = texelFetch(u_PointLightTBO, 1 + (i * VEC4_IN_POINTLIGHTS)).zw;
+		pointLight.ambient.z = texelFetch(u_PointLightTBO, 2 + (i * VEC4_IN_POINTLIGHTS)).x;
+		pointLight.diffuse = texelFetch(u_PointLightTBO, 2 + (i * VEC4_IN_POINTLIGHTS)).yzw;
+		pointLight.specular = texelFetch(u_PointLightTBO, 3 + (i * VEC4_IN_POINTLIGHTS)).xyz;
+		res_color.rgb += CalcPointLight(pointLight, normal, fs_in.g_FragPos, viewDir, material);
+	}
 
-	res_color.rgb += CalcPointLight(pointLight, normal, fs_in.g_FragPos, viewDir, material);
+	DirLight dirLight;
+	for (int i = 0; i < u_NumDirLights; i++) {
+		dirLight.direction = texelFetch(u_DirLightTBO, 0 + (i * VEC4_IN_DIRLIGHTS)).xyz;
+		dirLight.ambient.x = texelFetch(u_DirLightTBO, 0 + (i * VEC4_IN_DIRLIGHTS)).w;
+		dirLight.ambient.yz = texelFetch(u_DirLightTBO, 1 + (i * VEC4_IN_DIRLIGHTS)).xy;
+		dirLight.diffuse.xy = texelFetch(u_DirLightTBO, 1 + (i * VEC4_IN_DIRLIGHTS)).zw;
+		dirLight.diffuse.z = texelFetch(u_DirLightTBO, 2 + (i * VEC4_IN_DIRLIGHTS)).x;
+		dirLight.specular = texelFetch(u_DirLightTBO, 2 + (i * VEC4_IN_DIRLIGHTS)).yzw;
+		res_color.rgb += CalcDirLight(dirLight, normal, viewDir, material);
+	}
+
+	SpotLight spotLight;
+	for (int i = 0; i < u_NumSpotLights; i++) {
+		spotLight.position = texelFetch(u_SpotLightTBO, 0 + (i * VEC4_IN_SPOTLIGHTS)).xyz;
+		spotLight.direction.x = texelFetch(u_SpotLightTBO, 0 + (i * VEC4_IN_SPOTLIGHTS)).w;
+		spotLight.direction.yz = texelFetch(u_SpotLightTBO, 1 + (i * VEC4_IN_SPOTLIGHTS)).xy;
+		spotLight.cutOff = texelFetch(u_SpotLightTBO, 1 + (i * VEC4_IN_SPOTLIGHTS)).z;
+		spotLight.outerCutOff = texelFetch(u_SpotLightTBO, 1 + (i * VEC4_IN_SPOTLIGHTS)).w;
+		spotLight.constant = texelFetch(u_SpotLightTBO, 2 + (i * VEC4_IN_SPOTLIGHTS)).x;
+		spotLight.linear = texelFetch(u_SpotLightTBO, 2 + (i * VEC4_IN_SPOTLIGHTS)).y;
+		spotLight.quadratic = texelFetch(u_SpotLightTBO, 2 + (i * VEC4_IN_SPOTLIGHTS)).z;
+		spotLight.ambient.x = texelFetch(u_SpotLightTBO, 2 + (i * VEC4_IN_SPOTLIGHTS)).w;
+		spotLight.ambient.yz = texelFetch(u_SpotLightTBO, 3 + (i * VEC4_IN_SPOTLIGHTS)).xy;
+		spotLight.diffuse.xy = texelFetch(u_SpotLightTBO, 3 + (i * VEC4_IN_SPOTLIGHTS)).zw;
+		spotLight.diffuse.z = texelFetch(u_SpotLightTBO, 4 + (i * VEC4_IN_SPOTLIGHTS)).x;
+		spotLight.specular = texelFetch(u_SpotLightTBO, 4 + (i * VEC4_IN_SPOTLIGHTS)).yzw;
+		res_color.rgb += CalcSpotLight(spotLight, normal, fs_in.g_FragPos, viewDir, material);
+	}
+
+
 
 	// add emissive
 	res_color.rgb += material.emissive.rgb;
 
-	color = res_color;
+	// apply texture at the end, merge colors
+	color = res_color * texture(u_TextureArraySlot, vec3(fs_in.g_TexCoord.xy, material.texture_id));
 
 
 	// extract bright colors into the separate color attachment
@@ -190,7 +229,7 @@ vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir, Mat
     float distance = length(fragToLight);
     float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));    
     // spotlight intensity
-    float theta = dot(lightDir, normalize(-light.direction)); 
+    float theta = dot(lightDir, normalize(-(mat3(u_View) * light.direction))); // same as dirlight, wtf?????????????????????????????????
     float epsilon = light.cutOff - light.outerCutOff;
     float intensity = clamp((theta - light.outerCutOff) / epsilon, 0.0, 1.0);
     

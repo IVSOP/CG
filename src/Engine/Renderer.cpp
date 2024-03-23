@@ -14,6 +14,8 @@
 #define SCENE_TEXTURE_SLOT 2 // slot to go into final bloom shader
 #define MATERIAL_TEXTURE_BUFFER_SLOT 3
 #define POINTLIGHT_TEXTURE_BUFFER_SLOT 4
+#define DIRLIGHT_TEXTURE_BUFFER_SLOT 5
+#define SPOTLIGHT_TEXTURE_BUFFER_SLOT 6
 
 #define MAX_MATERIALS 8
 #define MAX_LIGHTS 8
@@ -32,8 +34,32 @@ struct PointLight {
 	// need one extra float for 16. read Material.h
 	GLfloat padding_1;
 };
-static_assert(sizeof(PointLight) == 4 * sizeof(glm::vec4), "Error: Material has unexpected size");
+static_assert(sizeof(PointLight) == 4 * sizeof(glm::vec4), "Error: PointLight has unexpected size");
 
+struct DirLight {
+    glm::vec3 direction;
+  
+    glm::vec3 ambient;
+    glm::vec3 diffuse;
+    glm::vec3 specular;
+};
+static_assert(sizeof(DirLight) == 3 * sizeof(glm::vec4), "Error: DirLight has unexpected size");
+
+struct SpotLight {
+    glm::vec3 position;
+    glm::vec3 direction;
+    GLfloat cutOff;
+    GLfloat outerCutOff;
+  
+    GLfloat constant;
+    GLfloat linear;
+    GLfloat quadratic;
+  
+    glm::vec3 ambient;
+    glm::vec3 diffuse;
+    glm::vec3 specular;
+};
+static_assert(sizeof(SpotLight) == 5 * sizeof(glm::vec4), "Error: SpotLight has unexpected size");
 
 
 // quad filling entire screen
@@ -188,6 +214,19 @@ Renderer::Renderer(GLsizei viewport_width, GLsizei viewport_height)
 	GLCall(glBindTexture(GL_TEXTURE_BUFFER, pointLightTBO));
 	GLCall(glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, pointLightBuffer)); // bind the buffer to the texture
 
+	GLCall(glGenBuffers(1, &dirLightBuffer));
+	GLCall(glBindBuffer(GL_TEXTURE_BUFFER, dirLightBuffer));
+	GLCall(glGenTextures(1, &dirLightTBO));
+	GLCall(glBindTexture(GL_TEXTURE_BUFFER, dirLightTBO));
+	GLCall(glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, dirLightBuffer)); // bind the buffer to the texture
+
+	GLCall(glGenBuffers(1, &spotLightBuffer));
+	GLCall(glBindBuffer(GL_TEXTURE_BUFFER, spotLightBuffer));
+	GLCall(glGenTextures(1, &spotLightTBO));
+	GLCall(glBindTexture(GL_TEXTURE_BUFFER, spotLightTBO));
+	GLCall(glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, spotLightBuffer)); // bind the buffer to the texture
+
+
 
 	// for axis shader
 	axisShader.use();
@@ -289,7 +328,7 @@ void Renderer::prepareFrame(Camera &camera, GLfloat deltaTime) {
 
 }
 
-void Renderer::drawLighting(std::vector<Vertex> &verts, const glm::mat4 &projection, const glm::mat4 &view, GLFWwindow * window) {
+void Renderer::drawLighting(std::vector<Vertex> &verts, const glm::mat4 &projection, const glm::mat4 &view, GLFWwindow * window, const Camera &camera) {
 	constexpr glm::mat4 model = glm::mat4(1.0f);
 	// const glm::mat4 MVP = projection * view * model;
 
@@ -325,7 +364,7 @@ void Renderer::drawLighting(std::vector<Vertex> &verts, const glm::mat4 &project
 			// glm::vec3(2.99f, 0.72f, 0.0745f),
 			glm::vec3(0.1f),
 			32.0f,
-			2
+			5
 		};
 
 		GLCall(glBindBuffer(GL_TEXTURE_BUFFER, materialBuffer));
@@ -335,8 +374,7 @@ void Renderer::drawLighting(std::vector<Vertex> &verts, const glm::mat4 &project
 		// GLCall(glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, materialBuffer)); // bind the buffer to the texture (has been done while setting up)
 		lightingShader.setInt("u_MaterialTBO", MATERIAL_TEXTURE_BUFFER_SLOT);
 
-		// load test light
-		PointLight pointLights[8];
+		PointLight pointLights[MAX_LIGHTS];
 		pointLights[0] = {
 			.position = glm::vec3(0.0f, 2.0f, 5.0f),
 			.constant = 1.0f,
@@ -354,6 +392,47 @@ void Renderer::drawLighting(std::vector<Vertex> &verts, const glm::mat4 &project
 		GLCall(glBindTexture(GL_TEXTURE_BUFFER, pointLightTBO));
 		// GLCall(glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, pointLightBuffer)); // bind the buffer to the texture (has been done while setting up)
 		lightingShader.setInt("u_PointLightTBO", POINTLIGHT_TEXTURE_BUFFER_SLOT);
+		lightingShader.setInt("u_NumPointLights", 0);
+
+		DirLight dirLights[MAX_LIGHTS];
+		dirLights[0] = {
+			.direction = glm::normalize(glm::vec3(0.5f, -0.45f, 0.5f)),
+			.ambient = glm::vec3(0.2f, 0.2f, 0.0f),
+			.diffuse = glm::vec3(0.78f, 0.78f, 0.0f),
+			.specular = glm::vec3(1.0f, 1.0f, 1.0f)
+		};
+
+		GLCall(glBindBuffer(GL_TEXTURE_BUFFER, dirLightBuffer));
+		GLCall(glBufferData(GL_TEXTURE_BUFFER, MAX_LIGHTS * sizeof(DirLight), dirLights, GL_STATIC_DRAW));
+		GLCall(glActiveTexture(GL_TEXTURE0 + DIRLIGHT_TEXTURE_BUFFER_SLOT));
+		GLCall(glBindTexture(GL_TEXTURE_BUFFER, dirLightTBO));
+		// GLCall(glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, pointLightBuffer)); // bind the buffer to the texture (has been done while setting up)
+		lightingShader.setInt("u_DirLightTBO", DIRLIGHT_TEXTURE_BUFFER_SLOT);
+		lightingShader.setInt("u_NumDirLights", 0);
+
+		SpotLight spotLights[MAX_LIGHTS];
+		spotLights[0] = {
+			// .position = camera.Position,
+			.position = glm::vec3(0.0f, 1.0f, 3.0f),
+			// .direction = camera.Front,
+			.direction = glm::vec3(0.0f, -0.25f, -0.97f),
+			.cutOff = glm::cos(glm::radians(12.5f)),
+			.outerCutOff = glm::cos(glm::radians(17.5f)),
+			.constant = 1.0f,
+			.linear = 0.09f,
+			.quadratic = 0.032f,
+			.ambient = glm::vec3(0.1f, 0.1f, 0.1f),
+			.diffuse = glm::vec3(0.8f, 0.8f, 0.8f),
+			.specular = glm::vec3(1.0f, 1.0f, 1.0f)
+		};
+
+		GLCall(glBindBuffer(GL_TEXTURE_BUFFER, spotLightBuffer));
+		GLCall(glBufferData(GL_TEXTURE_BUFFER, MAX_LIGHTS * sizeof(SpotLight), spotLights, GL_STATIC_DRAW));
+		GLCall(glActiveTexture(GL_TEXTURE0 + SPOTLIGHT_TEXTURE_BUFFER_SLOT));
+		GLCall(glBindTexture(GL_TEXTURE_BUFFER, spotLightTBO));
+		// GLCall(glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, spotLightBuffer)); // bind the buffer to the texture (has been done while setting up)
+		lightingShader.setInt("u_SpotLightTBO", SPOTLIGHT_TEXTURE_BUFFER_SLOT);
+		lightingShader.setInt("u_NumSpotLights", 1);
 
 		// specify 2 attachments
 		constexpr GLuint attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
@@ -477,7 +556,7 @@ void Renderer::endFrame(GLFWwindow * window) {
 void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Camera &camera, GLFWwindow * window, GLfloat deltaTime) {
 	prepareFrame(camera, deltaTime);
 	const glm::mat4 view = camera.GetViewMatrix();
-	drawLighting(verts, projection, view, window);
+	drawLighting(verts, projection, view, window, camera);
 	bloomBlur(this->bloomBlurPasses);
 	merge();
 

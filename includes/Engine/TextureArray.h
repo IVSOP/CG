@@ -7,6 +7,8 @@
 #define TEXTURE_LAYERS 64
 #define TEXTURE_WIDTH 1024
 #define TEXTURE_HEIGHT 1024
+// GL_MAX_TEXTURE_SIZE for width and height????
+// GL_MAX_ARRAY_TEXTURE_LAYERS for depth
 
 class TextureArray {
 	public:
