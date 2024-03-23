@@ -44,6 +44,8 @@ public:
     float MouseSensitivity;
     float Zoom;
 
+	bool speedup = false;
+
     // constructor with vectors
 	// por agora estes nao sao usados, porque temos o ponto para onde queremos olhar e nao um vetor
     // Camera(glm::vec3 position = glm::vec3(0.0f, 2.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH) : Front(glm::vec3(0.0f, 0.0f, -1.0f)), MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
@@ -90,7 +92,12 @@ public:
     // processes input received from any keyboard-like input system. Accepts input parameter in the form of camera defined ENUM (to abstract it from windowing systems)
     void ProcessKeyboard(Camera_Movement direction, float deltaTime)
     {
-        float velocity = MovementSpeed * deltaTime;
+		float velocity;
+		if (speedup) {
+			velocity = 10 * MovementSpeed * deltaTime;
+		} else {
+        	velocity = MovementSpeed * deltaTime;
+		}
 
 		switch(direction) {
 			case(FORWARD):
@@ -181,6 +188,10 @@ public:
 	void look(GLfloat deltaPitch, GLfloat deltaYaw) {
 		this->Pitch += deltaPitch;
 		this->Yaw += deltaYaw;
+	}
+
+	void SpeedUp(bool speedup) {
+		this->speedup = speedup;
 	}
 
 private:

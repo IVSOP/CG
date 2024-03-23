@@ -144,7 +144,6 @@ void renderLoop(GLFWwindow *window, Camera &camera, Renderer &renderer) {
 
         currentFrameTime = glfwGetTime();
         deltaTime = currentFrameTime - lastFrameTime;
-        lastFrameTime = currentFrameTime;
 
         // no need for sleep, vsync takes care of mantaining timings
 		// HOWEVER macbooks as per usual do not work properly

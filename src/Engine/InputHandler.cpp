@@ -92,6 +92,12 @@ void InputHandler::applyToCamera(Camera &camera, int windowWidth, int windowHeig
 	if ((&keys[GLFW_KEY_LEFT_ALT])->last_action != GLFW_RELEASE) {
 		camera.ProcessKeyboard(DOWN, deltatime);
 	}
+	if ((&keys[GLFW_KEY_LEFT_SHIFT])->last_action != GLFW_RELEASE) {
+		camera.SpeedUp(true);
+	} else {
+		camera.SpeedUp(false);
+	}
+
 
 	if (!inMenu) {
 		// const int center_x = windowWidth / 2;
