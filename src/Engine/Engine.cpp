@@ -115,6 +115,7 @@ void Engine::renderLoop() {
 			}
 		}
     }
+	kill = true;
 }
 
 void Engine::physLoop () {
@@ -130,7 +131,7 @@ void Engine::physLoop () {
 		// points[i].tex_id = 1.0f;
 	// }
 	
-    while (true) {
+    while (!kill) {
         lastFrameTime = glfwGetTime();
         // perform calculations............................
 

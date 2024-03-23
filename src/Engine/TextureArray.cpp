@@ -50,7 +50,7 @@ void TextureArray::addTexture(const char path[]) {
 
 	if (_width != this->width || _height != this->height) {
 
-		fprintf(stderr, "%sWARNING%s image dimensions for %s: Expected %d %d got %d %d. The image will be automatically resized.\n", YELLOW, RESET, __func__, this->width, this->height, _width, _height);
+		fprintf(stderr, "%s: %sWARNING%s image dimensions for %s: Expected %d %d got %d %d. The image will be automatically resized.\n", __PRETTY_FUNCTION__, YELLOW, RESET, path, this->width, this->height, _width, _height);
 		unsigned char * resized_buffer = (unsigned char*) malloc(this->width * this->height * STBIR_RGBA); // STBIR_RGBA???????
 		stbir_resize_uint8_linear(buffer, _width, _height, 0, resized_buffer, this->width, this->height, 0, STBIR_RGBA);
 

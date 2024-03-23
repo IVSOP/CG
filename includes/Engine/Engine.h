@@ -52,6 +52,8 @@ public:
 	// ou seja acho que vai ter de ficar assim
 	bool resize = false;
 
+	bool kill = false;
+
 };
 
 #endif
