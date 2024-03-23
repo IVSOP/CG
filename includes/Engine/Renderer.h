@@ -75,7 +75,7 @@ public:
 
 private:
 	void prepareFrame(Camera &camera, GLfloat deltatime);
-	void drawLighting(std::vector<Vertex> &verts, const glm::mat4 &projection, const glm::mat4 &view, GLFWwindow * window, const Camera &camera); // camera is for debugging
+	void drawLighting(std::vector<Vertex> &verts, const glm::mat4 &projection, const glm::mat4 &view, const Camera &camera); // camera is for debugging
 	void bloomBlur(int passes);
 	void merge();
 	void endFrame(GLFWwindow * window);

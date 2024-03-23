@@ -3,52 +3,15 @@
 #include <cstdio>
 #include <filesystem>
 
-#include "tinyxml2.h"
-#include "Vertex.h"
-#include "XmlParser.h"
-
-#if _WIN32
-#include <windows_unistd.h>
-#else
-#include <unistd.h>
-#endif
-
-#include "Renderer.h"
-#include "BasicRenderer.h"
-#include "Camera.h"
-#include "InputHandler.h"
-#include <thread>
-#include <mutex>
+#include "Engine.h"
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1900) && !defined(IMGUI_DISABLE_WIN32_FUNCTIONS)
 #pragma comment(lib, "legacy_stdio_definitions")
 #endif
 
-
-#undef BASIC_RENDER
-
-
-///////////////////////////////////////////////////////// main objects. temporario, depois vai sair daqui
-InputHandler inputHandler;
-XmlParser xmlParser;
-bool resize = false;
-glm::mat4 projection = glm::mat4(1.0f);
-bool renderer_resize_flag = false; // this is a temporary hack since I could not pass renderer into setWindow. When this file gets cleaned up this needs to go
-int renderer_windowWidth, renderer_windowHeight; // same thing
-
-std::vector<Vertex> points;
-std::vector<Vertex> draw_points;
-
-// sempre que dou resize, ele manda um mouse callback que lixa tudo, tive de fazer isto para esse callback ser ignorado
-// isto e extremamente roto, mas nas docs basicamente diz que sou burro se tentar fazer como no glut e meter GLFW_CURSOR_HIDDEN e estar sempre a centra-lo, diz para usar GLFW_CURSOR_DISABLED
-// ou seja acho que vai ter de ficar assim
-std::mutex mtx;
-
+//////////////////////////// CALLBACKS FOR GLFW //////////////////////////////
 void setWindow(GLFWwindow* window, int windowWidth, int windowHeight) {
-    // cursed, devia sair daqui, os valores nunca se alteram desde que o xml e carregado
-    const GLdouble windowFov = xmlParser.getWindowFov();
-    const GLdouble windowZNear = xmlParser.getWindowZNear();
-    const GLdouble windowZFar = xmlParser.getWindowZFar();
+	Engine *engine = reinterpret_cast<Engine *>(glfwGetWindowUserPointer(window));
 
     if (windowWidth == 0 || windowHeight == 0) {
         fprintf(stderr, "Detected window size 0, ignoring resize operation\n");
@@ -59,87 +22,82 @@ void setWindow(GLFWwindow* window, int windowWidth, int windowHeight) {
     GLfloat aspectRatio = static_cast<GLfloat>(windowWidth) / static_cast<GLfloat>(windowHeight);
 
     // Set perspective
-    projection = glm::perspective(glm::radians(static_cast<GLfloat>(windowFov)), static_cast<GLfloat>(aspectRatio), static_cast<GLfloat>(windowZNear), static_cast<GLfloat>(windowZFar));
+    engine->projection = glm::perspective(glm::radians(static_cast<GLfloat>(engine->windowFov)), static_cast<GLfloat>(aspectRatio), static_cast<GLfloat>(engine->windowZNear), static_cast<GLfloat>(engine->windowZFar));
 
     // Set viewport to be the entire window
     glViewport(0, 0, windowWidth, windowHeight);
 
-	renderer_windowWidth = windowWidth;
-	renderer_windowHeight = windowHeight;
+	engine->windowWidth = windowWidth;
+	engine->windowHeight = windowHeight;
+
+	engine->renderer.get()->resizeViewport(windowWidth, windowHeight);
 
     // printf("window set to %d %d. half is %d %d\n", windowWidth, windowHeight, windowWidth / 2, windowHeight / 2);
-    resize = true;
-	
-	renderer_resize_flag = true;
+    engine->resize = true;
 }
 
 void handleKey(GLFWwindow *window, int key, int scancode, int action, int mods) {
-    inputHandler.pressKey(window, key, scancode, action, mods);
+	Engine *engine = reinterpret_cast<Engine *>(glfwGetWindowUserPointer(window));
+
+    engine->inputHandler.get()->pressKey(window, key, scancode, action, mods);
 }
 
 void handleMouseMov(GLFWwindow *window, double xpos, double ypos) {
+	Engine *engine = reinterpret_cast<Engine *>(glfwGetWindowUserPointer(window));
+
     // printf("mouse callback is at %f %f\n", static_cast<GLfloat>(xpos), static_cast<GLfloat>(ypos));
-    if (!resize) {
-        inputHandler.moveMouseTo(xpos, ypos);
+    if (!engine->resize) {
+        engine->inputHandler.get()->moveMouseTo(xpos, ypos);
     } else {
         // fix para ao dar resize da janela coordenadas mudarem
         glfwGetCursorPos(window, &xpos, &ypos);
-        resize = false;
-        inputHandler.centerMouseTo(xpos, ypos);
+        engine->resize = false;
+        engine->inputHandler.get()->centerMouseTo(xpos, ypos);
     }
 }
 
-void basicRenderLoop(GLFWwindow *window, Camera &camera, BasicRenderer &renderer) {
-	double lastFrameTime, currentFrameTime, deltaTime = PHYS_STEP; // to prevent errors when this is first ran, I initialize it to the physics substep
-    while (!glfwWindowShouldClose(window)) {
-        glfwPollEvents(); // at the start due to imgui (??) test moving it to after the unlock()
+// void basicRenderLoop(GLFWwindow *window, Camera &camera, BasicRenderer &renderer) {
+// 	double lastFrameTime, currentFrameTime, deltaTime = PHYS_STEP; // to prevent errors when this is first ran, I initialize it to the physics substep
+//     while (!glfwWindowShouldClose(window)) {
+//         glfwPollEvents(); // at the start due to imgui (??) test moving it to after the unlock()
 
-        lastFrameTime = glfwGetTime();
-        int windowWidth = xmlParser.getWindowWidth();
-        int windowHeight = xmlParser.getWindowHeight();
+//         lastFrameTime = glfwGetTime();
+//         int windowWidth = xmlParser.getWindowWidth();
+//         int windowHeight = xmlParser.getWindowHeight();
 
-        // printf("delta is %f (%f fps)\n", deltaTime, 1.0f / deltaTime);
-        inputHandler.applyToCamera(camera, windowWidth, windowHeight, static_cast<GLfloat>(deltaTime));
+//         // printf("delta is %f (%f fps)\n", deltaTime, 1.0f / deltaTime);
+//         inputHandler.applyToCamera(camera, windowWidth, windowHeight, static_cast<GLfloat>(deltaTime));
 
 
-        std::unique_lock<std::mutex> lock = std::unique_lock<std::mutex>(mtx);
-        // auto s = draw_points.size();
-        // printf("%f %f %f %lu\n", draw_points[s -1].getX(), draw_points[s -1].getY(), draw_points[s -1].getZ(), s);
-        renderer.draw(draw_points, projection, camera, window);
-        lock.unlock();
+//         std::unique_lock<std::mutex> lock = std::unique_lock<std::mutex>(mtx);
+//         // auto s = draw_points.size();
+//         // printf("%f %f %f %lu\n", draw_points[s -1].getX(), draw_points[s -1].getY(), draw_points[s -1].getZ(), s);
+//         renderer.draw(draw_points, projection, camera, window);
+//         lock.unlock();
 
-        currentFrameTime = glfwGetTime();
-        deltaTime = currentFrameTime - lastFrameTime;
-        lastFrameTime = currentFrameTime;
+//         currentFrameTime = glfwGetTime();
+//         deltaTime = currentFrameTime - lastFrameTime;
+//         lastFrameTime = currentFrameTime;
 
-        // no need for sleep, vsync takes care of mantaining timings
-    }
+//         // no need for sleep, vsync takes care of mantaining timings
+//     }
+// }
 
-}
-
-void renderLoop(GLFWwindow *window, Camera &camera, Renderer &renderer) {
+void Engine::renderLoop() {
     double lastFrameTime, currentFrameTime, deltaTime = PHYS_STEP; // to prevent errors when this is first ran, I initialize it to the physics substep
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents(); // at the start due to imgui (??) test moving it to after the unlock()
 
 		lastFrameTime = glfwGetTime();
-        int windowWidth = xmlParser.getWindowWidth();
-        int windowHeight = xmlParser.getWindowHeight();
-
-		if (renderer_resize_flag) {
-			renderer.resizeViewport(renderer_windowWidth, renderer_windowHeight);
-			renderer_resize_flag = false;
-		}
-
 
         // printf("delta is %f (%f fps)\n", deltaTime, 1.0f / deltaTime);
-        inputHandler.applyToCamera(camera, windowWidth, windowHeight, static_cast<GLfloat>(deltaTime));
+        inputHandler.get()->applyToCamera(*camera.get(), windowWidth, windowHeight, static_cast<GLfloat>(deltaTime));
 
 
         std::unique_lock<std::mutex> lock = std::unique_lock<std::mutex>(mtx);
         // auto s = draw_points.size();
         // printf("%f %f %f %lu\n", draw_points[s -1].getX(), draw_points[s -1].getY(), draw_points[s -1].getZ(), s);
-        renderer.draw(draw_points, projection, camera, window, deltaTime);
+        renderer.get()->draw(draw_points, projection, *camera.get(), window, deltaTime);
         lock.unlock();
 
         currentFrameTime = glfwGetTime();
@@ -148,8 +106,8 @@ void renderLoop(GLFWwindow *window, Camera &camera, Renderer &renderer) {
         // no need for sleep, vsync takes care of mantaining timings
 		// HOWEVER macbooks as per usual do not work properly
 		// so I made this bandaid fix
-		if (renderer.limitFPS) {
-			const double fps_time = 1.0f / renderer.fps;
+		if (renderer.get()->limitFPS) {
+			const double fps_time = 1.0f / renderer.get()->fps;
 			if (deltaTime < fps_time) {
 				const double sleepTime = (fps_time - deltaTime) * 10E5; // multiply to get from seconds to microseconds, this is prob platform dependent and very bad
 				usleep(sleepTime);
@@ -159,7 +117,7 @@ void renderLoop(GLFWwindow *window, Camera &camera, Renderer &renderer) {
     }
 }
 
-auto physLoop = [](GLFWwindow *window) {
+void Engine::physLoop () {
     double lastFrameTime, currentFrameTime, deltaTime;
 	// for (unsigned int i = 0; i < points.size(); i++) {
 	// 	float r = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
@@ -206,10 +164,18 @@ int main(int argc, char **argv) {
         return 1;
     }
 
-    xmlParser.parseXML(argv[1]);
+    XmlParser xmlParser;
+	xmlParser.parseXML(argv[1]);
 
-    int windowWidth = xmlParser.getWindowWidth();
-    int windowHeight = xmlParser.getWindowHeight();
+	Engine engine(xmlParser);
+	engine.loop();
+
+    return 0;
+}
+
+Engine::Engine(XmlParser &xmlParser) {
+	this->windowWidth = xmlParser.getWindowWidth();
+    this->windowHeight = xmlParser.getWindowHeight();
 
     glfwSetErrorCallback(glfw_error_callback); // ?? isto nao devia tar depois??
     if (!glfwInit()) {
@@ -232,18 +198,22 @@ int main(int argc, char **argv) {
     // glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only isto faz o que??????????????????????????????????????????????????????????????????????????????????????????????????????
 #endif
 
-    GLFWwindow *window = glfwCreateWindow(windowWidth, windowHeight, "CG", NULL, NULL);
+    this->window = glfwCreateWindow(windowWidth, windowHeight, "CG", NULL, NULL);
     if (window == NULL) {
         perror("GLFW window failed to create");
         glfwTerminate();
-        return 1;
+        exit(EXIT_FAILURE);
     }
     glfwMakeContextCurrent(window);
 
 	if (glewInit() != GLEW_OK) {
 		perror("GLEW failed");
-		return 1;
+		exit(EXIT_FAILURE);
 	}
+
+	glfwSetWindowUserPointer(window, this);
+
+	this->inputHandler = std::make_unique<InputHandler>();
 
     glfwSwapInterval(1); // hardcoded sync with monitor fps
 
@@ -251,7 +221,7 @@ int main(int argc, char **argv) {
     glfwSetFramebufferSizeCallback(window, setWindow);
     glfwSetKeyCallback(window, handleKey);
     // TEMPORARY
-    inputHandler.handleMouseMov = handleMouseMov;
+    inputHandler.get()->handleMouseMov = handleMouseMov;
     glfwSetCursorPosCallback(window, handleMouseMov);
 
 
@@ -307,7 +277,13 @@ int main(int argc, char **argv) {
     GLdouble cameraYUp = xmlParser.getCameraYUp();
     GLdouble cameraZUp = xmlParser.getCameraZUp();
 
-    Camera camera = Camera(glm::vec3(cameraXPos, cameraYPos, cameraZPos), glm::vec3(cameraXLook, cameraYLook, cameraZLook), glm::vec3(cameraXUp, cameraYUp, cameraZUp));
+    this->camera = std::make_unique<Camera>(Camera(glm::vec3(cameraXPos, cameraYPos, cameraZPos), glm::vec3(cameraXLook, cameraYLook, cameraZLook), glm::vec3(cameraXUp, cameraYUp, cameraZUp)));
+
+
+	this->windowFov = xmlParser.getWindowFov();
+    this->windowZNear = xmlParser.getWindowZNear();
+    this->windowZFar = xmlParser.getWindowZFar();
+
 
 	// por qualquer razao especificamente no mac nao da para criar shaders sem ter um VAO
 #ifdef __APPLE__
@@ -316,38 +292,30 @@ int main(int argc, char **argv) {
 	GLCall(glBindVertexArray(tempVAO));
 #endif
 
-	#ifdef BASIC_RENDER
-		BasicRenderer renderer = BasicRenderer();
-	#else
-		Renderer renderer(static_cast<GLsizei>(windowWidth), static_cast<GLsizei>(windowHeight));
-	#endif
+	this->renderer = std::make_unique<Renderer>(static_cast<GLsizei>(this->windowWidth), static_cast<GLsizei>(this->windowHeight));
 
 #ifdef __APPLE__
 	GLCall(glDeleteVertexArrays(1, &tempVAO));
 #endif
-	renderer_windowWidth = windowWidth;
-	renderer_windowHeight = windowHeight;
 
-    setWindow(window, static_cast<GLdouble>(windowWidth), static_cast<GLdouble>(windowHeight));
+    setWindow(window, static_cast<GLdouble>(this->windowWidth), static_cast<GLdouble>(this->windowHeight));
 
     points = xmlParser.getPoints();
     draw_points = points; // early copy to allow renderer to display something
+}
 
-    std::thread physThread(physLoop, window);
+void Engine::loop() {
+    std::thread physThread(&Engine::physLoop, this);
 	physThread.detach();
 
-	#ifdef BASIC_RENDER
-		basicRenderLoop(window, camera, renderer);
-	#else
-    	renderLoop(window, camera, renderer);
-	#endif
+	renderLoop();
+}
 
-    ImGui_ImplOpenGL3_Shutdown();
+Engine::~Engine() {
+	ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
 
     glfwDestroyWindow(window);
     glfwTerminate();
-
-    return 0;
 }

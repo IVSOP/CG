@@ -335,7 +335,7 @@ void Renderer::prepareFrame(Camera &camera, GLfloat deltaTime) {
 
 }
 
-void Renderer::drawLighting(std::vector<Vertex> &verts, const glm::mat4 &projection, const glm::mat4 &view, GLFWwindow * window, const Camera &camera) {
+void Renderer::drawLighting(std::vector<Vertex> &verts, const glm::mat4 &projection, const glm::mat4 &view, const Camera &camera) {
 	constexpr glm::mat4 model = glm::mat4(1.0f);
 	// const glm::mat4 MVP = projection * view * model;
 
@@ -567,7 +567,7 @@ void Renderer::endFrame(GLFWwindow * window) {
 void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Camera &camera, GLFWwindow * window, GLfloat deltaTime) {
 	prepareFrame(camera, deltaTime);
 	const glm::mat4 view = camera.GetViewMatrix();
-	drawLighting(verts, projection, view, window, camera);
+	drawLighting(verts, projection, view, camera);
 	bloomBlur(this->bloomBlurPasses);
 	merge();
 
