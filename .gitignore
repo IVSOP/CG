@@ -5,3 +5,4 @@ debug/
 .vscode/
 buildWin/
 imgui.ini
+*.3d

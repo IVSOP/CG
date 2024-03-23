@@ -318,7 +318,10 @@ void Renderer::prepareFrame(Camera &camera, GLfloat deltaTime) {
 	// ImGui::ShowDemoWindow();
 	ImGui::Text("FPS: %lf", 1.0f / deltaTime);
 	ImGui::Text("Facing x:%f y:%f z:%f", camera.Front.x, camera.Front.y, camera.Front.z);
-	ImGui::InputFloat3("Position:", glm::value_ptr(camera.Position));
+	ImGui::InputFloat3("Position", glm::value_ptr(camera.Position));
+	ImGui::SliderFloat("##Camera_speed", &camera.MovementSpeed, 0.0f, 1000.0f, "Camera speed = %.3f");
+	ImGui::SameLine();
+	ImGui::InputFloat("Camera speed", &camera.MovementSpeed, 1.0f, 10.0f);
 	ImGui::SliderFloat("gamma", &gamma, 0.0f, 10.0f, "gamma = %.3f");
 	ImGui::SliderFloat("exposure", &exposure, 0.0f, 10.0f, "exposure = %.3f");
 	ImGui::InputInt("bloomPasses", &bloomBlurPasses, 1, 1); if (bloomBlurPasses < 0) bloomBlurPasses = 0;
