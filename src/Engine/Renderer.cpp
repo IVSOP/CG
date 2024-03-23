@@ -3,7 +3,6 @@
 #include <iostream>
 #include <vector>
 #include <cstdio>
-#include <unistd.h>
 #include "Vertex.h"
 #include "Material.h"
 #include "Camera.h"
