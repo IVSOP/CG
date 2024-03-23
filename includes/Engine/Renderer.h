@@ -31,7 +31,7 @@ public:
 	GLuint VAO, VAO_axis;
 	GLuint vertexBuffer, vertexBuffer_axis;
 	Shader lightingShader, axisShader, normalsShader;
-	GLuint lightingFBO = 0;
+	GLuint lightingFBO = 0, lightingFBODepthBuffer = 0;
 	GLuint lightingTexture = 0; // color atttachment 0, scene renders into this
 	GLuint brightTexture = 0; // color atttachment 1, extraction of brightly lit areas
 
@@ -69,6 +69,7 @@ public:
 	void loadTextures();
 	void checkProgram(GLuint program);
 	void resizeViewport(GLsizei viewport_width, GLsizei viewport_height);
+	void generate_FBO_depth_buffer(GLuint *depthBuffer) const;
 	void generate_FBO_texture(GLuint *textureID, GLenum attachmentID); // makes the texture, needs to be called whenever viewport is resized (for now)
 	void checkFrameBuffer();
 

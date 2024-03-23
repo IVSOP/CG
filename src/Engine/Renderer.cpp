@@ -241,6 +241,7 @@ Renderer::Renderer(GLsizei viewport_width, GLsizei viewport_height)
 	//////////////////////////// LOADING FRAMEBUFFERS AND TEXTURE ATTACHMENTS ////////////////////////////
 	GLCall(glGenFramebuffers(1, &lightingFBO));
 		GLCall(glBindFramebuffer(GL_FRAMEBUFFER, lightingFBO));
+		generate_FBO_depth_buffer(&lightingFBODepthBuffer);
 		generate_FBO_texture(&lightingTexture, GL_COLOR_ATTACHMENT0);
 		generate_FBO_texture(&brightTexture, GL_COLOR_ATTACHMENT1);
 		GLCall(checkFrameBuffer());
@@ -276,6 +277,9 @@ Renderer::~Renderer() {
 	GLCall(glDeleteTextures(1, &lightingTexture));
 	GLCall(glDeleteTextures(1, &materialBuffer));
 	GLCall(glDeleteTextures(2, pingpongTextures));
+
+	GLCall(glBindFramebuffer(GL_FRAMEBUFFER, lightingFBO));
+	GLCall(glDeleteRenderbuffers(1, &lightingFBODepthBuffer));
 
 	GLCall(glDeleteFramebuffers(1, &lightingFBO));
 	GLCall(glDeleteFramebuffers(2, pingpongFBO));
@@ -412,10 +416,10 @@ void Renderer::drawLighting(std::vector<Vertex> &verts, const glm::mat4 &project
 
 		SpotLight spotLights[MAX_LIGHTS];
 		spotLights[0] = {
-			// .position = camera.Position,
-			.position = glm::vec3(0.0f, 1.0f, 3.0f),
-			// .direction = camera.Front,
-			.direction = glm::vec3(0.0f, -0.25f, -0.97f),
+			.position = camera.Position,
+			// .position = glm::vec3(0.0f, 1.0f, 3.0f),
+			.direction = camera.Front,
+			// .direction = glm::vec3(0.0f, -0.25f, -0.97f),
 			.cutOff = glm::cos(glm::radians(12.5f)),
 			.outerCutOff = glm::cos(glm::radians(17.5f)),
 			.constant = 1.0f,
@@ -433,6 +437,10 @@ void Renderer::drawLighting(std::vector<Vertex> &verts, const glm::mat4 &project
 		// GLCall(glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, spotLightBuffer)); // bind the buffer to the texture (has been done while setting up)
 		lightingShader.setInt("u_SpotLightTBO", SPOTLIGHT_TEXTURE_BUFFER_SLOT);
 		lightingShader.setInt("u_NumSpotLights", 1);
+
+		// bind the render buffer to this FBO (maybe this is missing actualy binding it, idk, but it gets regenerated automatically when screen is resized)
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, lightingFBODepthBuffer);
+
 
 		// specify 2 attachments
 		constexpr GLuint attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
@@ -570,6 +578,18 @@ void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Cam
 	endFrame(window);
 }
 
+// make sure fbo is bound before calling this
+void Renderer::generate_FBO_depth_buffer(GLuint *depthBuffer) const {
+
+	if (*depthBuffer > 0) {
+		glDeleteRenderbuffers(1, depthBuffer);
+	}
+
+	glGenRenderbuffers(1, depthBuffer);
+    glBindRenderbuffer(GL_RENDERBUFFER, *depthBuffer);
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT, this->viewport_width, this->viewport_height);
+}
+
 // this does NOT take into acount currently used textures slots etc, only here for organisation
 // make sure fbo is bound before calling this
 void Renderer::generate_FBO_texture(GLuint *textureID, GLenum attachmentID) {
@@ -600,6 +620,7 @@ void Renderer::resizeViewport(GLsizei viewport_width, GLsizei viewport_height) {
 	this->viewport_height = viewport_height;
 
 	GLCall(glBindFramebuffer(GL_FRAMEBUFFER, lightingFBO));
+	generate_FBO_depth_buffer(&lightingFBODepthBuffer);
 	generate_FBO_texture(&lightingTexture, GL_COLOR_ATTACHMENT0);
 	generate_FBO_texture(&brightTexture, GL_COLOR_ATTACHMENT1);
 	GLCall(checkFrameBuffer());
