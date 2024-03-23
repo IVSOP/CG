@@ -70,7 +70,7 @@
             </transform>
             <models>
                 <!-- Júpiter -->
-                <model file="sphere_1_20_20.3d"> <!-- generator torus 80 85 50 50 torus_80_85_50_50.3d -->
+                <model file="sphere_1_20_20.3d"> <!-- generator sphere 1 20 20 sphere_1_20_20.3d -->
                     <texture file="jupiter.jpg"/>
                 </model>
             </models>
@@ -82,7 +82,7 @@
             </transform>
             <models>
                 <!-- Saturno -->
-                <model file="sphere_1_20_20.3d"> <!-- generator torus 80 85 50 50 torus_80_85_50_50.3d -->
+                <model file="sphere_1_20_20.3d"> <!-- generator sphere 1 20 20 sphere_1_20_20.3d -->
                     <texture file="saturno.jpg"/>
                 </model>
             </models>
@@ -94,7 +94,7 @@
             </transform>
             <models>
                 <!-- Urano -->
-                <model file="sphere_1_20_20.3d"> <!-- generator torus 80 85 50 50 torus_80_85_50_50.3d -->
+                <model file="sphere_1_20_20.3d"> <!-- generator sphere 1 20 20 sphere_1_20_20.3d -->
                     <texture file="urano.jpg"/>
                 </model>
             </models>
@@ -106,7 +106,7 @@
             </transform>
             <models>
                 <!-- Neptuno -->
-                <model file="sphere_1_20_20.3d"> <!-- generator torus 80 85 50 50 torus_80_85_50_50.3d -->
+                <model file="sphere_1_20_20.3d"> <!-- generator sphere 1 20 20 sphere_1_20_20.3d -->
                     <texture file="neptuno.jpg"/>
                 </model>
             </models>
