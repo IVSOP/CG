@@ -1,0 +1,124 @@
+<world>
+    <window width="512" height="512"/>
+    <camera>
+        <position x="150" y="50" z="-150"/>
+        <lookAt x="0" y="0" z="0"/>
+        <up x="0" y="1" z="0"/> <!-- optional, use these values as default-->
+        <projection fov="60" near="1" far="1000"/> <!-- optional, use these values as default-->
+    </camera>
+
+    <group>
+        <group>
+            <transform>
+                <translate x="18" y="0" z="0"/>
+                <scale x="0.33" y="0.33" z="0.33"/> <!-- Real proportion = 0.33 -->
+            </transform>
+            <models>
+                <!-- Mercury -->
+                <model file="sphere_1_20_20.3d"> <!-- generator sphere 1 20 20 sphere_1_20_20.3d -->
+                    <texture file="mercury.jpg"/>
+                </model>
+            </models>
+            <group>
+                <transform>
+                    <scale x="3" y="3" z="3"/> <!-- Real proportion ~= 1.0 -->
+                    <translate x="5" y="0" z="10"/>
+                </transform>
+                <models>
+                    <!-- Venus -->
+                    <model file="sphere_1_20_20.3d"> <!-- generator sphere 1 20 20 sphere_1_20_20.3d -->
+                        <texture file="venus.jpg"/>
+                    </model>
+                </models>
+            </group>
+        </group>
+        <group>
+            <transform>
+                <translate x="-35" y="0" z="-22"/>
+            </transform>
+            <models>
+                <!-- Terra -->
+                <model file="sphere_1_20_20.3d"> <!-- generator sphere 1 20 20 sphere_1_20_20.3d -->
+                    <texture file="terra.jpg"/>
+                </model>
+            </models>
+            <group>
+                <transform>
+                    <translate x="50" y="0" z="-31"/>
+                    <scale x="0.5" y="0.5" z="0.5"/> <!-- Real proportion ~= 0.5 -->
+                </transform>
+                <models>
+                    <!-- Marte -->
+                    <model file="sphere_1_20_20.3d"> <!-- generator sphere 1 20 20 sphere_1_20_20.3d -->
+                        <texture file="marte.jpg"/>
+                    </model>
+                </models>
+            </group>
+        </group>
+        <group>
+            <models>
+                <!-- Cinturão de asteróides -->
+                <model file="torus_80_85_50_50.3d"> <!-- generator torus 80 85 50 50 torus_80_85_50_50.3d -->
+                    <texture file="asteroides.jpg"/>
+                </model>
+            </models>
+        </group>
+        <group>
+            <transform>
+                <translate x="68" y="0" z="-85"/>
+                <scale x="5" y="5" z="5"/> <!-- Real proportion ~= 11 -->
+            </transform>
+            <models>
+                <!-- Júpiter -->
+                <model file="sphere_1_20_20.3d"> <!-- generator torus 80 85 50 50 torus_80_85_50_50.3d -->
+                    <texture file="jupiter.jpg"/>
+                </model>
+            </models>
+        </group>
+        <group>
+            <transform>
+                <translate x="-88" y="0" z="85"/>
+                <scale x="4" y="4" z="4"/> <!-- Real proportion ~= 9.5 -->
+            </transform>
+            <models>
+                <!-- Saturno -->
+                <model file="sphere_1_20_20.3d"> <!-- generator torus 80 85 50 50 torus_80_85_50_50.3d -->
+                    <texture file="saturno.jpg"/>
+                </model>
+            </models>
+        </group>
+        <group>
+            <transform>
+                <translate x="108" y="0" z="130"/>
+                <scale x="2.5" y="2.5" z="2.5"/> <!-- Real proportion ~= 4 -->
+            </transform>
+            <models>
+                <!-- Urano -->
+                <model file="sphere_1_20_20.3d"> <!-- generator torus 80 85 50 50 torus_80_85_50_50.3d -->
+                    <texture file="urano.jpg"/>
+                </model>
+            </models>
+        </group>
+        <group>
+            <transform>
+                <translate x="-130" y="0" z="-150"/>
+                <scale x="2.5" y="2.5" z="2.5"/> <!-- Real proportion ~= 4 -->
+            </transform>
+            <models>
+                <!-- Neptuno -->
+                <model file="sphere_1_20_20.3d"> <!-- generator torus 80 85 50 50 torus_80_85_50_50.3d -->
+                    <texture file="neptuno.jpg"/>
+                </model>
+            </models>
+        </group>
+        <transform>
+            <scale x="10" y="10" z="10"/> <!-- Real proportion = 109 -->
+        </transform>
+        <models>
+            <!-- Sun -->
+            <model file="sphere_1_20_20.3d"> <!-- generator sphere 1 20 20 sphere_1_20_20.3d -->
+                <texture file="sun.jpg"/>
+            </model>
+        </models>
+    </group>
+</world>
