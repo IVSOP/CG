@@ -262,6 +262,7 @@ void Renderer::loadTextures() {
 	tex->addTexture("test_files_phase_4/earth.jpg"); // 5
 	tex->addTexture("textures/rainbow.png"); // 6
 	tex->addTexture("textures/stripes.png"); // 7
+    tex->addTexture("test_files_phase_4/cone.jpg"); // 8
 
 	tex->setTextureArrayToSlot(TEX_ARRAY_SLOT);
 }
@@ -325,7 +326,7 @@ void Renderer::drawLighting(std::vector<Vertex> &verts, const glm::mat4 &project
 			// glm::vec3(2.99f, 0.72f, 0.0745f),
 			glm::vec3(0.1f),
 			32.0f,
-			2
+            3
 		};
 
 		GLCall(glBindBuffer(GL_TEXTURE_BUFFER, materialBuffer));
