@@ -1,124 +1,432 @@
+
+<!-- Data based on this website https://www.jpl.nasa.gov/edu/pdfs/scaless_reference.pdf -->
+
+<!-- Correr comando para mostrar o sistema solar:
+./build.sh && ./build/Generator sphere 1 20 20 sphere_1_20_20.3d && ./build/Generator torus 55 60 50 50 torus_55_60_50_50.3d && ./build/Generator torus 6 7 50 50 torus_6_7_50_50.3d && ./build/Engine custom_test_files_phase_1/solar_system.xml
+-->
+
 <world>
     <window width="512" height="512"/>
     <camera>
-        <position x="150" y="50" z="-150"/>
+        <position x="120" y="30" z="-30"/>
         <lookAt x="0" y="0" z="0"/>
         <up x="0" y="1" z="0"/> <!-- optional, use these values as default-->
         <projection fov="60" near="1" far="1000"/> <!-- optional, use these values as default-->
     </camera>
 
     <group>
+        <!-- Sun -->
         <group>
             <transform>
+                <scale x="10" y="10" z="10"/> <!-- Real proportion = 109 -->
+            </transform>
+            <models>
+                <model file="sphere_1_20_20.3d"> <!-- generator sphere 1 20 20 sphere_1_20_20.3d -->
+                    <texture file="sun.jpg"/>
+                </model>
+            </models>
+        </group>
+
+        <!-- Mercury -->
+        <group> 
+            <transform>
+                <rotate angle="30" x="0" y="1" z="0"/>
                 <translate x="18" y="0" z="0"/>
                 <scale x="0.33" y="0.33" z="0.33"/> <!-- Real proportion = 0.33 -->
             </transform>
             <models>
-                <!-- Mercury -->
                 <model file="sphere_1_20_20.3d"> <!-- generator sphere 1 20 20 sphere_1_20_20.3d -->
                     <texture file="mercury.jpg"/>
                 </model>
             </models>
-            <group>
-                <transform>
-                    <scale x="3" y="3" z="3"/> <!-- Real proportion ~= 1.0 -->
-                    <translate x="5" y="0" z="10"/>
-                </transform>
-                <models>
-                    <!-- Venus -->
-                    <model file="sphere_1_20_20.3d"> <!-- generator sphere 1 20 20 sphere_1_20_20.3d -->
-                        <texture file="venus.jpg"/>
-                    </model>
-                </models>
-            </group>
         </group>
+        <!-- Venus -->
         <group>
             <transform>
-                <translate x="-35" y="0" z="-22"/>
+                <translate x="23" y="0" z="0"/>
             </transform>
             <models>
-                <!-- Terra -->
+                <model file="sphere_1_20_20.3d"> <!-- generator sphere 1 20 20 sphere_1_20_20.3d -->
+                    <texture file="venus.jpg"/>
+                </model>
+            </models>
+        </group>
+        <!-- Terra -->
+        <group>
+            <transform>
+                <translate x="35" y="0" z="0"/>
+            </transform>
+            <models>
                 <model file="sphere_1_20_20.3d"> <!-- generator sphere 1 20 20 sphere_1_20_20.3d -->
                     <texture file="terra.jpg"/>
                 </model>
             </models>
+            <!-- Lua -->
             <group>
                 <transform>
-                    <translate x="50" y="0" z="-31"/>
-                    <scale x="0.5" y="0.5" z="0.5"/> <!-- Real proportion ~= 0.5 -->
+                    <rotate angle="30" x="0" y="1" z="0"/>
+                    <translate x="3" y="0" z="0"/>
+                    <scale x="0.25" y="0.25" z="0.25"/>
                 </transform>
                 <models>
-                    <!-- Marte -->
                     <model file="sphere_1_20_20.3d"> <!-- generator sphere 1 20 20 sphere_1_20_20.3d -->
-                        <texture file="marte.jpg"/>
+                        <texture file="solar_system/earth_moon.jpg"/>
                     </model>
                 </models>
             </group>
         </group>
+        <!-- Marte -->
+        <group>
+            <transform>
+                <translate x="50" y="0" z="0"/>
+                <scale x="0.8" y="0.8" z="0.8"/> <!-- Real proportion ~= 0.5 -->
+            </transform>
+            <models>
+                <model file="sphere_1_20_20.3d"> <!-- generator sphere 1 20 20 sphere_1_20_20.3d -->
+                    <texture file="marte.jpg"/>
+                </model>
+            </models>
+            <!-- ########### Luas de Marte ######### --> 
+            <!-- Lua Phobos de Marte  -->
+            <group>
+                <transform>
+                    <rotate angle="60" x="0" y="1" z="0"/>
+                    <translate x="2" y="0" z="0"/>
+                    <scale x="0.25" y="0.25" z="0.25"/>
+                </transform>
+                <models>
+                    <model file="sphere_1_20_20.3d"> <!-- generator sphere 1 20 20 sphere_1_20_20.3d -->
+                        <texture file="solar_system/earth_moon.jpg"/>
+                    </model>
+                </models>
+            </group>
+            <!-- Lua Deimos de Marte  -->
+            <group>
+                <transform>
+                    <rotate angle="120" x="0" y="1" z="0"/>
+                    <translate x="3" y="0" z="0"/>
+                    <scale x="0.25" y="0.25" z="0.25"/>
+                </transform>
+                <models>
+                    <model file="sphere_1_20_20.3d"> <!-- generator sphere 1 20 20 sphere_1_20_20.3d -->
+                        <texture file="solar_system/earth_moon.jpg"/>
+                    </model>
+                </models>
+            </group>
+        </group>
+
+        <!-- Cinturão de asteróides -->
         <group>
             <models>
-                <!-- Cinturão de asteróides -->
-                <model file="torus_80_85_50_50.3d"> <!-- generator torus 80 85 50 50 torus_80_85_50_50.3d -->
+                <model file="torus_55_60_50_50.3d"> <!-- generator torus 55 60 50 50 torus_55_60_50_50.3d -->
                     <texture file="asteroides.jpg"/>
                 </model>
             </models>
         </group>
+        <!-- Júpiter -->
         <group>
             <transform>
-                <translate x="68" y="0" z="-85"/>
+                <translate x="75" y="0" z="0"/>
                 <scale x="5" y="5" z="5"/> <!-- Real proportion ~= 11 -->
             </transform>
             <models>
-                <!-- Júpiter -->
                 <model file="sphere_1_20_20.3d"> <!-- generator sphere 1 20 20 sphere_1_20_20.3d -->
                     <texture file="jupiter.jpg"/>
                 </model>
             </models>
+
+            <!-- ########### Luas de Jupiter - representadas 4 de 95 ######### --> 
+            <!-- Lua Io de Júpiter -->
+            <group>
+                <transform>
+                    <rotate angle="30" x="0" y="1" z="0"/>
+                    <translate x="2.2" y="0" z="0"/>
+                    <scale x="0.21" y="0.21" z="0.21"/>
+                </transform>
+                <models>
+                    <model file="sphere_1_20_20.3d"> <!-- generator sphere 1 20 20 sphere_1_20_20.3d -->
+                        <texture file="solar_system/earth_moon.jpg"/>
+                    </model>
+                </models>
+            </group>
+
+            <!-- Lua Europa de Júpiter  -->
+            <group>
+                <transform>
+                    <rotate angle="120" x="0" y="1" z="0"/>
+                    <translate x="1.8" y="0" z="0"/>
+                    <scale x="0.13" y="0.13" z="0.13"/>
+                </transform>
+                <models>
+                    <model file="sphere_1_20_20.3d"> <!-- generator sphere 1 20 20 sphere_1_20_20.3d -->
+                        <texture file="solar_system/earth_moon.jpg"/>
+                    </model>
+                </models>
+            </group>
+
+            <!-- Lua Ganymede de Júpiter  -->
+            <group>
+                <transform>
+                    <rotate angle="150" x="0" y="1" z="0"/>
+                    <translate x="1.7" y="0" z="0"/>
+                    <scale x="0.33" y="0.33" z="0.33"/>
+                </transform>
+                <models>
+                    <model file="sphere_1_20_20.3d"> <!-- generator sphere 1 20 20 sphere_1_20_20.3d -->
+                        <texture file="solar_system/earth_moon.jpg"/>
+                    </model>
+                </models>
+            </group>
+
+            <!-- Lua Callisto de Júpiter  -->
+            <group>
+                <transform>
+                    <rotate angle="-60" x="0" y="1" z="0"/>
+                    <translate x="2.4" y="0" z="0"/>
+                    <scale x="0.18" y="0.18" z="0.18"/>
+                </transform>
+                <models>
+                    <model file="sphere_1_20_20.3d"> <!-- generator sphere 1 20 20 sphere_1_20_20.3d -->
+                        <texture file="solar_system/earth_moon.jpg"/>
+                    </model>
+                </models>
+            </group>
         </group>
+
+        <!-- Saturno -->
         <group>
             <transform>
-                <translate x="-88" y="0" z="85"/>
+                <translate x="130" y="0" z="0"/>
                 <scale x="4" y="4" z="4"/> <!-- Real proportion ~= 9.5 -->
             </transform>
             <models>
-                <!-- Saturno -->
                 <model file="sphere_1_20_20.3d"> <!-- generator sphere 1 20 20 sphere_1_20_20.3d -->
                     <texture file="saturno.jpg"/>
                 </model>
             </models>
+            <!-- Anel de Saturno -->
+            <group>
+                <transform>
+                    <scale x="0.25" y="0.25" z="0.25"/>  <!-- cancelar a escala do planeta -->
+                    <rotate angle="32" x="-1" y="0.3" z="0"/>
+                </transform>
+                <models>
+                    <model file="torus_6_7_50_50.3d"> <!-- generator torus 6 7 50 50 torus_6_7_50_50.3d -->
+                        <texture file="asteroides.jpg"/>
+                    </model>
+                </models>
+            </group>
+
+            <!-- ########### Luas de Saturno - representadas 4 de 146 ######### --> 
+            <!-- Lua Rhea de Saturno -->
+            <group>
+                <transform>
+                    <rotate angle="70" x="0" y="1" z="0"/>
+                    <translate x="4" y="0" z="0"/>
+                    <scale x="0.1" y="0.1" z="0.1"/>
+                </transform>
+                <models>
+                    <model file="sphere_1_20_20.3d"> <!-- generator sphere 1 20 20 sphere_1_20_20.3d -->
+                        <texture file="solar_system/earth_moon.jpg"/>
+                    </model>
+                </models>
+            </group>
+
+            <!-- Lua Titan de Saturno  -->
+            <group>
+                <transform>
+                    <rotate angle="150" x="0" y="1" z="0"/>
+                    <translate x="1.4" y="0" z="0"/>
+                    <scale x="0.08" y="0.08" z="0.08"/>
+                </transform>
+                <models>
+                    <model file="sphere_1_20_20.3d"> <!-- generator sphere 1 20 20 sphere_1_20_20.3d -->
+                        <texture file="solar_system/earth_moon.jpg"/>
+                    </model>
+                </models>
+            </group>
+
+            <!-- Lua Hyperion de Saturno  -->
+            <group>
+                <transform>
+                    <rotate angle="-32" x="0" y="1" z="0"/>
+                    <translate x="2.2" y="0" z="0"/>
+                    <scale x="0.13" y="0.13" z="0.13"/>
+                </transform>
+                <models>
+                    <model file="sphere_1_20_20.3d"> <!-- generator sphere 1 20 20 sphere_1_20_20.3d -->
+                        <texture file="solar_system/earth_moon.jpg"/>
+                    </model>
+                </models>
+            </group>
+
+            <!-- Lua Iapetus de Saturno  -->
+            <group>
+                <transform>
+                    <rotate angle="-60" x="0" y="1" z="0"/>
+                    <translate x="2.4" y="0" z="0"/>
+                    <scale x="0.18" y="0.18" z="0.18"/>
+                </transform>
+                <models>
+                    <model file="sphere_1_20_20.3d"> <!-- generator sphere 1 20 20 sphere_1_20_20.3d -->
+                        <texture file="solar_system/earth_moon.jpg"/>
+                    </model>
+                </models>
+            </group>
         </group>
+
+        <!-- Urano -->
         <group>
             <transform>
-                <translate x="108" y="0" z="130"/>
+                <translate x="163" y="0" z="0"/>
                 <scale x="2.5" y="2.5" z="2.5"/> <!-- Real proportion ~= 4 -->
             </transform>
             <models>
-                <!-- Urano -->
                 <model file="sphere_1_20_20.3d"> <!-- generator sphere 1 20 20 sphere_1_20_20.3d -->
                     <texture file="urano.jpg"/>
                 </model>
             </models>
+            <!-- Anel de Urano -->
+            <group>
+                <transform>
+                    <rotate angle="87" x="1" y="0.1" z="0.7"/>
+                    <scale x="0.3" y="0.3" z="0.3"/>
+                </transform>
+                <models>
+                    <model file="torus_6_7_50_50.3d"> <!-- generator torus 55 60 50 50 torus_55_60_50_50.3d -->
+                        <texture file="asteroides.jpg"/>
+                    </model>
+                </models>
+            </group>
+
+            <!-- ########### Luas de Urano - representadas 4 de 28 ######### --> 
+            <!-- Lua Miranda de Saturno -->
+            <group>
+                <transform>
+                    <rotate angle="-50" x="0" y="1" z="0"/>
+                    <translate x="4" y="0" z="0"/>
+                    <scale x="0.1" y="0.1" z="0.1"/>
+                </transform>
+                <models>
+                    <model file="sphere_1_20_20.3d"> <!-- generator sphere 1 20 20 sphere_1_20_20.3d -->
+                        <texture file="solar_system/earth_moon.jpg"/>
+                    </model>
+                </models>
+            </group>
+
+            <!-- Lua Ariel de Saturno  -->
+            <group>
+                <transform>
+                    <rotate angle="40" x="0" y="1" z="0"/>
+                    <translate x="1.4" y="0" z="0"/>
+                    <scale x="0.08" y="0.08" z="0.08"/>
+                </transform>
+                <models>
+                    <model file="sphere_1_20_20.3d"> <!-- generator sphere 1 20 20 sphere_1_20_20.3d -->
+                        <texture file="solar_system/earth_moon.jpg"/>
+                    </model>
+                </models>
+            </group>
+
+            <!-- Lua Umbriel de Saturno  -->
+            <group>
+                <transform>
+                    <rotate angle="-152" x="0" y="1" z="0"/>
+                    <translate x="2.2" y="0" z="0"/>
+                    <scale x="0.13" y="0.13" z="0.13"/>
+                </transform>
+                <models>
+                    <model file="sphere_1_20_20.3d"> <!-- generator sphere 1 20 20 sphere_1_20_20.3d -->
+                        <texture file="solar_system/earth_moon.jpg"/>
+                    </model>
+                </models>
+            </group>
+
+            <!-- Lua Titania de Saturno  -->
+            <group>
+                <transform>
+                    <rotate angle="70" x="0" y="1" z="0"/>
+                    <translate x="2.4" y="0" z="0"/>
+                    <scale x="0.18" y="0.18" z="0.18"/>
+                </transform>
+                <models>
+                    <model file="sphere_1_20_20.3d"> <!-- generator sphere 1 20 20 sphere_1_20_20.3d -->
+                        <texture file="solar_system/earth_moon.jpg"/>
+                    </model>
+                </models>
+            </group>
+
         </group>
+
+            <!-- Neptuno -->
         <group>
             <transform>
-                <translate x="-130" y="0" z="-150"/>
+                <translate x="186" y="0" z="0"/>
                 <scale x="2.5" y="2.5" z="2.5"/> <!-- Real proportion ~= 4 -->
             </transform>
             <models>
-                <!-- Neptuno -->
                 <model file="sphere_1_20_20.3d"> <!-- generator sphere 1 20 20 sphere_1_20_20.3d -->
                     <texture file="neptuno.jpg"/>
                 </model>
             </models>
+
+            <!-- ########### Luas de Neptuno - representadas 4 de 16 ######### --> 
+            <!-- Lua Triton de Neptuno -->
+            <group>
+                <transform>
+                    <rotate angle="150" x="0" y="1" z="0"/>
+                    <translate x="4" y="0" z="0"/>
+                    <scale x="0.1" y="0.1" z="0.1"/>
+                </transform>
+                <models>
+                    <model file="sphere_1_20_20.3d"> <!-- generator sphere 1 20 20 sphere_1_20_20.3d -->
+                        <texture file="solar_system/earth_moon.jpg"/>
+                    </model>
+                </models>
+            </group>
+
+            <!-- Lua Nereid de Neptuno  -->
+            <group>
+                <transform>
+                    <rotate angle="-145" x="0" y="1" z="0"/>
+                    <translate x="1.4" y="0" z="0"/>
+                    <scale x="0.08" y="0.08" z="0.08"/>
+                </transform>
+                <models>
+                    <model file="sphere_1_20_20.3d"> <!-- generator sphere 1 20 20 sphere_1_20_20.3d -->
+                        <texture file="solar_system/earth_moon.jpg"/>
+                    </model>
+                </models>
+            </group>
+
+            <!-- Lua Halimede de Neptuno  -->
+            <group>
+                <transform>
+                    <rotate angle="245" x="0" y="1" z="0"/>
+                    <translate x="3.5" y="0" z="0"/>
+                    <scale x="0.13" y="0.13" z="0.13"/>
+                </transform>
+                <models>
+                    <model file="sphere_1_20_20.3d"> <!-- generator sphere 1 20 20 sphere_1_20_20.3d -->
+                        <texture file="solar_system/earth_moon.jpg"/>
+                    </model>
+                </models>
+            </group>
+
+            <!-- Lua Sao de Neptuno  -->
+            <group>
+                <transform>
+                    <rotate angle="93" x="0" y="1" z="0"/>
+                    <translate x="2.47" y="0" z="0"/>
+                    <scale x="0.12" y="0.12" z="0.12"/>
+                </transform>
+                <models>
+                    <model file="sphere_1_20_20.3d"> <!-- generator sphere 1 20 20 sphere_1_20_20.3d -->
+                        <texture file="solar_system/earth_moon.jpg"/>
+                    </model>
+                </models>
+            </group>
+
         </group>
-        <transform>
-            <scale x="10" y="10" z="10"/> <!-- Real proportion = 109 -->
-        </transform>
-        <models>
-            <!-- Sun -->
-            <model file="sphere_1_20_20.3d"> <!-- generator sphere 1 20 20 sphere_1_20_20.3d -->
-                <texture file="sun.jpg"/>
-            </model>
-        </models>
     </group>
 </world>
