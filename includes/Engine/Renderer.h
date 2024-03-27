@@ -25,8 +25,6 @@ public:
 	GLuint spotLightBuffer, spotLightTBO;
 
 
-	// TODO test: apply gamma and exposure and only then extract colors
-
 	// lighting FBO into wich scene gets rendered normally, but bright colors are extracted for bloom
 	GLuint VAO, VAO_axis;
 	GLuint vertexBuffer, vertexBuffer_axis;
@@ -67,7 +65,6 @@ public:
 	void drawNormals(const glm::mat4 &model, const glm::mat4 &view, const glm::mat4 &projection, const std::vector<Vertex> &vertices); // vector is copied over on purpose
 
 	void loadTextures();
-	void checkProgram(GLuint program);
 	void resizeViewport(GLsizei viewport_width, GLsizei viewport_height);
 	void generate_FBO_depth_buffer(GLuint *depthBuffer) const;
 	void generate_FBO_texture(GLuint *textureID, GLenum attachmentID); // makes the texture, needs to be called whenever viewport is resized (for now)

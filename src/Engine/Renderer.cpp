@@ -102,7 +102,6 @@ void Renderer::drawAxis(const glm::mat4 &model, const glm::mat4 &view, const glm
 	GLCall(glDrawArrays(GL_LINES, 0, 6)); // 6 pontos, 3 linhas
 }
 
-// the vertices are copied on purpose!!!
 void Renderer::drawNormals(const glm::mat4 &model, const glm::mat4 &view, const glm::mat4 &projection, const std::vector<Vertex> &vertices) {
 
 	// VAO and VBO are the same as the normal ones, so I will not rebind them
@@ -281,12 +280,6 @@ Renderer::~Renderer() {
 
 	GLCall(glDeleteFramebuffers(1, &lightingFBO));
 	GLCall(glDeleteFramebuffers(2, pingpongFBO));
-}
-
-void Renderer::checkProgram(GLuint program) {
-	GLCall(glLinkProgram(program));
-		checkProgramLinking(program);
-		validateProgram(program);
 }
 
 void Renderer::loadTextures() {
