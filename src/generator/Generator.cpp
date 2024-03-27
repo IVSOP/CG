@@ -14,6 +14,7 @@
 #include "Cone.h"
 #include "Cylinder.h"
 #include "Torus.h"
+#include "Patch.h"
 
 int main(int argc, char **argv) {
     if (argc < 2) {
@@ -123,6 +124,24 @@ int main(int argc, char **argv) {
         int stacks = std::stoi(std::string(argv[5]));
 
         return Torus::createTorusPoints(intRadius, extRadius, slices, stacks);
+    }});
+
+    // generator patch teapot.patch 10 bezier_10.3d
+
+    primitiveMap.insert({"patch", [&]() {
+        if (argc != 5) {
+            perror("Wrong number of arguments given to Cone primitive. Make sure you provide the radius of the base, the height of the Cone, the number of slices and the number of stacks. Also, don't forget to provide the name of the storage file.");
+
+            exit(-1);
+        }
+
+        storageFile = std::string(argv[4]);
+
+        std::string patchFilename = std::string(argv[2]);
+        int tesselation = std::stoi(std::string(argv[3]));
+
+
+        return Patch::generatePatch(patchFilename, tesselation);
     }});
 
     if (primitiveMap.find(primitive) == primitiveMap.end()) {
