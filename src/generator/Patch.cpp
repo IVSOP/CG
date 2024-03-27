@@ -174,23 +174,68 @@ std::vector<Vertex> Patch::dividePatch(std::vector<Vertex>& patch, int divisions
 
 Vertex Patch::interpolatePatch(std::vector<Vertex>& patch, float u, float v){
     std::vector<Vertex> curvePoints = std::vector<Vertex>();
+    glm::vec3 dU = derivativeUBezier(patch, u, v);
+    glm::vec3 dV = derivativeVBezier(patch, u, v);
+
+    glm::vec3 normal = glm::normalize(glm::cross(dV, dU));
 
     for(int i = 0; i < 4; i++){
-        curvePoints.emplace_back(interpolateVertex(patch[4*i], patch[4*i + 1], patch[4*i + 2], patch[4*i + 3], v, u, v));
+
+        curvePoints.emplace_back(interpolateVertex(patch[4*i], patch[4*i + 1], patch[4*i + 2], patch[4*i + 3], v));
     }
 
-    return interpolateVertex(curvePoints[0], curvePoints[1], curvePoints[2], curvePoints[3], u, u, v);
+    return interpolateVertex(curvePoints[0], curvePoints[1], curvePoints[2], curvePoints[3], u, u, v, normal);
 }
 
-Vertex Patch::interpolateVertex(Vertex& p0, Vertex& p1, Vertex& p2, Vertex& p3, float t, float u, float v){
+/* Code inspired on https://www.scratchapixel.com/lessons/geometry/bezier-curve-rendering-utah-teapot/bezier-patch-normal.html */
+
+glm::vec3 Patch::derivativeUBezier(std::vector<Vertex>& controlPoints, float u, float v){
+    std::vector<Vertex> curvePoints = std::vector<Vertex>();
+    float mu = 1 - u;
+
+    for(int i = 0; i < 4; i++) curvePoints.emplace_back(interpolateVertex(controlPoints[4*i], controlPoints[4*i + 1], controlPoints[4*i + 2], controlPoints[4*i + 3], v));
+
+    return (-3 * (float) pow(mu, 2)) * glm::vec3(curvePoints[0].coords.x, curvePoints[0].coords.y, curvePoints[0].coords.z) +
+            (3 * (float) pow(mu, 2) - 6 * u * mu) * glm::vec3(curvePoints[1].coords.x, curvePoints[1].coords.y, curvePoints[1].coords.z) +
+            (6 * mu  * u - 3 * (float) pow(u, 2)) * glm::vec3(curvePoints[2].coords.x, curvePoints[2].coords.y, curvePoints[2].coords.z) +
+            (3 * (float) pow(u, 2)) * glm::vec3(curvePoints[3].coords.x, curvePoints[3].coords.y, curvePoints[3].coords.z);
+}
+
+glm::vec3 Patch::derivativeVBezier(std::vector<Vertex>& controlPoints, float u, float v){
+    std::vector<Vertex> curvePoints = std::vector<Vertex>();
+    float mv = 1 - v;
+
+    for(int i = 0; i < 4; i++) curvePoints.emplace_back(interpolateVertex(controlPoints[i], controlPoints[i + 4], controlPoints[i + 8], controlPoints[i + 12], u));
+
+    return (-3 * (float) pow(mv, 2)) * glm::vec3(curvePoints[0].coords.x, curvePoints[0].coords.y, curvePoints[0].coords.z) +
+           (3 * (float) pow(mv, 2) - 6 * v * mv) * glm::vec3(curvePoints[1].coords.x, curvePoints[1].coords.y, curvePoints[1].coords.z) +
+           (6 * mv  * v - 3 * (float) pow(v, 2)) * glm::vec3(curvePoints[2].coords.x, curvePoints[2].coords.y, curvePoints[2].coords.z) +
+           (3 * (float) pow(v, 2)) * glm::vec3(curvePoints[3].coords.x, curvePoints[3].coords.y, curvePoints[3].coords.z);
+}
+
+Vertex Patch::interpolateVertex(Vertex& p0, Vertex& p1, Vertex& p2, Vertex& p3, float t){
     float mt = 1-t;
 
+    // Bernstein polynomials
     float coordX = pow(mt, 3) * p0.coords.x + 3.0f * pow(mt, 2) * t * p1.coords.x + 3.0f * mt * pow(t, 2) * p2.coords.x + pow(t, 3) * p3.coords.x;
     float coordY = pow(mt, 3) * p0.coords.y + 3.0f * pow(mt, 2) * t * p1.coords.y + 3.0f * mt * pow(t, 2) * p2.coords.y + pow(t, 3) * p3.coords.y;
     float coordZ = pow(mt, 3) * p0.coords.z + 3.0f * pow(mt, 2) * t * p1.coords.z + 3.0f * mt * pow(t, 2) * p2.coords.z + pow(t, 3) * p3.coords.z;
-    float normalX = pow(mt, 3) * p0.normal.x + 3.0f * pow(mt, 2) * t * p1.normal.x + 3.0f * mt * pow(t, 2) * p2.normal.x + pow(t, 3) * p3.normal.x;
-    float normalY = pow(mt, 3) * p0.normal.y + 3.0f * pow(mt, 2) * t * p1.normal.y + 3.0f * mt * pow(t, 2) * p2.normal.y + pow(t, 3) * p3.normal.y;
-    float normalZ = pow(mt, 3) * p0.normal.z + 3.0f * pow(mt, 2) * t * p1.normal.z + 3.0f * mt * pow(t, 2) * p2.normal.z + pow(t, 3) * p3.normal.z;
+
+    return Vertex(coordX, coordY, coordZ);
+}
+
+Vertex Patch::interpolateVertex(Vertex& p0, Vertex& p1, Vertex& p2, Vertex& p3, float t, float u, float v, glm::vec3 normal){
+    float mt = 1-t;
+
+    // d mt = 3 mt^2 p0.x + 6 mt * t * p1.x +  +
+
+    // Bernstein polynomials
+    float coordX = pow(mt, 3) * p0.coords.x + 3.0f * pow(mt, 2) * t * p1.coords.x + 3.0f * mt * pow(t, 2) * p2.coords.x + pow(t, 3) * p3.coords.x;
+    float coordY = pow(mt, 3) * p0.coords.y + 3.0f * pow(mt, 2) * t * p1.coords.y + 3.0f * mt * pow(t, 2) * p2.coords.y + pow(t, 3) * p3.coords.y;
+    float coordZ = pow(mt, 3) * p0.coords.z + 3.0f * pow(mt, 2) * t * p1.coords.z + 3.0f * mt * pow(t, 2) * p2.coords.z + pow(t, 3) * p3.coords.z;
+    float normalX = normal.x;
+    float normalY = normal.y;
+    float normalZ = normal.z;
     float textX = 1 - v;
     float textY = 1 - u;
 

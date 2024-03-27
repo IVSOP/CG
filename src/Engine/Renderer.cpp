@@ -395,7 +395,7 @@ void Renderer::drawLighting(std::vector<Vertex> &verts, const glm::mat4 &project
 
 		DirLight dirLights[MAX_LIGHTS];
 		dirLights[0] = {
-			.direction = glm::normalize(glm::vec3(0.5f, -0.45f, 0.5f)),
+			.direction = glm::normalize(glm::vec3(1.0f, 0.0f, 0.0f)),
 			.ambient = glm::vec3(0.2f, 0.2f, 0.0f),
 			.diffuse = glm::vec3(0.78f, 0.78f, 0.0f),
 			.specular = glm::vec3(1.0f, 1.0f, 1.0f)
@@ -407,7 +407,7 @@ void Renderer::drawLighting(std::vector<Vertex> &verts, const glm::mat4 &project
 		GLCall(glBindTexture(GL_TEXTURE_BUFFER, dirLightTBO));
 		// GLCall(glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, pointLightBuffer)); // bind the buffer to the texture (has been done while setting up)
 		lightingShader.setInt("u_DirLightTBO", DIRLIGHT_TEXTURE_BUFFER_SLOT);
-		lightingShader.setInt("u_NumDirLights", 0);
+		lightingShader.setInt("u_NumDirLights", 1);
 
 		SpotLight spotLights[MAX_LIGHTS];
 		spotLights[0] = {
@@ -431,7 +431,7 @@ void Renderer::drawLighting(std::vector<Vertex> &verts, const glm::mat4 &project
 		GLCall(glBindTexture(GL_TEXTURE_BUFFER, spotLightTBO));
 		// GLCall(glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, spotLightBuffer)); // bind the buffer to the texture (has been done while setting up)
 		lightingShader.setInt("u_SpotLightTBO", SPOTLIGHT_TEXTURE_BUFFER_SLOT);
-		lightingShader.setInt("u_NumSpotLights", 1);
+		lightingShader.setInt("u_NumSpotLights", 0);
 
 		// bind the render buffer to this FBO (maybe this is missing actualy binding it, idk, but it gets regenerated automatically when screen is resized)
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, lightingFBODepthBuffer);
