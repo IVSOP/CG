@@ -226,17 +226,17 @@ std::vector<Vertex> XmlParser::parseVertex(tinyxml2::XMLElement *model){
         inFile.close();
 
     } else {
-        std::cerr << "Error opening file for reading." << std::endl;
+        std::cerr << "Error opening file for reading." << " " << model->Attribute("file") << std::endl;
     }
 
     return points;
 }
 
 Engine_Object_Materials XmlParser::parseEngineObjectMaterials(tinyxml2::XMLElement *model){
-    glm::vec3 diffuse = glm::vec3(200, 200, 200);
-    glm::vec3 ambient = glm::vec3(50, 50, 50);
-    glm::vec3 specular = glm::vec3(0, 0, 0);
-    glm::vec3 emissive = glm::vec3(0, 0, 0);
+    glm::vec3 diffuse = glm::vec3(1.0f);
+    glm::vec3 ambient = glm::vec3(1.0f);
+    glm::vec3 specular = glm::vec3(1.0f);
+    glm::vec3 emissive = glm::vec3(1.0f);
     int shininess = 0;
 
     std::string texture = std::string("white.png");
@@ -271,6 +271,14 @@ Engine_Object_Materials XmlParser::parseEngineObjectMaterials(tinyxml2::XMLEleme
 
         perror("Found unrecognized tag inside a models tag.");
         std::cout << name << std::endl;
+    }
+
+    if(texture == ""){
+        glm::vec3 diffuse = glm::vec3(200, 200, 200);
+        glm::vec3 ambient = glm::vec3(50, 50, 50);
+        glm::vec3 specular = glm::vec3(0, 0, 0);
+        glm::vec3 emissive = glm::vec3(0, 0, 0);
+        int shininess = 0;
     }
 
     return Engine_Object_Materials(diffuse, ambient, specular, emissive, shininess, texture);
