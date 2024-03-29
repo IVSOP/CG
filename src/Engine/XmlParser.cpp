@@ -241,10 +241,14 @@ Engine_Object_Materials XmlParser::parseEngineObjectMaterials(tinyxml2::XMLEleme
 
     std::string texture = std::string("white.png");
 
+    bool hasTexture = false, hasColor = false;
+
     for (tinyxml2::XMLElement* node = model->FirstChildElement(); node != nullptr; node = node->NextSiblingElement()){
         std::string name = std::string(node->Name());
 
         if(name == "color"){
+            hasColor = true;
+
             tinyxml2::XMLElement* nodeChild = node->FirstChildElement("diffuse");
             diffuse = glm::vec3(nodeChild->IntAttribute("R"), nodeChild->IntAttribute("G"), nodeChild->IntAttribute("B"));
 
@@ -264,6 +268,8 @@ Engine_Object_Materials XmlParser::parseEngineObjectMaterials(tinyxml2::XMLEleme
         }
 
         if(name == "texture"){
+            hasTexture = true;
+
             texture = std::string(node->Attribute("file"));
 
             continue;
@@ -273,12 +279,12 @@ Engine_Object_Materials XmlParser::parseEngineObjectMaterials(tinyxml2::XMLEleme
         std::cout << name << std::endl;
     }
 
-    if(texture == ""){
-        glm::vec3 diffuse = glm::vec3(200, 200, 200);
-        glm::vec3 ambient = glm::vec3(50, 50, 50);
-        glm::vec3 specular = glm::vec3(0, 0, 0);
-        glm::vec3 emissive = glm::vec3(0, 0, 0);
-        int shininess = 0;
+    if(!hasColor && !hasTexture){
+        diffuse = glm::vec3(200, 200, 200);
+        ambient = glm::vec3(50, 50, 50);
+        specular = glm::vec3(0, 0, 0);
+        emissive = glm::vec3(0, 0, 0);
+        shininess = 0;
     }
 
     return Engine_Object_Materials(diffuse, ambient, specular, emissive, shininess, texture);
