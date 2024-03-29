@@ -32,16 +32,17 @@ public:
     glm::vec3 ambient;
     glm::vec3 specular;
     glm::vec3 emissive;
+    int shininess;
 
     std::string texture;
     Transformation transformation;
 
-    Engine_Object_Info() : diffuse(), ambient(), specular(), emissive(), texture(), transformation() {}
+    Engine_Object_Info() : diffuse(), ambient(), specular(), emissive(), shininess(), texture(), transformation() {}
 
     Engine_Object_Info(const Engine_Object_Materials &engineObjectMaterials, const Transformation transformation)
             : diffuse(engineObjectMaterials.diffuse), ambient(engineObjectMaterials.ambient),
               specular(engineObjectMaterials.specular), emissive(engineObjectMaterials.emissive),
-              texture(engineObjectMaterials.texture), transformation(transformation) {}
+              shininess(engineObjectMaterials.shininess), texture(engineObjectMaterials.texture), transformation(transformation) {}
 };
 
 class Engine_Object {
