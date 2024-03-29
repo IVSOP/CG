@@ -11,17 +11,16 @@
 #include <vector>
 
 struct Transformation {
-private:
-    glm::mat4 transformMatrix{};
-
 public:
+    glm::mat4 transformMatrix;
+
     Transformation(){
         this->transformMatrix = Consts::idMatrix();
     }
 
-    // Transformation(Transformation& transformation){
-    //     this->transformMatrix = glm::mat4 (transformation.transformMatrix);
-    // }
+    Transformation(const Transformation& transformation){
+        this->transformMatrix = transformation.transformMatrix;
+    }
 
     explicit Transformation(Translate& translate){
         this->transformMatrix = translate.getMatrix();
@@ -34,8 +33,6 @@ public:
     explicit Transformation(Scale& scale){
         this->transformMatrix = scale.getMatrix();
     }
-
-    // Transformation(Transformation const &transformation) : transformMatrix(transformation.transformMatrix){}
 
     void appendTransformation(glm::mat4& transformation);
 

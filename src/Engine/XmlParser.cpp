@@ -137,12 +137,16 @@ void XmlParser::setPoints(std::vector<Vertex>& points){
     this->points = std::vector<Vertex>(points);
 }
 
-std::vector<Vertex> XmlParser::getPoints(){
+std::vector<std::vector<Vertex>> XmlParser::getPoints(){
     return this->engineObject.getPoints();
 }
 
-std::vector<Vertex> XmlParser::parseModels(tinyxml2::XMLElement *models){
-    std::vector<Vertex> ans = std::vector<Vertex>();
+std::vector<Engine_Object_Info> XmlParser::getMaterials() {
+    return this->engineObject.getMaterials();
+}
+
+std::vector<std::pair<Engine_Object_Materials, std::vector<Vertex>>> XmlParser::parseModels(tinyxml2::XMLElement *models){
+    std::vector<std::pair<Engine_Object_Materials, std::vector<Vertex>>> ans = std::vector<std::pair<Engine_Object_Materials, std::vector<Vertex>>>();
 
     for (tinyxml2::XMLElement* node = models->FirstChildElement(); node != nullptr; node = node->NextSiblingElement()){
         std::string name = std::string(node->Name());
@@ -150,7 +154,9 @@ std::vector<Vertex> XmlParser::parseModels(tinyxml2::XMLElement *models){
         if(name == "model"){
             std::vector<Vertex> tmp = this->parseVertex(node);
 
-            ans.insert(ans.end(), tmp.begin(), tmp.end());
+            Engine_Object_Materials engineObjectMaterials = this->parseEngineObjectMaterials(node);
+
+            ans.emplace_back(std::pair<Engine_Object_Materials, std::vector<Vertex>>(engineObjectMaterials, tmp));
 
             continue;
         }
@@ -226,8 +232,54 @@ std::vector<Vertex> XmlParser::parseVertex(tinyxml2::XMLElement *model){
     return points;
 }
 
+Engine_Object_Materials XmlParser::parseEngineObjectMaterials(tinyxml2::XMLElement *model){
+    // TODO Corrigir initializações padrão
+
+    glm::vec3 diffuse = glm::vec3();
+    glm::vec3 ambient = glm::vec3();
+    glm::vec3 specular = glm::vec3();
+    glm::vec3 emissive = glm::vec3();
+    int shininess = 0;
+
+    std::string texture = std::string();
+
+    for (tinyxml2::XMLElement* node = model->FirstChildElement(); node != nullptr; node = node->NextSiblingElement()){
+        std::string name = std::string(node->Name());
+
+        if(name == "color"){
+            tinyxml2::XMLElement* nodeChild = node->FirstChildElement("diffuse");
+            diffuse = glm::vec3(nodeChild->IntAttribute("R"), nodeChild->IntAttribute("G"), nodeChild->IntAttribute("B"));
+
+            nodeChild = node->FirstChildElement("ambient");
+            ambient = glm::vec3(nodeChild->IntAttribute("R"), nodeChild->IntAttribute("G"), nodeChild->IntAttribute("B"));
+
+            nodeChild = node->FirstChildElement("specular");
+            specular = glm::vec3(nodeChild->IntAttribute("R"), nodeChild->IntAttribute("G"), nodeChild->IntAttribute("B"));
+
+            nodeChild = node->FirstChildElement("emissive");
+            emissive = glm::vec3(nodeChild->IntAttribute("R"), nodeChild->IntAttribute("G"), nodeChild->IntAttribute("B"));
+
+            nodeChild = node->FirstChildElement("shininess");
+            shininess = nodeChild->IntAttribute("value");
+
+            continue;
+        }
+
+        if(name == "texture"){
+            texture = std::string(node->Attribute("file"));
+
+            continue;
+        }
+
+        perror("Found unrecognized tag inside a models tag.");
+        std::cout << name << std::endl;
+    }
+
+    return Engine_Object_Materials(diffuse, ambient, specular, emissive, shininess, texture);
+}
+
 Engine_Object XmlParser::parseEngineObject(tinyxml2::XMLElement *group, Transformation transformations){
-    std::vector<Vertex> obj_points = std::vector<Vertex>();
+    std::vector<std::pair<Engine_Object_Materials, std::vector<Vertex>>> obj_points = std::vector<std::pair<Engine_Object_Materials, std::vector<Vertex>>>();
     std::vector<Engine_Object> child_objs = std::vector<Engine_Object>();
 
     for (tinyxml2::XMLElement* node = group->FirstChildElement(); node != nullptr; node = node->NextSiblingElement()){
@@ -241,7 +293,7 @@ Engine_Object XmlParser::parseEngineObject(tinyxml2::XMLElement *group, Transfor
         }
 
         if(name == "models"){
-            std::vector<Vertex> tmp_points = parseModels(node);
+            std::vector<std::pair<Engine_Object_Materials, std::vector<Vertex>>> tmp_points = parseModels(node);
             obj_points.insert(obj_points.end(), tmp_points.begin(), tmp_points.end());
 
             continue;

@@ -242,6 +242,8 @@ Vertex Patch::interpolateVertex(Vertex& p0, Vertex& p1, Vertex& p2, Vertex& p3, 
     // Using Bernstein Polynomial to calculate P(u)
     // Final result will be equivalent to the method taught in class
 
+    // FIXME fix normal calculations
+
     // Derivative of a bezier curve of third degree is a bezier curve of second degree
     // This will be the tangent of the current curve
 

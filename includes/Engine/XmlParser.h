@@ -38,7 +38,9 @@ private:
 
     std::vector<Vertex> parseVertex(tinyxml2::XMLElement *model);
 
-    std::vector<Vertex> parseModels(tinyxml2::XMLElement *models);
+    Engine_Object_Materials parseEngineObjectMaterials(tinyxml2::XMLElement *model);
+
+    std::vector<std::pair<Engine_Object_Materials, std::vector<Vertex>>> parseModels(tinyxml2::XMLElement *models);
 
     Transformation parseTransformation(tinyxml2::XMLElement *transform);
 public:
@@ -111,7 +113,8 @@ public:
     GLdouble getCameraZUp();
 
     void setPoints(std::vector<Vertex>& points);
-    std::vector<Vertex> getPoints();
+    std::vector<std::vector<Vertex>> getPoints();
+    std::vector<Engine_Object_Info> getMaterials();
 };
 
 
