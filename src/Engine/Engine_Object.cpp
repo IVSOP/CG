@@ -16,7 +16,7 @@ std::vector<std::vector<Vertex>> Engine_Object::getPoints() {
     return ans;
 }
 
-std::vector<Engine_Object_Info> Engine_Object::getMaterials(){
+std::vector<Engine_Object_Info> Engine_Object::getObjectInfo(){
     std::vector<Engine_Object_Info> ans = std::vector<Engine_Object_Info>();
 
     for(auto& p : this->points){
@@ -24,7 +24,7 @@ std::vector<Engine_Object_Info> Engine_Object::getMaterials(){
     }
 
     for(Engine_Object& engineObject : this->children_objects){
-        std::vector<Engine_Object_Info> tmp = engineObject.getMaterials();
+        std::vector<Engine_Object_Info> tmp = engineObject.getObjectInfo();
 
         ans.insert(ans.end(), tmp.begin(), tmp.end());
     }

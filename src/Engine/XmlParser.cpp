@@ -141,8 +141,8 @@ std::vector<std::vector<Vertex>> XmlParser::getPoints(){
     return this->engineObject.getPoints();
 }
 
-std::vector<Engine_Object_Info> XmlParser::getMaterials() {
-    return this->engineObject.getMaterials();
+std::vector<Engine_Object_Info> XmlParser::getObjectInfo() {
+    return this->engineObject.getObjectInfo();
 }
 
 std::vector<std::pair<Engine_Object_Materials, std::vector<Vertex>>> XmlParser::parseModels(tinyxml2::XMLElement *models){
@@ -233,15 +233,13 @@ std::vector<Vertex> XmlParser::parseVertex(tinyxml2::XMLElement *model){
 }
 
 Engine_Object_Materials XmlParser::parseEngineObjectMaterials(tinyxml2::XMLElement *model){
-    // TODO Corrigir initializações padrão
-
-    glm::vec3 diffuse = glm::vec3();
-    glm::vec3 ambient = glm::vec3();
-    glm::vec3 specular = glm::vec3();
-    glm::vec3 emissive = glm::vec3();
+    glm::vec3 diffuse = glm::vec3(200, 200, 200);
+    glm::vec3 ambient = glm::vec3(50, 50, 50);
+    glm::vec3 specular = glm::vec3(0, 0, 0);
+    glm::vec3 emissive = glm::vec3(0, 0, 0);
     int shininess = 0;
 
-    std::string texture = std::string();
+    std::string texture = std::string("white.png");
 
     for (tinyxml2::XMLElement* node = model->FirstChildElement(); node != nullptr; node = node->NextSiblingElement()){
         std::string name = std::string(node->Name());

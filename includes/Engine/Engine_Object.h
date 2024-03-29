@@ -67,7 +67,7 @@ public:
 
     std::vector<std::vector<Vertex>> getPoints();
 
-    std::vector<Engine_Object_Info> getMaterials();
+    std::vector<Engine_Object_Info> getObjectInfo();
 };
 
 #endif //CG_ENGINE_OBJECT_H
