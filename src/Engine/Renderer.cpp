@@ -292,7 +292,7 @@ GLfloat Renderer::getTextureID(const std::string &name) {
 	// roto mas caguei ns se ir pela exception era melhor
 	if (texture_id_map.find(name) == texture_id_map.end()) {
 		// not found, load
-		textureArray.get()->addTexture(("textures/" + name).c_str()); // cursed 
+		texture_id_map[name] = textureArray.get()->addTexture(("textures/" + name).c_str()); // cursed 
 	}
 	return texture_id_map[name];
 

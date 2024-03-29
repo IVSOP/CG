@@ -33,7 +33,7 @@ TextureArray::~TextureArray() {
 }
 
 // texture array needs to be bound but not necessarily activated
-void TextureArray::addTexture(const char path[]) {
+GLsizei TextureArray::addTexture(const char path[]) {
 	if (this->sp >= this->depth - 1) {
 		fprintf(stderr, "Error in %s, sp exceeds max depth. This class is not prepared to handle such cases, change it to have multiple texture arrays and manage them or something\n", __func__);
 		exit(EXIT_FAILURE);
@@ -88,6 +88,8 @@ void TextureArray::addTexture(const char path[]) {
 
 	this->sp ++;
 	free(buffer);
+
+	return sp - 1;
 }
 
 void TextureArray::setTextureArrayToSlot(const GLuint slot) {
