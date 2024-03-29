@@ -105,9 +105,13 @@ void Renderer::drawNormals(const glm::mat4 &model, const glm::mat4 &view, const 
 	// VAO and VBO are the same as the normal ones, so I will not rebind them
 
 	normalsShader.use();
-	normalsShader.setMat4("u_Model", model);
+	// normalsShader.setMat4("u_Model", model);
 	normalsShader.setMat4("u_View", view);
 	normalsShader.setMat4("u_Projection", projection);
+
+	// only doing this to setup TBO is risky but should work
+	normalsShader.setInt("u_ObjectInfoTBO", OBJECT_INFO_TEXTURE_BUFFER_SLOT);
+
 
 	GLCall(glDrawArrays(GL_TRIANGLES, 0, vertices.size()));
 }
