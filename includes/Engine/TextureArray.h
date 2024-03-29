@@ -19,7 +19,7 @@ class TextureArray {
 		// will check if width and height of provided image are correct
 		void addTexture(const char path[]); // adds a texture to the array. ID is automatically set, like a stack
 		void setTextureArrayToSlot(const GLuint slot);
-	private:
+	// private:
 		GLsizei width;
 		GLsizei height;
 		GLsizei depth;

@@ -18,9 +18,9 @@ public:
     std::string texture;
 
     Engine_Object_Materials()
-            : diffuse(), ambient(), specular(), emissive(), shininess(0), texture() {}
+            : diffuse(0), ambient(0), specular(0), emissive(0), shininess(0), texture("") {}
 
-    Engine_Object_Materials(glm::vec3 diffuse, glm::vec3 ambient, glm::vec3 specular, glm::vec3 emissive,
+    Engine_Object_Materials(const glm::vec3 &diffuse, const glm::vec3 &ambient, const glm::vec3 &specular, const glm::vec3 &emissive,
                             int shininess, std::string &texture)
             : diffuse(diffuse), ambient(ambient), specular(specular), emissive(emissive), shininess(shininess),
               texture(texture) {}

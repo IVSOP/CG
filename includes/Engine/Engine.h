@@ -37,9 +37,12 @@ public:
 	int windowWidth;
 	int windowHeight;
 
-	std::vector<Vertex> points;
-	std::vector<Vertex> draw_points;
 	std::mutex mtx;
+		std::vector<Vertex> points;
+		std::vector<Vertex> draw_points;
+		std::vector<RendererObjectInfo> objectInfo;
+		std::vector<RendererObjectInfo> draw_objectInfo;
+
 	GLFWwindow *window = nullptr;
 	std::unique_ptr<Camera> camera = nullptr;
 	std::unique_ptr<Renderer> renderer = nullptr;

@@ -14,7 +14,7 @@ struct Vertex {
 	GLuint object_id = 0;
 
     friend std::ostream &operator<<(std::ostream &os, const Vertex &p) {
-        os << "Vertex: { x: " << p.coords.x << ", y: " << p.coords.y << ", z: " << p.coords.z << ", n_x: " << p.normal.x << ", n_y: " << p.normal.y << ", n_z: " << p.normal.z << ", t_x: " << p.tex_coord.x << ", t_y: " << p.tex_coord.y << " }";
+        os << "Vertex: { {x: " << p.coords.x << ", y: " << p.coords.y << ", z: " << p.coords.z << "}, {n_x: " << p.normal.x << ", n_y: " << p.normal.y << ", n_z: " << p.normal.z << "}, {t_x: " << p.tex_coord.x << ", t_y: " << p.tex_coord.y << "}, " << p.object_id << " }";
         return os;
     }
 

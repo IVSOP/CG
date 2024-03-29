@@ -4,19 +4,17 @@
 #include <vector>
 #include <cstdio>
 #include "Vertex.h"
-#include "Material.h"
 #include "Camera.h"
 #include "Consts.h"
 
 #define TEX_ARRAY_SLOT 0
 #define BRIGHT_TEXTURE_SLOT 1 // slot to go into blur shader and final bloom shader
 #define SCENE_TEXTURE_SLOT 2 // slot to go into final bloom shader
-#define MATERIAL_TEXTURE_BUFFER_SLOT 3
+#define OBJECT_INFO_TEXTURE_BUFFER_SLOT 3
 #define POINTLIGHT_TEXTURE_BUFFER_SLOT 4
 #define DIRLIGHT_TEXTURE_BUFFER_SLOT 5
 #define SPOTLIGHT_TEXTURE_BUFFER_SLOT 6
 
-#define MAX_MATERIALS 8
 #define MAX_LIGHTS 8
 
 struct PointLight {
@@ -148,7 +146,7 @@ Renderer::Renderer(GLsizei viewport_width, GLsizei viewport_height)
 
 		GLuint vertex_matid_layout = 3;
 		GLCall(glEnableVertexAttribArray(vertex_matid_layout));					// size appart				// offset
-		GLCall(glVertexAttribPointer(vertex_matid_layout, 1, GL_UNSIGNED_INT, GL_FALSE, sizeof(Vertex), (const void *)offsetof(Vertex, object_id)));
+		GLCall(glVertexAttribPointer(vertex_matid_layout, 1, GL_UNSIGNED_INT, GL_FALSE, sizeof(Vertex), (const void *)offsetof(Vertex, object_id))); // use glVertexAttribIPointer??????????????????????? why does it work without it?????
 		// GLCall(glVertexAttribDivisor(vertex_color_layout, 0)); // values are per triangle, but I am not using instancing
 	}
 
@@ -200,11 +198,11 @@ Renderer::Renderer(GLsizei viewport_width, GLsizei viewport_height)
 	lightingShader.setMat4("u_Projection", glm::mat4(1.0f)); // load identity just for safety
 
 
-	GLCall(glGenBuffers(1, &materialBuffer));
-	GLCall(glBindBuffer(GL_TEXTURE_BUFFER, materialBuffer));
-	GLCall(glGenTextures(1, &materialTBO));
-	GLCall(glBindTexture(GL_TEXTURE_BUFFER, materialTBO));
-	GLCall(glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, materialBuffer)); // bind the buffer to the texture
+	GLCall(glGenBuffers(1, &objectInfoBuffer));
+	GLCall(glBindBuffer(GL_TEXTURE_BUFFER, objectInfoBuffer));
+	GLCall(glGenTextures(1, &objectInfoTBO));
+	GLCall(glBindTexture(GL_TEXTURE_BUFFER, objectInfoTBO));
+	GLCall(glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, objectInfoBuffer)); // bind the buffer to the texture
 
 	GLCall(glGenBuffers(1, &pointLightBuffer));
 	GLCall(glBindBuffer(GL_TEXTURE_BUFFER, pointLightBuffer));
@@ -232,8 +230,10 @@ Renderer::Renderer(GLsizei viewport_width, GLsizei viewport_height)
 	// axisShader.setMat4("u_Projection", glm::mat4(1.0f)); // load identity just for safety
 	axisShader.setMat4("u_MVP", glm::mat4(1.0f));
 
-	//////////////////////////// LOADING TEXTURES ///////////////////////////
-	loadTextures();
+	//////////////////////////// TEXTURE ARRAY ////////////////////////////
+	this->textureArray = std::make_unique<TextureArray>(TEXTURE_WIDTH, TEXTURE_HEIGHT, TEXTURE_LAYERS);
+	// textureArray.get()->addTexture("textures/grass.png");
+	// this->textureArray.get()->setTextureArrayToSlot(TEX_ARRAY_SLOT);
 
 	//////////////////////////// LOADING FRAMEBUFFERS AND TEXTURE ATTACHMENTS ////////////////////////////
 	GLCall(glGenFramebuffers(1, &lightingFBO));
@@ -262,7 +262,7 @@ Renderer::Renderer(GLsizei viewport_width, GLsizei viewport_height)
 
 Renderer::~Renderer() {
 	GLCall(glDeleteBuffers(1, &vertexBuffer));
-	GLCall(glDeleteBuffers(1, &materialBuffer));
+	GLCall(glDeleteBuffers(1, &objectInfoBuffer));
 	GLCall(glDeleteBuffers(1, &vertexBuffer_axis));
 	GLCall(glDeleteBuffers(1, &vertexBuffer_viewport));
 
@@ -272,7 +272,6 @@ Renderer::~Renderer() {
 
 	GLCall(glBindTexture(GL_TEXTURE_2D, 0));
 	GLCall(glDeleteTextures(1, &lightingTexture));
-	GLCall(glDeleteTextures(1, &materialBuffer));
 	GLCall(glDeleteTextures(2, pingpongTextures));
 
 	GLCall(glBindFramebuffer(GL_FRAMEBUFFER, lightingFBO));
@@ -280,25 +279,31 @@ Renderer::~Renderer() {
 
 	GLCall(glDeleteFramebuffers(1, &lightingFBO));
 	GLCall(glDeleteFramebuffers(2, pingpongFBO));
+
+	// delete TBOs??????????
 }
 
-void Renderer::loadTextures() {
-	// load texture array instance
-	this->textureArray = std::make_unique<TextureArray>(TEXTURE_WIDTH, TEXTURE_HEIGHT, TEXTURE_LAYERS);
+// could be optimized, whatever
+GLfloat Renderer::getTextureID(const std::string &name) {
 
-	TextureArray *tex = textureArray.get();
-	tex->addTexture("textures/missing_texture.png"); // 0
-	tex->addTexture("textures/black.png"); // 1
-	tex->addTexture("textures/grass.png"); // 2
-	tex->addTexture("textures/oak_log.png"); // 3
-	tex->addTexture("textures/white.png"); // 4
-	tex->addTexture("test_files_phase_4/earth.jpg"); // 5
-	tex->addTexture("textures/rainbow.png"); // 6
-	tex->addTexture("textures/stripes.png"); // 7
-    tex->addTexture("test_files_phase_4/cone.jpg"); // 8
-    tex->addTexture("test_files_phase_4/teapot.jpg"); // 9
+	// roto mas caguei ns se ir pela exception era melhor
+	if (texture_id_map.find(name) == texture_id_map.end()) {
+		// not found, load
+		textureArray.get()->addTexture(("textures/" + name).c_str()); // cursed 
+	}
+	return texture_id_map[name];
 
-	tex->setTextureArrayToSlot(TEX_ARRAY_SLOT);
+	// TextureArray *tex = textureArray.get();
+	// tex->addTexture("textures/missing_texture.png"); // 0
+	// tex->addTexture("textures/black.png"); // 1
+	// tex->addTexture("textures/grass.png"); // 2
+	// tex->addTexture("textures/oak_log.png"); // 3
+	// tex->addTexture("textures/white.png"); // 4
+	// tex->addTexture("test_files_phase_4/earth.jpg"); // 5
+	// tex->addTexture("textures/rainbow.png"); // 6
+	// tex->addTexture("textures/stripes.png"); // 7
+    // tex->addTexture("test_files_phase_4/cone.jpg"); // 8
+    // tex->addTexture("test_files_phase_4/teapot.jpg"); // 9
 }
 
 void Renderer::prepareFrame(Camera &camera, GLfloat deltaTime) {
@@ -327,11 +332,11 @@ void Renderer::prepareFrame(Camera &camera, GLfloat deltaTime) {
 
 }
 
-void Renderer::drawLighting(std::vector<Vertex> &verts, const glm::mat4 &projection, const glm::mat4 &view, const Camera &camera) {
+void Renderer::drawLighting(const std::vector<Vertex> &verts, const std::vector<RendererObjectInfo> &objectInfo, const glm::mat4 &projection, const glm::mat4 &view, const Camera &camera) {
 	constexpr glm::mat4 model = glm::mat4(1.0f);
 	// const glm::mat4 MVP = projection * view * model;
 
-	//////////////////////////////////////////////// he normal scene is drawn into the lighting framebuffer, where the bright colors are then separated
+	//////////////////////////////////////////////// the normal scene is drawn into the lighting framebuffer, where the bright colors are then separated
 	GLCall(glBindFramebuffer(GL_FRAMEBUFFER, lightingFBO));
     	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		// GLCall(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
@@ -348,30 +353,36 @@ void Renderer::drawLighting(std::vector<Vertex> &verts, const glm::mat4 &project
 		// load MVP, texture array and view
 		this->textureArray.get()->setTextureArrayToSlot(TEX_ARRAY_SLOT);
 		lightingShader.setInt("u_TextureArraySlot", TEX_ARRAY_SLOT);
-		lightingShader.setMat4("u_Model", model);
 		lightingShader.setMat4("u_View", view);
 		lightingShader.setMat4("u_Projection", projection);
 
 		lightingShader.setFloat("u_BloomThreshold", bloomThreshold);
 
-		// load UBO
-		Material materials[8];
-		materials[0] = {
-			glm::vec3(1.0f, 1.0f, 1.0f),
-			glm::vec3(1.0f, 1.0f, 1.0f),
-			glm::vec3(1.0f, 1.0f, 1.0f),
-			// glm::vec3(2.99f, 0.72f, 0.0745f),
-			glm::vec3(0.1f),
-			32.0f,
-			9
-		};
+		// Material materials[8];
+		// materials[0] = {
+		// 	glm::vec3(1.0f, 1.0f, 1.0f),
+		// 	glm::vec3(1.0f, 1.0f, 1.0f),
+		// 	glm::vec3(1.0f, 1.0f, 1.0f),
+		// 	// glm::vec3(2.99f, 0.72f, 0.0745f),
+		// 	glm::vec3(0.1f),
+		// 	32.0f,
+		// 	9
+		// };
 
-		GLCall(glBindBuffer(GL_TEXTURE_BUFFER, materialBuffer));
-		GLCall(glBufferData(GL_TEXTURE_BUFFER, MAX_MATERIALS * sizeof(Material), materials, GL_STATIC_DRAW));
-		GLCall(glActiveTexture(GL_TEXTURE0 + MATERIAL_TEXTURE_BUFFER_SLOT));
-		GLCall(glBindTexture(GL_TEXTURE_BUFFER, materialTBO));
+		// GLCall(glBindBuffer(GL_TEXTURE_BUFFER, materialBuffer));
+		// GLCall(glBufferData(GL_TEXTURE_BUFFER, MAX_MATERIALS * sizeof(Material), materials, GL_STATIC_DRAW));
+		// GLCall(glActiveTexture(GL_TEXTURE0 + MATERIAL_TEXTURE_BUFFER_SLOT));
+		// GLCall(glBindTexture(GL_TEXTURE_BUFFER, materialTBO));
+		// // GLCall(glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, materialBuffer)); // bind the buffer to the texture (has been done while setting up)
+		// lightingShader.setInt("u_MaterialTBO", MATERIAL_TEXTURE_BUFFER_SLOT);
+
+		GLCall(glBindBuffer(GL_TEXTURE_BUFFER, objectInfoBuffer));
+		GLCall(glBufferData(GL_TEXTURE_BUFFER, sizeof(RendererObjectInfo) * objectInfo.size(), objectInfo.data(), GL_STATIC_DRAW));
+		GLCall(glActiveTexture(GL_TEXTURE0 + OBJECT_INFO_TEXTURE_BUFFER_SLOT));
+		GLCall(glBindTexture(GL_TEXTURE_BUFFER, objectInfoTBO));
 		// GLCall(glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, materialBuffer)); // bind the buffer to the texture (has been done while setting up)
-		lightingShader.setInt("u_MaterialTBO", MATERIAL_TEXTURE_BUFFER_SLOT);
+		lightingShader.setInt("u_ObjectInfoTBO", OBJECT_INFO_TEXTURE_BUFFER_SLOT);
+
 
 		PointLight pointLights[MAX_LIGHTS];
 		pointLights[0] = {
@@ -556,10 +567,18 @@ void Renderer::endFrame(GLFWwindow * window) {
     glfwSwapBuffers(window);
 }
 
-void Renderer::draw(std::vector<Vertex> &verts, const glm::mat4 &projection, Camera &camera, GLFWwindow * window, GLfloat deltaTime) {
+std::vector<RendererObjectInfo> Renderer::translateEngineObjectInfo(const std::vector<Engine_Object_Info> &engineObjectInfo) {
+	std::vector<RendererObjectInfo> objectInfo;
+	for (const Engine_Object_Info & engineObjInfo: engineObjectInfo) {
+		objectInfo.emplace_back(getTextureID(engineObjInfo.texture), engineObjInfo);
+	}
+	return objectInfo;
+}
+
+void Renderer::draw(const std::vector<Vertex> &verts, const std::vector<RendererObjectInfo> &objectInfo, const glm::mat4 &projection, Camera &camera, GLFWwindow * window, GLfloat deltaTime) {
 	prepareFrame(camera, deltaTime);
 	const glm::mat4 view = camera.GetViewMatrix();
-	drawLighting(verts, projection, view, camera);
+	drawLighting(verts, objectInfo, projection, view, camera);
 	bloomBlur(this->bloomBlurPasses);
 	merge();
 

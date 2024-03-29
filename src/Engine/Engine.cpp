@@ -95,9 +95,7 @@ void Engine::renderLoop() {
 
 
         std::unique_lock<std::mutex> lock = std::unique_lock<std::mutex>(mtx);
-        // auto s = draw_points.size();
-        // printf("%f %f %f %lu\n", draw_points[s -1].getX(), draw_points[s -1].getY(), draw_points[s -1].getZ(), s);
-        renderer.get()->draw(draw_points, projection, *camera.get(), window, deltaTime);
+        renderer.get()->draw(draw_points, draw_objectInfo, projection, *camera.get(), window, deltaTime);
         lock.unlock();
 
         currentFrameTime = glfwGetTime();
@@ -137,6 +135,7 @@ void Engine::physLoop () {
 
         std::unique_lock<std::mutex> lock = std::unique_lock<std::mutex>(mtx);
         draw_points = points; // copy the buffer
+		draw_objectInfo = objectInfo;
         lock.unlock();
 
         currentFrameTime = glfwGetTime();
@@ -301,8 +300,23 @@ Engine::Engine(XmlParser &xmlParser) {
 
     setWindow(window, static_cast<GLdouble>(this->windowWidth), static_cast<GLdouble>(this->windowHeight));
 
-    points = xmlParser.getPoints();
-    draw_points = points; // early copy to allow renderer to display something
+	// vector of vectors, where [i] means the vertex has index [i]
+    std::vector<std::vector<Vertex>> unparsed_points = xmlParser.getPoints();
+	for (GLuint i = 0; i < unparsed_points.size(); i++) {
+		for (const Vertex &vert : unparsed_points[i]) {
+			Vertex newVert = vert;
+			newVert.object_id = i;
+			this->points.push_back(newVert);
+		}
+	}
+
+	// after getting the engine object info, translate them to renderer object info (yes very bad but only done once)
+	std::vector<Engine_Object_Info> engineObjInfo = xmlParser.getObjectInfo();
+	this->objectInfo = this->renderer.get()->translateEngineObjectInfo(engineObjInfo);
+
+	// early copy to allow renderer to display something
+    this->draw_points = points;
+	this->draw_objectInfo = objectInfo;
 }
 
 void Engine::loop() {

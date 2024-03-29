@@ -14,13 +14,12 @@ struct Transformation {
 public:
     glm::mat4 transformMatrix;
 
-    Transformation(){
-        this->transformMatrix = Consts::idMatrix();
-    }
-
-    Transformation(const Transformation& transformation){
-        this->transformMatrix = transformation.transformMatrix;
-    }
+    Transformation()
+    : transformMatrix(Consts::idMatrix()) {}
+    
+	// Transformation(const Transformation& transformation){
+    //     this->transformMatrix = transformation.transformMatrix;
+    // }
 
     explicit Transformation(Translate& translate){
         this->transformMatrix = translate.getMatrix();

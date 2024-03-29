@@ -30,7 +30,7 @@ bool GLLogCall(const char *function, const char *file, int line) {
 //             type, severity, message );
 // }
 
-void checkErrorInShader(GLuint shader) {
+void checkErrorInShader(GLuint shader, GLenum shaderType) {
 	int res;
 	glGetShaderiv(shader, GL_COMPILE_STATUS, &res);
 	if (!res) {
@@ -41,6 +41,19 @@ void checkErrorInShader(GLuint shader) {
 		char *message = (char *)alloca((len + 1) * sizeof(char));
 		glGetShaderInfoLog(shader, len, &len, message);
 		// std::cout << "Shader compilation failed for " << (type == GL_VERTEX_SHADER ? "vertex" : "fragment") << std::endl;
+		std::string shaderTypeStr = "undefined type";
+		switch (shaderType) {
+			case GL_VERTEX_SHADER:
+				shaderTypeStr = "GL_VERTEX_SHADER";
+				break;
+			case GL_FRAGMENT_SHADER:
+				shaderTypeStr = "GL_FRAGMENT_SHADER";
+				break;
+			case GL_GEOMETRY_SHADER:
+				shaderTypeStr = "GL_GEOMETRY_SHADER";
+				break;
+		}
+		fprintf(stderr, "%s: ", shaderTypeStr.c_str());
 		print_error("Shader compilation failed"); // can I use %s here???????
 		std::cout << message << std::endl;
 		glDeleteShader(shader);

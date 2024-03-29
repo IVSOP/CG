@@ -34,7 +34,7 @@ void Shader::loadShader(const char path[], GLenum shaderType, GLuint _program) c
 	GLCall(GLuint shader = glCreateShader(shaderType));
 	GLCall(glShaderSource(shader, 1, &buff, NULL)); // ??? why &buff? does it set it to null on error??
 	GLCall(glCompileShader(shader));
-	GLCall(checkErrorInShader(shader));
+	GLCall(checkErrorInShader(shader, shaderType));
 	GLCall(glAttachShader(_program, shader));
 	delete[] buff;
 

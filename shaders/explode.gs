@@ -6,23 +6,32 @@
 layout (triangles) in;
 layout (triangle_strip, max_vertices = 3) out;
 
-// info received from vertex shader. it is just passed through by the out below
+
 in VS_OUT {
 	vec2 v_TexCoord;
-	flat uint v_MaterialID; // flat since it is always the same between all vertices
 	vec3 v_Normal;
-	// vec3 v_FragPos;
+	flat vec3 v_Diffuse;
+	flat vec3 v_Ambient;
+	flat vec3 v_Specular;
+	flat vec3 v_Emissive;
+	flat float v_Shininess;
+	flat float v_TexID;
+	flat mat4 v_Transf;
 } gs_in[];
 
 out GS_OUT {
 	vec2 g_TexCoord;
-	flat uint g_MaterialID; // flat since it is always the same between all vertices
 	vec3 g_Normal;
 	vec3 g_FragPos;
+	flat vec3 g_Diffuse;
+	flat vec3 g_Ambient;
+	flat vec3 g_Specular;
+	flat vec3 g_Emissive;
+	flat float g_Shininess;
+	flat float g_TexID;
 } gs_out;
 
 uniform float u_ExplodeCoeff = 1.0;
-uniform mat4 u_Model;
 uniform mat4 u_View;
 uniform mat4 u_Projection;
 
@@ -44,38 +53,55 @@ void main() {
 	vec4 res;
 
 	res = explode(gl_in[0].gl_Position, normal);
-    gl_Position = u_Projection * u_View * u_Model * res;
+    gl_Position = u_Projection * u_View * gs_in[0].v_Transf * res;
 
     gs_out.g_TexCoord = gs_in[0].v_TexCoord;
-	gs_out.g_MaterialID = gs_in[0].v_MaterialID;
 	// calculate these things into view space
 	gs_out.g_Normal = gs_in[0].v_Normal;
-	gs_out.g_FragPos = vec3(u_View * u_Model * res);
+	gs_out.g_FragPos = vec3(u_View * gs_in[0].v_Transf * res);
 
+	gs_out.g_Diffuse = gs_in[0].v_Diffuse;
+	gs_out.g_Ambient = gs_in[0].v_Ambient;
+	gs_out.g_Specular = gs_in[0].v_Specular;
+	gs_out.g_Emissive = gs_in[0].v_Emissive;
+	gs_out.g_Shininess = gs_in[0].v_Shininess;
+	gs_out.g_TexID = gs_in[0].v_TexID;
 
 	EmitVertex();
 
 	res = explode(gl_in[1].gl_Position, normal);
-	gl_Position = u_Projection * u_View * u_Model * res;
+	gl_Position = u_Projection * u_View * gs_in[1].v_Transf * res;
 
     gs_out.g_TexCoord = gs_in[1].v_TexCoord;
-	gs_out.g_MaterialID = gs_in[1].v_MaterialID;
 	// calculate these things into view space
 	gs_out.g_Normal = gs_in[1].v_Normal;
-	gs_out.g_FragPos = vec3(u_View * u_Model * res);
-    
+	gs_out.g_FragPos = vec3(u_View * gs_in[1].v_Transf * res);
+
+	gs_out.g_Diffuse = gs_in[1].v_Diffuse;
+	gs_out.g_Ambient = gs_in[1].v_Ambient;
+	gs_out.g_Specular = gs_in[1].v_Specular;
+	gs_out.g_Emissive = gs_in[1].v_Emissive;
+	gs_out.g_Shininess = gs_in[1].v_Shininess;
+	gs_out.g_TexID = gs_in[1].v_TexID;
+
 	EmitVertex();
 
 
 	res = explode(gl_in[2].gl_Position, normal);
-	gl_Position = u_Projection * u_View * u_Model * res;
+	gl_Position = u_Projection * u_View * gs_in[2].v_Transf * res;
     
     gs_out.g_TexCoord = gs_in[2].v_TexCoord;
-	gs_out.g_MaterialID = gs_in[2].v_MaterialID;
 	// calculate these things into view space
 	gs_out.g_Normal = gs_in[2].v_Normal;
-	gs_out.g_FragPos = vec3(u_View * u_Model * res);
-    
+	gs_out.g_FragPos = vec3(u_View * gs_in[2].v_Transf * res);
+
+	gs_out.g_Diffuse = gs_in[2].v_Diffuse;
+	gs_out.g_Ambient = gs_in[2].v_Ambient;
+	gs_out.g_Specular = gs_in[2].v_Specular;
+	gs_out.g_Emissive = gs_in[2].v_Emissive;
+	gs_out.g_Shininess = gs_in[2].v_Shininess;
+	gs_out.g_TexID = gs_in[2].v_TexID;
+
 	EmitVertex();
     
 	

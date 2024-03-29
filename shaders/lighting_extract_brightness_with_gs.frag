@@ -13,8 +13,6 @@ struct Material {
 
 	// there are 2 padding floats here. please see Material struct in the source code to understand
 };
-// basicaly how many vec4s would fit in a material (14 + 2 padding =  4 * vec4)
-#define VEC4_IN_MATERIAL 4
 
 struct DirLight {
     vec3 direction;
@@ -57,13 +55,17 @@ struct SpotLight {
 // output from geometry shader and not vertex shader
 in GS_OUT {
 	vec2 g_TexCoord;
-	flat uint g_MaterialID; // flat since it is always the same between all vertices
 	vec3 g_Normal;
 	vec3 g_FragPos;
+	flat vec3 g_Diffuse;
+	flat vec3 g_Ambient;
+	flat vec3 g_Specular;
+	flat vec3 g_Emissive;
+	flat float g_Shininess;
+	flat float g_TexID;
 } fs_in;
 
 uniform sampler2DArray u_TextureArraySlot;
-uniform samplerBuffer u_MaterialTBO;
 uniform samplerBuffer u_PointLightTBO;
 uniform samplerBuffer u_DirLightTBO;
 uniform samplerBuffer u_SpotLightTBO;
@@ -79,23 +81,7 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, M
 vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir, Material material);
 
 void main() {
-	// get material from material array
-	// segurem se que vao haver manhosidades a ocorrer
-	Material material;
-	material.diffuse = texelFetch(u_MaterialTBO, 0 + (int(trunc(fs_in.g_MaterialID) * VEC4_IN_MATERIAL))).xyz;
-	material.ambient.x = texelFetch(u_MaterialTBO, 0 + (int(trunc(fs_in.g_MaterialID) * VEC4_IN_MATERIAL))).w;
-	material.ambient.yz = texelFetch(u_MaterialTBO, 1 + (int(trunc(fs_in.g_MaterialID) * VEC4_IN_MATERIAL))).xy;
-	material.specular.xy = texelFetch(u_MaterialTBO, 1 + (int(trunc(fs_in.g_MaterialID) * VEC4_IN_MATERIAL))).zw;
-	material.specular.z = texelFetch(u_MaterialTBO, 2 + (int(trunc(fs_in.g_MaterialID) * VEC4_IN_MATERIAL))).x;
-	material.emissive.xyz = texelFetch(u_MaterialTBO, 2 + (int(trunc(fs_in.g_MaterialID) * VEC4_IN_MATERIAL))).yzw;
-	material.shininess = texelFetch(u_MaterialTBO, 3 + (int(trunc(fs_in.g_MaterialID) * VEC4_IN_MATERIAL))).x;
-	// material.texture_id = uintBitsToFloat(floatBitsToInt( texelFetch(u_MaterialTBO, 3 + (int(trunc(fs_in.g_MaterialID) * VEC4_IN_MATERIAL))).y ));
-	material.texture_id = trunc( texelFetch(u_MaterialTBO, 3 + (int(trunc(fs_in.g_MaterialID) * VEC4_IN_MATERIAL))).y );
-
-
-
-
-	// get texture from texture array
+	Material material = Material(fs_in.g_Diffuse, fs_in.g_Ambient, fs_in.g_Specular, fs_in.g_Emissive, fs_in.g_Shininess, fs_in.g_TexID);
 	vec4 res_color = vec4(0.0, 0.0, 0.0, 1.0);
 
 	// normal and viewDir
