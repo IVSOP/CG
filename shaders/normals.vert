@@ -4,7 +4,7 @@
 layout (location = 0) in vec4 aPos;
 layout (location = 1) in vec3 aNormal;
 layout (location = 2) in vec2 aTexCoord;
-layout (location = 3) in uint aObjectID;
+layout (location = 3) in int aObjectID;
 
 struct Material {
 	vec3 diffuse;
@@ -36,10 +36,10 @@ void main()
 {
 	ObjectInfo objectInfo;
 	// mat4
-	objectInfo.transf[0] = texelFetch(u_ObjectInfoTBO, 0 + (int(aObjectID * VEC4_IN_OBJECTINFO)));
-	objectInfo.transf[1] = texelFetch(u_ObjectInfoTBO, 1 + (int(aObjectID * VEC4_IN_OBJECTINFO)));
-	objectInfo.transf[2] = texelFetch(u_ObjectInfoTBO, 2 + (int(aObjectID * VEC4_IN_OBJECTINFO)));
-	objectInfo.transf[3] = texelFetch(u_ObjectInfoTBO, 3 + (int(aObjectID * VEC4_IN_OBJECTINFO)));
+	objectInfo.transf[0] = texelFetch(u_ObjectInfoTBO, 0 + (aObjectID * VEC4_IN_OBJECTINFO));
+	objectInfo.transf[1] = texelFetch(u_ObjectInfoTBO, 1 + (aObjectID * VEC4_IN_OBJECTINFO));
+	objectInfo.transf[2] = texelFetch(u_ObjectInfoTBO, 2 + (aObjectID * VEC4_IN_OBJECTINFO));
+	objectInfo.transf[3] = texelFetch(u_ObjectInfoTBO, 3 + (aObjectID * VEC4_IN_OBJECTINFO));
 
 	// normalize(vec3(vec4(normalMatrix * aNormal, 0.0)));????????????????????????
 	vs_out.v_Normal = mat3(transpose(inverse(u_View * objectInfo.transf))) * aNormal; // inversion is costly and should be done on the CPU, this is temporary

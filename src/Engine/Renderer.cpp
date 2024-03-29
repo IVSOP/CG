@@ -150,7 +150,7 @@ Renderer::Renderer(GLsizei viewport_width, GLsizei viewport_height)
 
 		GLuint vertex_matid_layout = 3;
 		GLCall(glEnableVertexAttribArray(vertex_matid_layout));					// size appart				// offset
-		GLCall(glVertexAttribPointer(vertex_matid_layout, 1, GL_UNSIGNED_INT, GL_FALSE, sizeof(Vertex), (const void *)offsetof(Vertex, object_id))); // use glVertexAttribIPointer??????????????????????? why does it work without it?????
+		GLCall(glVertexAttribIPointer(vertex_matid_layout, 1, GL_INT, sizeof(Vertex), (const void *)offsetof(Vertex, object_id)));
 		// GLCall(glVertexAttribDivisor(vertex_color_layout, 0)); // values are per triangle, but I am not using instancing
 	}
 
@@ -197,7 +197,6 @@ Renderer::Renderer(GLsizei viewport_width, GLsizei viewport_height)
 	//////////////////////////// LOADING SHADER UNIFORMS ///////////////////////////
 	lightingShader.use();
 	lightingShader.setInt("u_TextureArraySlot", TEX_ARRAY_SLOT);
-	lightingShader.setMat4("u_Model", glm::mat4(1.0f)); // load identity just for safety
 	lightingShader.setMat4("u_View", glm::mat4(1.0f)); // load identity just for safety
 	lightingShader.setMat4("u_Projection", glm::mat4(1.0f)); // load identity just for safety
 

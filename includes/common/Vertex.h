@@ -11,14 +11,14 @@ struct Vertex {
 	glm::vec4 coords = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
 	glm::vec3 normal = glm::vec3(1.0f, 1.0f, 1.0f);
 	glm::vec2 tex_coord = glm::vec2(0.0f, 0.0f);
-	GLuint object_id = 0;
+	GLint object_id = 0;
 
     friend std::ostream &operator<<(std::ostream &os, const Vertex &p) {
         os << "Vertex: { {x: " << p.coords.x << ", y: " << p.coords.y << ", z: " << p.coords.z << "}, {n_x: " << p.normal.x << ", n_y: " << p.normal.y << ", n_z: " << p.normal.z << "}, {t_x: " << p.tex_coord.x << ", t_y: " << p.tex_coord.y << "}, " << p.object_id << " }";
         return os;
     }
 
-	Vertex(float x, float y, float z, float normal_x, float normal_y, float normal_z, float tex_x, float tex_y, GLuint _object_id)
+	Vertex(float x, float y, float z, float normal_x, float normal_y, float normal_z, float tex_x, float tex_y, GLint _object_id)
 	: coords(x, y, z, 1.0f), normal(normal_x, normal_y, normal_z), tex_coord(tex_x, tex_y), object_id(_object_id) {}
 
     Vertex(float x, float y, float z, float normal_x, float normal_y, float normal_z, float tex_x, float tex_y)
@@ -31,7 +31,7 @@ struct Vertex {
 
     Vertex(glm::vec4 coords, glm::vec3 normal, glm::vec2 tex_coord) : coords(coords), normal(normal), tex_coord(tex_coord) {}
 
-    Vertex(Vertex const &v) : coords(v.coords), normal(v.normal), tex_coord(v.tex_coord) {}
+    Vertex(Vertex const &v) : coords(v.coords), normal(v.normal), tex_coord(v.tex_coord), object_id(v.object_id) {}
 
     Vertex() = default;
 

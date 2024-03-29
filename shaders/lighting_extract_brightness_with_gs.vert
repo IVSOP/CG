@@ -4,7 +4,7 @@
 layout (location = 0) in vec4 aPos;
 layout (location = 1) in vec3 aNormal;
 layout (location = 2) in vec2 aTexCoord;
-layout (location = 3) in uint aObjectID;
+layout (location = 3) in int aObjectID;
 
 struct Material {
 	vec3 diffuse;
@@ -51,20 +51,20 @@ void main()
 {
 	ObjectInfo objectInfo;
 	// mat4
-	objectInfo.transf[0] = texelFetch(u_ObjectInfoTBO, 0 + (int(aObjectID * VEC4_IN_OBJECTINFO)));
-	objectInfo.transf[1] = texelFetch(u_ObjectInfoTBO, 1 + (int(aObjectID * VEC4_IN_OBJECTINFO)));
-	objectInfo.transf[2] = texelFetch(u_ObjectInfoTBO, 2 + (int(aObjectID * VEC4_IN_OBJECTINFO)));
-	objectInfo.transf[3] = texelFetch(u_ObjectInfoTBO, 3 + (int(aObjectID * VEC4_IN_OBJECTINFO)));
+	objectInfo.transf[0] = texelFetch(u_ObjectInfoTBO, 0 + (aObjectID * VEC4_IN_OBJECTINFO));
+	objectInfo.transf[1] = texelFetch(u_ObjectInfoTBO, 1 + (aObjectID * VEC4_IN_OBJECTINFO));
+	objectInfo.transf[2] = texelFetch(u_ObjectInfoTBO, 2 + (aObjectID * VEC4_IN_OBJECTINFO));
+	objectInfo.transf[3] = texelFetch(u_ObjectInfoTBO, 3 + (aObjectID * VEC4_IN_OBJECTINFO));
 
 	// material
-	objectInfo.material.diffuse = texelFetch(u_ObjectInfoTBO, 4 + (int(aObjectID * VEC4_IN_OBJECTINFO))).xyz;
-	objectInfo.material.ambient.x = texelFetch(u_ObjectInfoTBO, 4 + (int(aObjectID * VEC4_IN_OBJECTINFO))).w;
-	objectInfo.material.ambient.yz = texelFetch(u_ObjectInfoTBO, 5 + (int(aObjectID * VEC4_IN_OBJECTINFO))).xy;
-	objectInfo.material.specular.xy = texelFetch(u_ObjectInfoTBO, 5 + (int(aObjectID * VEC4_IN_OBJECTINFO))).zw;
-	objectInfo.material.specular.z = texelFetch(u_ObjectInfoTBO, 6 + (int(aObjectID * VEC4_IN_OBJECTINFO))).x;
-	objectInfo.material.emissive.xyz = texelFetch(u_ObjectInfoTBO, 6 + (int(aObjectID * VEC4_IN_OBJECTINFO))).yzw;
-	objectInfo.material.shininess = texelFetch(u_ObjectInfoTBO, 7 + (int(aObjectID * VEC4_IN_OBJECTINFO))).x;
-	objectInfo.material.texture_id = trunc( texelFetch(u_ObjectInfoTBO, 7 + (int(aObjectID * VEC4_IN_OBJECTINFO))).y );
+	objectInfo.material.diffuse = texelFetch(u_ObjectInfoTBO, 4 + (aObjectID * VEC4_IN_OBJECTINFO)).xyz;
+	objectInfo.material.ambient.x = texelFetch(u_ObjectInfoTBO, 4 + (aObjectID * VEC4_IN_OBJECTINFO)).w;
+	objectInfo.material.ambient.yz = texelFetch(u_ObjectInfoTBO, 5 + (aObjectID * VEC4_IN_OBJECTINFO)).xy;
+	objectInfo.material.specular.xy = texelFetch(u_ObjectInfoTBO, 5 + (aObjectID * VEC4_IN_OBJECTINFO)).zw;
+	objectInfo.material.specular.z = texelFetch(u_ObjectInfoTBO, 6 + (aObjectID * VEC4_IN_OBJECTINFO)).x;
+	objectInfo.material.emissive.xyz = texelFetch(u_ObjectInfoTBO, 6 + (aObjectID * VEC4_IN_OBJECTINFO)).yzw;
+	objectInfo.material.shininess = texelFetch(u_ObjectInfoTBO, 7 + (aObjectID * VEC4_IN_OBJECTINFO)).x;
+	objectInfo.material.texture_id = trunc( texelFetch(u_ObjectInfoTBO, 7 + (aObjectID * VEC4_IN_OBJECTINFO)).y );
 
 
 
