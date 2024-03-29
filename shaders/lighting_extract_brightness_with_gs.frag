@@ -81,7 +81,7 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, M
 vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir, Material material);
 
 void main() {
-	Material material = Material(fs_in.g_Diffuse, fs_in.g_Ambient, fs_in.g_Specular, fs_in.g_Emissive, fs_in.g_Shininess, fs_in.g_TexID);
+	Material material = Material(fs_in.g_Diffuse, fs_in.g_Ambient, fs_in.g_Specular, fs_in.g_Emissive, clamp(fs_in.g_Shininess, 0.01, 128.0), fs_in.g_TexID); // CAREFULL WITH THE CLAMP HERE idk what else to do, values 0.0 will have very werid glitches
 	vec4 res_color = vec4(0.0, 0.0, 0.0, 1.0);
 
 	// normal and viewDir
