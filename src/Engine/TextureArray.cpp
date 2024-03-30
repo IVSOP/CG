@@ -44,7 +44,7 @@ GLsizei TextureArray::addTexture(const char path[]) {
 	unsigned char *buffer =	stbi_load(path, &_width, &_height, &BPP, 4); // 4 -> RGBA or just use STBI_rgb_alpha
 
 	if (!buffer) {
-		fprintf(stderr, "Error loading image in %s\n", __func__);
+		fprintf(stderr, "Error loading '%s' in %s\n", path, __func__);
 		exit(EXIT_FAILURE);
 	}
 

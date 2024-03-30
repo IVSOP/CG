@@ -81,7 +81,8 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, M
 vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir, Material material);
 
 void main() {
-	Material material = Material(fs_in.g_Diffuse, fs_in.g_Ambient, fs_in.g_Specular, fs_in.g_Emissive, clamp(fs_in.g_Shininess, 0.01, 128.0), fs_in.g_TexID); // CAREFULL WITH THE CLAMP HERE idk what else to do, values 0.0 will have very werid glitches. but if I hardcode it to 0.0 it works wtf???????????
+	Material material = Material(fs_in.g_Diffuse, fs_in.g_Ambient, fs_in.g_Specular, fs_in.g_Emissive, fs_in.g_Shininess, fs_in.g_TexID);
+	
 	vec4 res_color = vec4(0.0, 0.0, 0.0, 1.0);
 
 	// normal and viewDir
@@ -166,7 +167,7 @@ vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir, Material material)
 
     // specular
     vec3 reflectDir = reflect(-lightDir, normal);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.000001), material.shininess); // apparently shininess is usually 0, but pow(0, 0) is undefined according to https://registry.khronos.org/OpenGL-Refpages/gl4/html/pow.xhtml, I spent hours on this fml
     vec3 specular = light.specular * (spec * material.specular.xyz);
 
     return (ambient + diffuse + specular);
@@ -182,7 +183,7 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, M
 	float diff = max(dot(normal, lightDir), 0.0);
     // specular shading
     vec3 reflectDir = reflect(-lightDir, normal);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.000001), material.shininess); // apparently shininess is usually 0, but pow(0, 0) is undefined according to https://registry.khronos.org/OpenGL-Refpages/gl4/html/pow.xhtml, I spent hours on this fml
     // attenuation
     float distance    = length(fragToLight);
     float attenuation = 1.0 / (light.constant + light.linear * distance + 
@@ -210,7 +211,7 @@ vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir, Mat
     float diff = max(dot(normal, lightDir), 0.0);
     // specular shading
     vec3 reflectDir = reflect(-lightDir, normal);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), material.shininess);
+    float spec = pow(max(dot(viewDir, reflectDir), 0.000001), material.shininess); // apparently shininess is usually 0, but pow(0, 0) is undefined according to https://registry.khronos.org/OpenGL-Refpages/gl4/html/pow.xhtml, I spent hours on this fml
     // attenuation
     float distance = length(fragToLight);
     float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));    
