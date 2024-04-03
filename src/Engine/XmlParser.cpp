@@ -236,7 +236,7 @@ Engine_Object_Materials XmlParser::parseEngineObjectMaterials(tinyxml2::XMLEleme
     glm::vec3 diffuse = glm::vec3(1.0f);
     glm::vec3 ambient = glm::vec3(1.0f);
     glm::vec3 specular = glm::vec3(1.0f);
-    glm::vec3 emissive = glm::vec3(1.0f);
+    glm::vec3 emissive = glm::vec3(0.0f);
     int shininess = 0;
 
     std::string texture = std::string("white.png");
@@ -250,16 +250,16 @@ Engine_Object_Materials XmlParser::parseEngineObjectMaterials(tinyxml2::XMLEleme
             hasColor = true;
 
             tinyxml2::XMLElement* nodeChild = node->FirstChildElement("diffuse");
-            diffuse = glm::vec3(nodeChild->IntAttribute("R"), nodeChild->IntAttribute("G"), nodeChild->IntAttribute("B"));
+            diffuse = glm::vec3(nodeChild->FloatAttribute("R") / 255.0f, nodeChild->FloatAttribute("G") / 255.0f, nodeChild->FloatAttribute("B") / 255.0f);
 
             nodeChild = node->FirstChildElement("ambient");
-            ambient = glm::vec3(nodeChild->IntAttribute("R"), nodeChild->IntAttribute("G"), nodeChild->IntAttribute("B"));
+            ambient = glm::vec3(nodeChild->FloatAttribute("R") / 255.0f, nodeChild->FloatAttribute("G") / 255.0f, nodeChild->FloatAttribute("B") / 255.0f);
 
             nodeChild = node->FirstChildElement("specular");
-            specular = glm::vec3(nodeChild->IntAttribute("R"), nodeChild->IntAttribute("G"), nodeChild->IntAttribute("B"));
+            specular = glm::vec3(nodeChild->FloatAttribute("R") / 255.0f, nodeChild->FloatAttribute("G") / 255.0f, nodeChild->FloatAttribute("B") / 255.0f);
 
             nodeChild = node->FirstChildElement("emissive");
-            emissive = glm::vec3(nodeChild->IntAttribute("R"), nodeChild->IntAttribute("G"), nodeChild->IntAttribute("B"));
+            emissive = glm::vec3(nodeChild->FloatAttribute("R") / 255.0f, nodeChild->FloatAttribute("G") / 255.0f, nodeChild->FloatAttribute("B") / 255.0f);
 
             nodeChild = node->FirstChildElement("shininess");
             shininess = nodeChild->IntAttribute("value");
@@ -280,8 +280,8 @@ Engine_Object_Materials XmlParser::parseEngineObjectMaterials(tinyxml2::XMLEleme
     }
 
     if(!hasColor && !hasTexture){
-        diffuse = glm::vec3(200, 200, 200);
-        ambient = glm::vec3(50, 50, 50);
+        diffuse = glm::vec3(200 / 255.0f, 200 / 255.0f, 200 / 255.0f);
+        ambient = glm::vec3(50 / 255.0f, 50 / 255.0f, 50 / 255.0f);
         specular = glm::vec3(0, 0, 0);
         emissive = glm::vec3(0, 0, 0);
         shininess = 0;
