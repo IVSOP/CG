@@ -75,7 +75,6 @@ add_executable(Engine
 		src/Engine/TextureArray.cpp
 		src/Engine/Shader.cpp
 		src/Engine/common.cpp
-		src/Engine/BasicRenderer.cpp
 		src/TinyXML2/tinyxml2.cpp
 		src/common/Vertex.cpp
 		src/common/Consts.cpp

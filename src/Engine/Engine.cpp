@@ -56,33 +56,6 @@ void handleMouseMov(GLFWwindow *window, double xpos, double ypos) {
     }
 }
 
-// void basicRenderLoop(GLFWwindow *window, Camera &camera, BasicRenderer &renderer) {
-// 	double lastFrameTime, currentFrameTime, deltaTime = PHYS_STEP; // to prevent errors when this is first ran, I initialize it to the physics substep
-//     while (!glfwWindowShouldClose(window)) {
-//         glfwPollEvents(); // at the start due to imgui (??) test moving it to after the unlock()
-
-//         lastFrameTime = glfwGetTime();
-//         int windowWidth = xmlParser.getWindowWidth();
-//         int windowHeight = xmlParser.getWindowHeight();
-
-//         // printf("delta is %f (%f fps)\n", deltaTime, 1.0f / deltaTime);
-//         inputHandler.applyToCamera(camera, windowWidth, windowHeight, static_cast<GLfloat>(deltaTime));
-
-
-//         std::unique_lock<std::mutex> lock = std::unique_lock<std::mutex>(mtx);
-//         // auto s = draw_points.size();
-//         // printf("%f %f %f %lu\n", draw_points[s -1].getX(), draw_points[s -1].getY(), draw_points[s -1].getZ(), s);
-//         renderer.draw(draw_points, projection, camera, window);
-//         lock.unlock();
-
-//         currentFrameTime = glfwGetTime();
-//         deltaTime = currentFrameTime - lastFrameTime;
-//         lastFrameTime = currentFrameTime;
-
-//         // no need for sleep, vsync takes care of mantaining timings
-//     }
-// }
-
 void Engine::renderLoop() {
     double lastFrameTime, currentFrameTime, deltaTime = PHYS_STEP; // to prevent errors when this is first ran, I initialize it to the physics substep
     while (!glfwWindowShouldClose(window)) {

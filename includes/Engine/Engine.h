@@ -12,7 +12,6 @@
 #endif
 
 #include "Renderer.h"
-#include "BasicRenderer.h"
 #include "Camera.h"
 #include "InputHandler.h"
 #include <thread>
