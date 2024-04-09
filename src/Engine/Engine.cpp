@@ -283,8 +283,10 @@ Engine::Engine(XmlParser &xmlParser) {
 		}
 	}
 
+    // TODO passar tempo atual
+
 	// after getting the engine object info, translate them to renderer object info (yes very bad but only done once)
-	std::vector<Engine_Object_Info> engineObjInfo = xmlParser.getObjectInfo();
+	std::vector<Engine_Object_Info> engineObjInfo = xmlParser.getObjectInfo(0.0f);
 	this->objectInfo = this->renderer.get()->translateEngineObjectInfo(engineObjInfo);
 
 	// early copy to allow renderer to display something

@@ -5,10 +5,12 @@
 #include "common.h"
 #include "Engine_Object.h"
 #include "tinyxml2.h"
+#include "Transformation.h"
 
 #include <vector>
 #include <map>
 #include <functional>
+#include <variant>
 
 class XmlParser {
 private:
@@ -34,7 +36,7 @@ private:
     Engine_Object engineObject;
     std::vector<Vertex> points;
 
-    Engine_Object parseEngineObject(tinyxml2::XMLElement *group, Transformation transformations);
+    Engine_Object parseEngineObject(tinyxml2::XMLElement *group);
 
     std::vector<Vertex> parseVertex(tinyxml2::XMLElement *model);
 
@@ -42,7 +44,7 @@ private:
 
     std::vector<std::pair<Engine_Object_Materials, std::vector<Vertex>>> parseModels(tinyxml2::XMLElement *models);
 
-    Transformation parseTransformation(tinyxml2::XMLElement *transform);
+    std::vector<std::variant<Translate, Rotate, Scale>> parseTransformation(tinyxml2::XMLElement *transform);
 public:
     XmlParser(){
         this->windowWidth = 512;
@@ -114,7 +116,7 @@ public:
 
     void setPoints(std::vector<Vertex>& points);
     std::vector<std::vector<Vertex>> getPoints();
-    std::vector<Engine_Object_Info> getObjectInfo();
+    std::vector<Engine_Object_Info> getObjectInfo(float t);
 };
 
 

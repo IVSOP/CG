@@ -1,9 +1,6 @@
 #include "XmlParser.h"
 #include "tinyxml2.h"
 #include "Transformation.h"
-#include "Rotate.h"
-#include "Translate.h"
-#include "Scale.h"
 
 #include <iosfwd>
 #include <fstream>
@@ -141,8 +138,8 @@ std::vector<std::vector<Vertex>> XmlParser::getPoints(){
     return this->engineObject.getPoints();
 }
 
-std::vector<Engine_Object_Info> XmlParser::getObjectInfo() {
-    return this->engineObject.getObjectInfo();
+std::vector<Engine_Object_Info> XmlParser::getObjectInfo(float t) {
+    return this->engineObject.getObjectInfo(t, Transformation());
 }
 
 std::vector<std::pair<Engine_Object_Materials, std::vector<Vertex>>> XmlParser::parseModels(tinyxml2::XMLElement *models){
@@ -169,28 +166,43 @@ std::vector<std::pair<Engine_Object_Materials, std::vector<Vertex>>> XmlParser::
 }
 
 // TODO Acabar
-Transformation XmlParser::parseTransformation(tinyxml2::XMLElement *transform){
-    Transformation transformation = Transformation();
+std::vector<std::variant<Translate, Rotate, Scale>> XmlParser::parseTransformation(tinyxml2::XMLElement *transform){
+    std::vector<std::variant<Translate, Rotate, Scale>> transformations = std::vector<std::variant<Translate, Rotate, Scale>>();
 
     for (tinyxml2::XMLElement* node = transform->FirstChildElement(); node != nullptr; node = node->NextSiblingElement()){
         std::string name = std::string(node->Name());
 
         if(name == "rotate"){
-            Rotate r = Rotate(node->DoubleAttribute("angle"), node->FloatAttribute("x"), node->FloatAttribute("y"), node->FloatAttribute("z"));
+            Rotate r = Rotate(node->DoubleAttribute("angle"), node->FloatAttribute("time"), node->FloatAttribute("x"), node->FloatAttribute("y"), node->FloatAttribute("z"), node->FindAttribute("time") != nullptr);
 
-            Transformation t = Transformation(r);
-
-            transformation.appendTransformation(t);
+            transformations.emplace_back(r);
 
             continue;
         }
 
         if(name == "translate"){
-            Translate translate = Translate(node->FloatAttribute("x"), node->FloatAttribute("y"), node->FloatAttribute("z"));
+            std::vector<Vertex> points = std::vector<Vertex>();
 
-            Transformation t = Transformation(translate);
+            bool curve = node->FindAttribute("time") != nullptr;
 
-            transformation.appendTransformation(t);
+            if(curve){
+                for(tinyxml2::XMLElement* point = node->FirstChildElement(); point != nullptr; point = point->NextSiblingElement()){
+                    std::string point_name = std::string(point->Name());
+
+                    if(point_name == "Point"){
+                        points.emplace_back(point->FloatAttribute("x"), point->FloatAttribute("y"), point->FloatAttribute("z"));
+
+                        continue;
+                    }
+
+                    perror("Found unrecognized tag inside a translate tag.");
+                    std::cout << point_name << std::endl;
+                }
+            }
+
+            Translate translate = Translate(node->FloatAttribute("time"), node->BoolAttribute("align"), node->FloatAttribute("x"), node->FloatAttribute("y"), node->FloatAttribute("z"), curve, points);
+
+            transformations.emplace_back(translate);
 
             continue;
         }
@@ -198,18 +210,16 @@ Transformation XmlParser::parseTransformation(tinyxml2::XMLElement *transform){
         if(name == "scale"){
             Scale s = Scale(node->FloatAttribute("x"), node->FloatAttribute("y"), node->FloatAttribute("z"));
 
-            Transformation t = Transformation(s);
-
-            transformation.appendTransformation(t);
+            transformations.emplace_back(s);
 
             continue;
         }
 
-        perror("Found unrecognized tag inside a models tag.");
+        perror("Found unrecognized tag inside a transform tag.");
         std::cout << name << std::endl;
     }
 
-    return transformation;
+    return transformations;
 }
 
 std::vector<Vertex> XmlParser::parseVertex(tinyxml2::XMLElement *model){
@@ -290,7 +300,8 @@ Engine_Object_Materials XmlParser::parseEngineObjectMaterials(tinyxml2::XMLEleme
     return Engine_Object_Materials(diffuse, ambient, specular, emissive, shininess, texture);
 }
 
-Engine_Object XmlParser::parseEngineObject(tinyxml2::XMLElement *group, Transformation transformations){
+Engine_Object XmlParser::parseEngineObject(tinyxml2::XMLElement *group){
+    std::vector<std::variant<Translate, Rotate, Scale>> transformations = std::vector<std::variant<Translate, Rotate, Scale>>();
     std::vector<std::pair<Engine_Object_Materials, std::vector<Vertex>>> obj_points = std::vector<std::pair<Engine_Object_Materials, std::vector<Vertex>>>();
     std::vector<Engine_Object> child_objs = std::vector<Engine_Object>();
 
@@ -298,8 +309,8 @@ Engine_Object XmlParser::parseEngineObject(tinyxml2::XMLElement *group, Transfor
         std::string name = std::string(node->Name());
 
         if(name == "transform"){
-            Transformation t = parseTransformation(node);
-            transformations.appendTransformation(t);
+            std::vector<std::variant<Translate, Rotate, Scale>> t = parseTransformation(node);
+            transformations.insert(transformations.end(), t.begin(), t.end());
 
             continue;
         }
@@ -312,8 +323,8 @@ Engine_Object XmlParser::parseEngineObject(tinyxml2::XMLElement *group, Transfor
         }
 
         if(name == "group"){
-            Engine_Object child = parseEngineObject(node, Transformation(transformations));
-            child_objs.emplace_back(child.transformation, child.points, child.children_objects);
+            Engine_Object child = parseEngineObject(node);
+            child_objs.emplace_back(child.transformations, child.points, child.children_objects);
 
             continue;
         }
@@ -379,6 +390,5 @@ void XmlParser::parseXML(char * xmlFile) {
     this->cameraYUp = up->DoubleAttribute("y");
     this->cameraZUp = up->DoubleAttribute("z");
 
-    Transformation transformations = Transformation();
-    this->engineObject = parseEngineObject(group, transformations);
+    this->engineObject = parseEngineObject(group);
 }

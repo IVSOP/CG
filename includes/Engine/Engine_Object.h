@@ -2,6 +2,7 @@
 #define CG_ENGINE_OBJECT_H
 
 #include <vector>
+#include <variant>
 
 #include "Transformation.h"
 #include "Vertex.h"
@@ -47,28 +48,28 @@ public:
 
 class Engine_Object {
 public:
-    Transformation transformation;
+    std::vector<std::variant<Translate, Rotate, Scale>> transformations;
     // (Texture, points)
     std::vector<std::pair<Engine_Object_Materials, std::vector<Vertex>>> points;
     std::vector<Engine_Object> children_objects;
 
     Engine_Object() {
-        this->transformation = Transformation();
+        this->transformations = std::vector<std::variant<Translate, Rotate, Scale>>();
         this->points = std::vector<std::pair<Engine_Object_Materials, std::vector<Vertex>>>();
         this->children_objects = std::vector<Engine_Object>();
     }
 
-    Engine_Object(const Transformation &transformation,
+    Engine_Object(std::vector<std::variant<Translate, Rotate, Scale>> &transformations,
                   std::vector<std::pair<Engine_Object_Materials, std::vector<Vertex>>> &points,
                   std::vector<Engine_Object> &children_objects) {
-        this->transformation = transformation;
+        this->transformations = std::vector<std::variant<Translate, Rotate, Scale>>(transformations);
         this->points = std::move(points);
         this->children_objects = std::move(children_objects);
     }
 
     std::vector<std::vector<Vertex>> getPoints();
 
-    std::vector<Engine_Object_Info> getObjectInfo();
+    std::vector<Engine_Object_Info> getObjectInfo(float t, Transformation transformation);
 };
 
 #endif //CG_ENGINE_OBJECT_H

@@ -4,8 +4,9 @@ void Transformation::appendTransformation(glm::mat4& transformation){
     this->transformMatrix *= transformation;
 }
 
-void Transformation::appendTransformation(Transformation& transformation){
-    this->appendTransformation(transformation.transformMatrix);
+void Transformation::appendTransformation(Transform& transform, float t){
+    glm::mat4 transformation = transform.getMatrix(t);
+    this->appendTransformation(transformation);
 }
 
 std::vector<Vertex> Transformation::apply(std::vector<Vertex>& points) {

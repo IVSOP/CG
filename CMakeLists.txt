@@ -67,10 +67,7 @@ add_executable(Engine
 		src/Engine/InputHandler.cpp
 		src/Engine/XmlParser.cpp
 		src/Engine/Engine_Object.cpp
-		src/Engine/Translate.cpp
-		src/Engine/Rotate.cpp
-		src/Engine/Scale.cpp
-		src/Engine/Transformation.cpp
+        src/Engine/Transformation.cpp
 		src/Engine/GLErrors.cpp
 		src/Engine/TextureArray.cpp
 		src/Engine/Shader.cpp
