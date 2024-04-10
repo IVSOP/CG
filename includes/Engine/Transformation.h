@@ -24,9 +24,93 @@ public:
     glm::mat4 getMatrix(float t) override {
         if(!this->curve) return Consts::translateMatrix(this->x, this->y, this->z);
 
-        t %= this->time;
+        t = fmod(t,this->time);
 
-        return glm::mat4(1.0f);
+        glm::vec4 pos;
+        glm::vec4 deriv;
+
+        //obter posição e derivadas de ponto
+        getGlobalCatmullRomPoint(t, pos, deriv, curvePoints);
+
+        glm::mat4 finalMat;
+
+        // translação para  posição correta na curva
+        finalMat = Consts::translateMatrix(pos.x,pos.y,pos.z); 
+
+        // //setup para matriz de rotação
+        // glm::vec3 yVector = glm::vec3(0.0f,1.0f,0.0f); // Assumir y inicial
+
+        // glm::vec3 xVector = glm::vec3(glm::normalize(deriv));
+
+        // glm::vec3 zVector = glm::normalize(glm::cross(xVector,yVector));
+
+        // yVector = glm::normalize(glm::cross(zVector,xVector));
+
+        // glm::mat4 rotMatrix = buildRotMatrix(xVector,yVector,zVector);
+
+        // //rodar objeto para ficar alinhado com a curva
+        // finalMat *= rotMatrix;
+
+        return finalMat;
+    }
+
+    glm::mat4 buildRotMatrix(glm::vec3& x, glm::vec3& y, glm::vec3& z) {
+        glm::mat4 resultMatrix;
+        resultMatrix[0][0] = x.x; resultMatrix[0][1] = x.y; resultMatrix[0][2] = x.z; resultMatrix[0][3] = 0.0f;
+        resultMatrix[1][0] = y.x; resultMatrix[1][1] = y.y; resultMatrix[1][2] = y.z; resultMatrix[1][3] = 0.0f;
+        resultMatrix[2][0] = z.x; resultMatrix[2][1] = z.y; resultMatrix[2][2] = z.z; resultMatrix[2][3] = 0.0f;
+        resultMatrix[3][0] = 0.0f; resultMatrix[3][1] = 0.0f; resultMatrix[3][2] = 0.0f; resultMatrix[3][3] = 1.0f;
+
+        return resultMatrix;
+    }
+    
+    void getGlobalCatmullRomPoint(float gt, glm::vec4& pos, glm::vec4& deriv, std::vector<Vertex>& curvePoints) {
+
+        int pointCount = curvePoints.size();
+        float t = gt * pointCount;
+        int index = floor(t);  // which segment
+        t = t - index; // where within  the segment
+
+        int indices[4];
+
+        indices[0] = (index + pointCount-1)%pointCount;	
+        indices[1] = (indices[0]+1)%pointCount;
+        indices[2] = (indices[1]+1)%pointCount; 
+        indices[3] = (indices[2]+1)%pointCount;
+
+    //pontos atuais da curva a ser considerados
+        std::vector<Vertex> currPoints;
+
+        for (int index : indices) {
+            currPoints.emplace_back(curvePoints[index]);
+        }
+
+    // catmull-rom matrix
+        glm::mat4 mMatrix = glm::mat4(1.0f);	
+            
+        mMatrix[0][0] = -0.5f; mMatrix[0][1] = 1.5f; mMatrix[0][2] = -1.5f; mMatrix[0][3] = 0.5f;
+        mMatrix[1][0] = 1.0f;  mMatrix[1][1] = -2.5f; mMatrix[1][2] = 2.0f;  mMatrix[1][3] = -0.5f;
+        mMatrix[2][0] = -0.5f; mMatrix[2][1] = 0.0f;  mMatrix[2][2] = 0.5f;  mMatrix[2][3] = 0.0f;
+        mMatrix[3][0] = 0.0f;  mMatrix[3][1] = 1.0f;  mMatrix[3][2] = 0.0f;  mMatrix[3][3] = 0.0f;
+
+        glm::vec4 tVec= glm::vec4(powf(t,3), powf(t,2), powf(t,1), t);
+        glm::vec4 tTVec = glm::vec4(3.0f * powf(t,2), 2 * t, 1.0f, 0.0f);
+
+        glm::mat4 pMatrix; 
+
+    //construct pMatrix from currPoints coords
+        for (int i = 0; i < 4; ++i) {
+            pMatrix[i] = currPoints[i].coords;
+        }
+
+    // Compute A = M * P // 4*4 * 4*4 = 4*4
+        glm::mat4 aMatrix = mMatrix * pMatrix;
+
+    // Compute pos = T * A // 1*4 * 4*4 = 1*4
+        pos = tVec * aMatrix;
+
+    // compute deriv = T' * A
+        deriv = tTVec * aMatrix;
     }
 };
 
@@ -40,7 +124,7 @@ public:
 
     glm::mat4 getMatrix(float t) override {
         if(this->curve){
-            t %= this->time;
+            t = fmod(t,this->time); // rever
             this->angle = 360.0f * t / this->time;
         }
 
