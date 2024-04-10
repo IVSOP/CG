@@ -6,6 +6,8 @@
 #include "common.h"
 
 #include <vector>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/string_cast.hpp>
 
 class Transform {
 public:
@@ -25,6 +27,9 @@ public:
         if(!this->curve) return Consts::translateMatrix(this->x, this->y, this->z);
 
         t = fmod(t,this->time);
+        t = t / this->time;
+        
+        std::cout << "time: " << t << std::endl;
 
         glm::vec4 pos;
         glm::vec4 deriv;
@@ -32,10 +37,9 @@ public:
         //obter posição e derivadas de ponto
         getGlobalCatmullRomPoint(t, pos, deriv, curvePoints);
 
-        glm::mat4 finalMat;
-
+        std::cout << glm::to_string(pos) << glm::to_string(deriv) << std::endl;
         // translação para  posição correta na curva
-        finalMat = Consts::translateMatrix(pos.x,pos.y,pos.z); 
+        glm::mat4 finalMat = Consts::translateMatrix(pos.x,pos.y,pos.z); 
 
         // //setup para matriz de rotação
         // glm::vec3 yVector = glm::vec3(0.0f,1.0f,0.0f); // Assumir y inicial
@@ -51,11 +55,14 @@ public:
         // //rodar objeto para ficar alinhado com a curva
         // finalMat *= rotMatrix;
 
+
+        std::cout << glm::to_string(finalMat) << std::endl;
+
         return finalMat;
     }
 
     glm::mat4 buildRotMatrix(glm::vec3& x, glm::vec3& y, glm::vec3& z) {
-        glm::mat4 resultMatrix;
+        glm::mat4 resultMatrix = glm::mat4(1.0f);
         resultMatrix[0][0] = x.x; resultMatrix[0][1] = x.y; resultMatrix[0][2] = x.z; resultMatrix[0][3] = 0.0f;
         resultMatrix[1][0] = y.x; resultMatrix[1][1] = y.y; resultMatrix[1][2] = y.z; resultMatrix[1][3] = 0.0f;
         resultMatrix[2][0] = z.x; resultMatrix[2][1] = z.y; resultMatrix[2][2] = z.z; resultMatrix[2][3] = 0.0f;
