@@ -5,8 +5,8 @@
 
 // these are for convenience outside this class and are never used here
 #define TEXTURE_LAYERS 64
-#define TEXTURE_WIDTH 1024
-#define TEXTURE_HEIGHT 1024
+#define TEXTURE_WIDTH 2048
+#define TEXTURE_HEIGHT 2048
 // GL_MAX_TEXTURE_SIZE for width and height????
 // GL_MAX_ARRAY_TEXTURE_LAYERS for depth
 
