@@ -142,6 +142,10 @@ std::vector<Engine_Object_Info> XmlParser::getObjectInfo(float t) {
     return this->engineObject.getObjectInfo(t, Transformation());
 }
 
+std::vector<std::pair<std::vector<Vertex>, std::vector<Vertex>>> XmlParser::getCurvePoints(int tesselation_level) {
+    return this->engineObject.getCurvePoints(tesselation_level);
+}
+
 std::vector<std::pair<Engine_Object_Materials, std::vector<Vertex>>> XmlParser::parseModels(tinyxml2::XMLElement *models){
     std::vector<std::pair<Engine_Object_Materials, std::vector<Vertex>>> ans = std::vector<std::pair<Engine_Object_Materials, std::vector<Vertex>>>();
 

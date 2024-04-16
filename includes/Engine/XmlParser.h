@@ -117,6 +117,7 @@ public:
     void setPoints(std::vector<Vertex>& points);
     std::vector<std::vector<Vertex>> getPoints();
     std::vector<Engine_Object_Info> getObjectInfo(float t);
+    std::vector<std::pair<std::vector<Vertex>, std::vector<Vertex>>> getCurvePoints(int tesselation_level);
 };
 
 

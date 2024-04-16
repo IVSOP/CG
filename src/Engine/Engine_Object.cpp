@@ -48,3 +48,36 @@ std::vector<Engine_Object_Info> Engine_Object::getObjectInfo(float t, Transforma
 
     return ans;
 }
+
+std::vector<std::pair<std::vector<Vertex>, std::vector<Vertex>>> Engine_Object::getCurvePoints(int tesselation_level){
+    std::vector<std::pair<std::vector<Vertex>, std::vector<Vertex>>> ans = std::vector<std::pair<std::vector<Vertex>, std::vector<Vertex>>>();
+
+    Translate* translate;
+    bool found;
+
+    for(auto& p : this->points){
+        found = false;
+
+        // Assuming there is only one translate per group, since it doesn't make sense to have several curves to the same objects
+        for(auto& obj : this->transformations){
+            if(std::holds_alternative<Translate>(obj)){
+                translate = &std::get<Translate>(obj);
+
+                ans.emplace_back(translate->getCurvePoints(tesselation_level));
+                found = true;
+                break;
+            }
+        }
+
+        if(!found)
+            ans.emplace_back(std::vector<Vertex>(), std::vector<Vertex>()); //preencher sem pontos e derivadas no caso de não haver curva a ser desenhada
+    }
+
+    for(Engine_Object& engineObject : this->children_objects){
+        std::vector<std::pair<std::vector<Vertex>, std::vector<Vertex>>> tmp = engineObject.getCurvePoints(tesselation_level);
+
+        ans.insert(ans.end(), tmp.begin(), tmp.end());
+    }
+
+    return ans;
+}
