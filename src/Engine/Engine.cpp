@@ -68,7 +68,7 @@ void Engine::renderLoop() {
 
 
         std::unique_lock<std::mutex> lock = std::unique_lock<std::mutex>(mtx);
-        renderer.get()->draw(draw_points, draw_objectInfo, projection, *camera.get(), window, deltaTime);
+        renderer.get()->draw(curvePoints, draw_points, draw_objectInfo, projection, *camera.get(), window, deltaTime);
         lock.unlock();
 
         currentFrameTime = glfwGetTime();
@@ -289,11 +289,10 @@ Engine::Engine(XmlParser &xmlParser) :xmlParser(xmlParser) {
 		}
 	}
 
-    // TODO passar tempo atual
-
 	// after getting the engine object info, translate them to renderer object info (yes very bad but only done once)
 	std::vector<Engine_Object_Info> engineObjInfo = xmlParser.getObjectInfo(0.0f);
 	this->objectInfo = this->renderer.get()->translateEngineObjectInfo(engineObjInfo);
+    this->curvePoints = xmlParser.getCurvePoints(100); // Tesselation level
 
 	// early copy to allow renderer to display something
     this->draw_points = points;

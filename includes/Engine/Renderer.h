@@ -63,9 +63,10 @@ public:
 
 
 	std::vector<RendererObjectInfo> translateEngineObjectInfo(const std::vector<Engine_Object_Info> &engineObjectInfo);
-	void draw(const std::vector<Vertex> &verts, const std::vector<RendererObjectInfo> &objectInfo, const glm::mat4 &projection, Camera &camera, GLFWwindow * window, GLfloat deltatime); // const
+	void draw(const std::vector<std::pair<std::vector<Vertex>, std::vector<Vertex>>>& curvePoints, const std::vector<Vertex> &verts, const std::vector<RendererObjectInfo> &objectInfo, const glm::mat4 &projection, Camera &camera, GLFWwindow * window, GLfloat deltatime); // const
 	void drawAxis(const glm::mat4 &model, const glm::mat4 &view, const glm::mat4 &projection);
 	void drawNormals(const glm::mat4 &model, const glm::mat4 &view, const glm::mat4 &projection, const std::vector<Vertex> &vertices); // vector is copied over on purpose
+    void drawCurves(const glm::mat4 &model, const glm::mat4 &view, const glm::mat4 &projection, const std::vector<std::pair<std::vector<Vertex>, std::vector<Vertex>>>& points, const bool drawNormals);
 
 	GLfloat getTextureID(const std::string &name); // will load it into the texture buffer if it is not in the map
 	void resizeViewport(GLsizei viewport_width, GLsizei viewport_height);

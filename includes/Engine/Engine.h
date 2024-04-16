@@ -42,6 +42,7 @@ public:
 		std::vector<Vertex> draw_points;
 		std::vector<RendererObjectInfo> objectInfo;
 		std::vector<RendererObjectInfo> draw_objectInfo;
+        std::vector<std::pair<std::vector<Vertex>, std::vector<Vertex>>> curvePoints;
 
 	GLFWwindow *window = nullptr;
 	std::unique_ptr<Camera> camera = nullptr;

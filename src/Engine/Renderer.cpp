@@ -100,6 +100,55 @@ void Renderer::drawAxis(const glm::mat4 &model, const glm::mat4 &view, const glm
 	GLCall(glDrawArrays(GL_LINES, 0, 6)); // 6 pontos, 3 linhas
 }
 
+void Renderer::drawCurves(const glm::mat4 &model, const glm::mat4 &view, const glm::mat4 &projection,
+                          const std::vector<std::pair<std::vector<Vertex>, std::vector<Vertex>>>& points, const bool drawNormals) {
+
+    std::vector<AxisVertex> curvePoints = std::vector<AxisVertex>();
+    std::vector<AxisVertex> normalPoints = std::vector<AxisVertex>();
+
+    // bind VAO, VBO
+    GLCall(glBindVertexArray(this->VAO_axis));
+    GLCall(glBindBuffer(GL_ARRAY_BUFFER, this->vertexBuffer_axis));
+
+    axisShader.use();
+    axisShader.setMat4("u_MVP", projection * view * model);
+
+    // TODO Try drawing only one time
+    for(auto& pair: points) {
+        // pair.first -> curve points
+        // pair.second -> each 2 points form the normals of the curve
+        curvePoints.clear();
+        normalPoints.clear();
+
+        for(auto& p : pair.first){
+            // Draw lines white
+            curvePoints.emplace_back(p.coords.x, p.coords.y, p.coords.z, 1.0f, 1.0f, 1.0f);
+        }
+
+        int size = curvePoints.size();
+
+        // load vertices
+        GLCall(glBufferData(GL_ARRAY_BUFFER, size * sizeof(AxisVertex), curvePoints.data(), GL_STATIC_DRAW));
+
+        GLCall(glDrawArrays(GL_LINE_LOOP, 0, size));
+
+        if(drawNormals){
+
+            for(auto& p : pair.second){
+                // Draw lines white
+                normalPoints.emplace_back(p.coords.x, p.coords.y, p.coords.z, 0.5f, 0.5f, 0.5f);
+            }
+
+            int size = normalPoints.size();
+
+            // load vertices
+            GLCall(glBufferData(GL_ARRAY_BUFFER, size * sizeof(AxisVertex), normalPoints.data(), GL_STATIC_DRAW));
+
+            GLCall(glDrawArrays(GL_LINES, 0, size));
+        }
+    }
+}
+
 void Renderer::drawNormals(const glm::mat4 &model, const glm::mat4 &view, const glm::mat4 &projection, const std::vector<Vertex> &vertices) {
 
 	// VAO and VBO are the same as the normal ones, so I will not rebind them
@@ -578,10 +627,14 @@ std::vector<RendererObjectInfo> Renderer::translateEngineObjectInfo(const std::v
 	return objectInfo;
 }
 
-void Renderer::draw(const std::vector<Vertex> &verts, const std::vector<RendererObjectInfo> &objectInfo, const glm::mat4 &projection, Camera &camera, GLFWwindow * window, GLfloat deltaTime) {
+void Renderer::draw(const std::vector<std::pair<std::vector<Vertex>, std::vector<Vertex>>>& curvePoints, const std::vector<Vertex> &verts, const std::vector<RendererObjectInfo> &objectInfo, const glm::mat4 &projection, Camera &camera, GLFWwindow * window, GLfloat deltaTime) {
 	prepareFrame(camera, deltaTime);
 	const glm::mat4 view = camera.GetViewMatrix();
+    const glm::mat4 model = glm::mat4(1.0f);
 	drawLighting(verts, objectInfo, projection, view, camera);
+
+    // TODO showNormals (last parameter -> bool) match to imgui input
+    drawCurves(model, view, projection, curvePoints, true);
 	bloomBlur(this->bloomBlurPasses);
 	merge();
 

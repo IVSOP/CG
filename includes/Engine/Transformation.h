@@ -40,7 +40,7 @@ public:
         glm::vec4 deriv;
 
         // obter posição e derivadas de ponto
-        getGlobalCatmullRomPoint(t, pos, deriv, curvePoints);
+        getGlobalCatmullRomPoint(t, pos, deriv);
 
         // translação para  posição correta na curva
         glm::mat4 finalMat = Consts::translateMatrix(pos.x,pos.y,pos.z); 
