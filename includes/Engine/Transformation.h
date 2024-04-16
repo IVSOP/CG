@@ -29,15 +29,12 @@ public:
         t = fmod(t,this->time);
         t = t / this->time;
         
-        std::cout << "time: " << t << std::endl;
-
         glm::vec4 pos;
         glm::vec4 deriv;
 
         //obter posição e derivadas de ponto
         getGlobalCatmullRomPoint(t, pos, deriv, curvePoints);
 
-        std::cout << glm::to_string(pos) << glm::to_string(deriv) << std::endl;
         // translação para  posição correta na curva
         glm::mat4 finalMat = Consts::translateMatrix(pos.x,pos.y,pos.z); 
 
@@ -48,15 +45,10 @@ public:
 
         // glm::vec3 zVector = glm::normalize(glm::cross(xVector,yVector));
 
-        // yVector = glm::normalize(glm::cross(zVector,xVector));
-
         // glm::mat4 rotMatrix = buildRotMatrix(xVector,yVector,zVector);
 
         // //rodar objeto para ficar alinhado com a curva
         // finalMat *= rotMatrix;
-
-
-        std::cout << glm::to_string(finalMat) << std::endl;
 
         return finalMat;
     }

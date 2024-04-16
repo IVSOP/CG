@@ -101,6 +101,8 @@ void Engine::physLoop () {
 	// 	points[i].color.b = b;
 		// points[i].tex_id = 1.0f;
 	// }
+
+    int i = 0;
 	
     while (!kill) {
         lastFrameTime = glfwGetTime();
@@ -108,7 +110,9 @@ void Engine::physLoop () {
 
         std::unique_lock<std::mutex> lock = std::unique_lock<std::mutex>(mtx);
         draw_points = points; // copy the buffer
-		draw_objectInfo = objectInfo;
+        // draw_objectInfo = objectInfo;
+        draw_objectInfo = this->renderer.get()->translateEngineObjectInfo(this->xmlParser.getObjectInfo(static_cast<float>(i) * PHYS_STEP));
+
         lock.unlock();
 
         currentFrameTime = glfwGetTime();
@@ -120,6 +124,8 @@ void Engine::physLoop () {
             const double sleepTime = (PHYS_STEP - deltaTime) * 10E5; // multiply to get from seconds to microseconds, this is prob platform dependent and very bad
             usleep(sleepTime);
         }
+
+        i++;
     }
 };
 
@@ -146,7 +152,7 @@ int main(int argc, char **argv) {
     return 0;
 }
 
-Engine::Engine(XmlParser &xmlParser) {
+Engine::Engine(XmlParser &xmlParser) :xmlParser(xmlParser) {
 	this->windowWidth = xmlParser.getWindowWidth();
     this->windowHeight = xmlParser.getWindowHeight();
 

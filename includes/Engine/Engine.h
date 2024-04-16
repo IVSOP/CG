@@ -19,6 +19,7 @@
 
 class Engine {
 public:
+    XmlParser &xmlParser;
 
 	Engine(XmlParser &xmlParser);
 	~Engine();
