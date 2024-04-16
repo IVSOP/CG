@@ -21,14 +21,16 @@ public:
     std::vector<Vertex> curvePoints;
 
     Translate(float time, bool align, float x, float y, float z, bool curve, std::vector<Vertex>& curvePoints):
-            time(time), align(align), x(x), y(y), z(z), curve(curve), curvePoints(curvePoints){}
+            time(time), x(x), y(y), z(z), align(align), curve(curve), curvePoints(curvePoints){}
 
     glm::mat4 getMatrix(float t) override {
         if(!this->curve) return Consts::translateMatrix(this->x, this->y, this->z);
 
         t = fmod(t,this->time);
+
         t = t / this->time;
-        
+
+
         glm::vec4 pos;
         glm::vec4 deriv;
 
@@ -87,12 +89,13 @@ public:
     // catmull-rom matrix
         glm::mat4 mMatrix = glm::mat4(1.0f);	
             
-        mMatrix[0][0] = -0.5f; mMatrix[0][1] = 1.5f; mMatrix[0][2] = -1.5f; mMatrix[0][3] = 0.5f;
-        mMatrix[1][0] = 1.0f;  mMatrix[1][1] = -2.5f; mMatrix[1][2] = 2.0f;  mMatrix[1][3] = -0.5f;
-        mMatrix[2][0] = -0.5f; mMatrix[2][1] = 0.0f;  mMatrix[2][2] = 0.5f;  mMatrix[2][3] = 0.0f;
-        mMatrix[3][0] = 0.0f;  mMatrix[3][1] = 1.0f;  mMatrix[3][2] = 0.0f;  mMatrix[3][3] = 0.0f;
+        // glm é column major daí fazer assim
+        mMatrix[0] = glm::vec4(-0.5f, 1.0f, -0.5f, 0.0f);
+        mMatrix[1] = glm::vec4(1.5f, -2.5f, 0.0f, 1.0f);
+        mMatrix[2] = glm::vec4(-1.5f, 2.0f, 0.5f, 0.0f);
+        mMatrix[3] = glm::vec4(0.5f, -0.5f, 0.0f, 0.0f);
 
-        glm::vec4 tVec= glm::vec4(powf(t,3), powf(t,2), powf(t,1), t);
+        glm::vec4 tVec = glm::vec4(powf(t,3.0f), powf(t,2.0f), t, 1.0f);
         glm::vec4 tTVec = glm::vec4(3.0f * powf(t,2), 2 * t, 1.0f, 0.0f);
 
         glm::mat4 pMatrix; 
@@ -101,6 +104,10 @@ public:
         for (int i = 0; i < 4; ++i) {
             pMatrix[i] = currPoints[i].coords;
         }
+
+        // glm é column major daí fazer assim
+        pMatrix = glm::transpose(pMatrix);
+
 
     // Compute A = M * P // 4*4 * 4*4 = 4*4
         glm::mat4 aMatrix = mMatrix * pMatrix;

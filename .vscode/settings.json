@@ -1,5 +1,6 @@
 {
 	"files.associations": {
+		".fantomasignore": "ignore",
 		"string_view": "cpp",
 		"array": "cpp",
 		"atomic": "cpp",
@@ -59,6 +60,23 @@
 		"mutex": "cpp",
 		"semaphore": "cpp",
 		"stop_token": "cpp",
-		"thread": "cpp"
-	}
+		"thread": "cpp",
+		"__bit_reference": "cpp",
+		"__config": "cpp",
+		"__hash_table": "cpp",
+		"__locale": "cpp",
+		"__node_handle": "cpp",
+		"__split_buffer": "cpp",
+		"__threading_support": "cpp",
+		"__tree": "cpp",
+		"__verbose_abort": "cpp",
+		"bitset": "cpp",
+		"charconv": "cpp",
+		"execution": "cpp",
+		"ios": "cpp",
+		"locale": "cpp",
+		"optional": "cpp",
+		"variant": "cpp"
+	},
+	"cmake.configureOnOpen": false
 }
