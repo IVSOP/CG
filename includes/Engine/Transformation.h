@@ -20,14 +20,21 @@ public:
     bool align, curve;
     std::vector<Vertex> curvePoints;
 
+    std::string alignAxis;
+
     glm::vec3 xVector;
     glm::vec3 yVector; // Assumir y inicial
     glm::vec3 zVector;
 
     // Como saber qual o eixo de orientação do objeto?
-    Translate(float time, bool align, float x, float y, float z, bool curve, std::vector<Vertex>& curvePoints):
+    Translate(float time, bool align, float x, float y, float z, bool curve, std::vector<Vertex>& curvePoints, const char* alignAxis):
             time(time), x(x), y(y), z(z), align(align), curve(curve), curvePoints(curvePoints),
-            xVector(), yVector(glm::vec3(0.0f,1.0f,0.0f)), zVector(){}
+            xVector(), yVector(glm::vec3(0.0f,1.0f,0.0f)), zVector(glm::vec3(0.0f,0.0f,-1.0f)){
+        this->alignAxis = alignAxis;
+
+        std::transform(this->alignAxis.begin(), this->alignAxis.end(), this->alignAxis.begin(), ::tolower);
+
+    }
 
     glm::mat4 getMatrix(float t) override {
         if(!this->curve) return Consts::translateMatrix(this->x, this->y, this->z);
@@ -48,14 +55,47 @@ public:
         // setup para matriz de rotação
         glm::mat4 rotMatrix = glm::mat4(1.0f);
 
+        // glm::vec3 desiredOrientation = glm::vec3(0.0f,1.0f,0.0f);
+
         if(this->align){
-            this->xVector = glm::vec3(glm::normalize(deriv));
 
-            this->zVector = glm::normalize(glm::cross(this->xVector,this->yVector));
+            // Align Z
+            if(this->alignAxis == "z"){
+                this->zVector = glm::vec3(glm::normalize(deriv));
 
-            this->yVector = glm::normalize(glm::cross(this->zVector, this->xVector));
+                this->xVector = glm::normalize(glm::cross(this->zVector,this->yVector));
 
-            glm::mat4 rotMatrix = buildRotMatrix(this->xVector,this->yVector,this->zVector);
+                this->yVector = glm::normalize(glm::cross(this->xVector, this->zVector));
+            }
+
+            // Align Y
+            // Se quiseres que o teapot fique virado para cima em vez de para baixo, no construtor do zVector mete -1.0f em vez de 1.0f
+
+            else if(this->alignAxis == "y"){
+                this->yVector = glm::vec3(glm::normalize(deriv));
+
+                this->xVector = glm::normalize(glm::cross(this->yVector, this->zVector));
+
+                this->zVector = glm::normalize(glm::cross(this->xVector,this->yVector));
+            }
+
+            // Default
+            // Align X
+            else {
+                this->xVector = glm::vec3(glm::normalize(deriv));
+
+                this->zVector = glm::normalize(glm::cross(this->xVector,this->yVector));
+
+                this->yVector = glm::normalize(glm::cross(this->zVector, this->xVector));
+            }
+
+//            this->yVector = glm::normalize(deriv);
+//
+//            this->zVector = glm::normalize(glm::cross(this->yVector, glm::vec3(1.0f, 0.0f, 0.0f)));
+//
+//            this->xVector = glm::normalize(glm::cross(this->zVector, this->yVector));
+
+            rotMatrix = buildRotMatrix(this->xVector,this->yVector,this->zVector);
         }
 
         // rodar objeto para ficar alinhado com a curva

@@ -97,10 +97,10 @@ std::vector<Vertex> Patch::generatePatch(std::string& patchFilename, int tessela
         }
     }
 
-    std::string tmpFilename = std::string("og_patches.patch");
+//    std::string tmpFilename = std::string("og_patches.patch");
 
     // Writing patch to file allow us to see the different bezier curves through a python program retrived from another person's github
-    writePatchesToFile(patches, tmpFilename);
+//    writePatchesToFile(patches, tmpFilename);
 
     // Calculate the final object from the patches and tesselation level
     return tessellatePatches(patches, tesselation);

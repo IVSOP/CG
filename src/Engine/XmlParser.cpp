@@ -204,7 +204,10 @@ std::vector<std::variant<Translate, Rotate, Scale>> XmlParser::parseTransformati
                 }
             }
 
-            Translate translate = Translate(node->FloatAttribute("time"), node->BoolAttribute("align"), node->FloatAttribute("x"), node->FloatAttribute("y"), node->FloatAttribute("z"), curve, points);
+            Translate translate = Translate(node->FloatAttribute("time"), node->BoolAttribute("align", false),
+                                            node->FloatAttribute("x"), node->FloatAttribute("y"),
+                                            node->FloatAttribute("z"), curve, points,
+                                            node->FindAttribute("alignAxis") ? node->Attribute("alignAxis") : "x");
 
             transformations.emplace_back(translate);
 
