@@ -3,8 +3,8 @@
 
 #include "common.h"
 
-// these are for convenience outside this class and are never used here
-#define TEXTURE_LAYERS 64
+// these are for convenience outside this class and are never used here directly
+#define TEXTURE_LAYERS 32
 #define TEXTURE_WIDTH 2048
 #define TEXTURE_HEIGHT 2048
 // GL_MAX_TEXTURE_SIZE for width and height????

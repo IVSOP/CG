@@ -58,6 +58,7 @@ public:
 	bool explode = false;
 	bool limitFPS = false;
 	double fps = 60.0f;
+	bool showCurveNormals = false;
 
 	std::unique_ptr<TextureArray> textureArray = nullptr; // pointer since it starts as null and gets initialized later. unique_ptr so it always gets deleted
 
@@ -65,8 +66,8 @@ public:
 	std::vector<RendererObjectInfo> translateEngineObjectInfo(const std::vector<Engine_Object_Info> &engineObjectInfo);
 	void draw(const std::vector<std::pair<std::vector<Vertex>, std::vector<Vertex>>>& curvePoints, const std::vector<Vertex> &verts, const std::vector<RendererObjectInfo> &objectInfo, const glm::mat4 &projection, Camera &camera, GLFWwindow * window, GLfloat deltatime); // const
 	void drawAxis(const glm::mat4 &model, const glm::mat4 &view, const glm::mat4 &projection);
-	void drawNormals(const glm::mat4 &model, const glm::mat4 &view, const glm::mat4 &projection, const std::vector<Vertex> &vertices); // vector is copied over on purpose
-    void drawCurves(const glm::mat4 &model, const glm::mat4 &view, const glm::mat4 &projection, const std::vector<std::pair<std::vector<Vertex>, std::vector<Vertex>>>& points, const bool drawNormals);
+	void drawNormals(const glm::mat4 &view, const glm::mat4 &projection, const std::vector<Vertex> &vertices); // vector is copied over on purpose
+    void drawCurves(const glm::mat4 &view, const glm::mat4 &projection, const std::vector<std::pair<std::vector<Vertex>, std::vector<Vertex>>>& points);
 
 	GLfloat getTextureID(const std::string &name); // will load it into the texture buffer if it is not in the map
 	void resizeViewport(GLsizei viewport_width, GLsizei viewport_height);

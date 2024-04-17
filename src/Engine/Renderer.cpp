@@ -100,8 +100,8 @@ void Renderer::drawAxis(const glm::mat4 &model, const glm::mat4 &view, const glm
 	GLCall(glDrawArrays(GL_LINES, 0, 6)); // 6 pontos, 3 linhas
 }
 
-void Renderer::drawCurves(const glm::mat4 &model, const glm::mat4 &view, const glm::mat4 &projection,
-                          const std::vector<std::pair<std::vector<Vertex>, std::vector<Vertex>>>& points, const bool drawNormals) {
+void Renderer::drawCurves(const glm::mat4 &view, const glm::mat4 &projection,
+                          const std::vector<std::pair<std::vector<Vertex>, std::vector<Vertex>>>& points) {
 
     std::vector<AxisVertex> curvePoints = std::vector<AxisVertex>();
     std::vector<AxisVertex> normalPoints = std::vector<AxisVertex>();
@@ -111,6 +111,7 @@ void Renderer::drawCurves(const glm::mat4 &model, const glm::mat4 &view, const g
     GLCall(glBindBuffer(GL_ARRAY_BUFFER, this->vertexBuffer_axis));
 
     axisShader.use();
+	constexpr glm::mat4 model = glm::mat4(1.0f);
     axisShader.setMat4("u_MVP", projection * view * model);
 
     // TODO Try drawing only one time
@@ -125,21 +126,21 @@ void Renderer::drawCurves(const glm::mat4 &model, const glm::mat4 &view, const g
             curvePoints.emplace_back(p.coords.x, p.coords.y, p.coords.z, 1.0f, 1.0f, 1.0f);
         }
 
-        int size = curvePoints.size();
+        GLuint size = curvePoints.size();
 
         // load vertices
         GLCall(glBufferData(GL_ARRAY_BUFFER, size * sizeof(AxisVertex), curvePoints.data(), GL_STATIC_DRAW));
 
         GLCall(glDrawArrays(GL_LINE_LOOP, 0, size));
 
-        if(drawNormals){
+        if (showCurveNormals) {
 
             for(auto& p : pair.second){
                 // Draw lines white
                 normalPoints.emplace_back(p.coords.x, p.coords.y, p.coords.z, 0.5f, 0.5f, 0.5f);
             }
 
-            int size = normalPoints.size();
+            GLuint size = normalPoints.size();
 
             // load vertices
             GLCall(glBufferData(GL_ARRAY_BUFFER, size * sizeof(AxisVertex), normalPoints.data(), GL_STATIC_DRAW));
@@ -149,7 +150,7 @@ void Renderer::drawCurves(const glm::mat4 &model, const glm::mat4 &view, const g
     }
 }
 
-void Renderer::drawNormals(const glm::mat4 &model, const glm::mat4 &view, const glm::mat4 &projection, const std::vector<Vertex> &vertices) {
+void Renderer::drawNormals(const glm::mat4 &view, const glm::mat4 &projection, const std::vector<Vertex> &vertices) {
 
 	// VAO and VBO are the same as the normal ones, so I will not rebind them
 
@@ -380,6 +381,7 @@ void Renderer::prepareFrame(Camera &camera, GLfloat deltaTime) {
 	ImGui::SliderFloat("bloomOffset", &bloomOffset, 0.0f, 10.0f, "bloomOffset = %.3f");
 	ImGui::Checkbox("Show axis", &showAxis);
 	ImGui::Checkbox("Show normals", &showNormals);
+	ImGui::Checkbox("Show curve normals", &showCurveNormals);
 	ImGui::Checkbox("Explode", &explode);
 
 }
@@ -517,7 +519,7 @@ void Renderer::drawLighting(const std::vector<Vertex> &verts, const std::vector<
 		GLCall(glDrawArrays(GL_TRIANGLES, 0, verts.size()));
 	
 		if (showNormals) {
-			drawNormals(model, view, projection, verts);
+			drawNormals(view, projection, verts);
 		}
 
 		if (showAxis) {
@@ -630,14 +632,13 @@ std::vector<RendererObjectInfo> Renderer::translateEngineObjectInfo(const std::v
 void Renderer::draw(const std::vector<std::pair<std::vector<Vertex>, std::vector<Vertex>>>& curvePoints, const std::vector<Vertex> &verts, const std::vector<RendererObjectInfo> &objectInfo, const glm::mat4 &projection, Camera &camera, GLFWwindow * window, GLfloat deltaTime) {
 	prepareFrame(camera, deltaTime);
 	const glm::mat4 view = camera.GetViewMatrix();
-    const glm::mat4 model = glm::mat4(1.0f);
 	drawLighting(verts, objectInfo, projection, view, camera);
 
-    // TODO showNormals (last parameter -> bool) match to imgui input
-    drawCurves(model, view, projection, curvePoints, true);
+    drawCurves(view, projection, curvePoints);
 	bloomBlur(this->bloomBlurPasses);
 	merge();
 
+	// pq e que isto ta feito aqui?????????????
 	ImGui::Checkbox("Limit FPS", &limitFPS);
 	if (limitFPS) {
 		const double f64_min = 0.0, f64_max = 240.0;
