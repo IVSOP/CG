@@ -29,7 +29,7 @@ public:
     // Como saber qual o eixo de orientação do objeto?
     Translate(float time, bool align, float x, float y, float z, bool curve, std::vector<Vertex>& curvePoints, const char* alignAxis):
             time(time), x(x), y(y), z(z), align(align), curve(curve), curvePoints(curvePoints),
-            xVector(), yVector(glm::vec3(0.0f,1.0f,0.0f)), zVector(glm::vec3(0.0f,0.0f,-1.0f)){
+            xVector(glm::vec3(1.0f,0.0f,0.0f)), yVector(glm::vec3(0.0f,1.0f,0.0f)), zVector(glm::vec3(0.0f,0.0f,-1.0f)){
         this->alignAxis = alignAxis;
 
         std::transform(this->alignAxis.begin(), this->alignAxis.end(), this->alignAxis.begin(), ::tolower);
