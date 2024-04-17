@@ -135,9 +135,15 @@ void Renderer::drawCurves(const glm::mat4 &view, const glm::mat4 &projection,
 
         if (showCurveNormals) {
 
-            for(auto& p : pair.second){
+			int i = 0;
+            for(auto& p : pair.second) {
                 // Draw lines white
-                normalPoints.emplace_back(p.coords.x, p.coords.y, p.coords.z, 0.5f, 0.5f, 0.5f);
+				if (i % 2) {
+                	normalPoints.emplace_back(p.coords.x, p.coords.y, p.coords.z, 1.0f, 0.0f, 0.0f);
+				} else {
+					normalPoints.emplace_back(p.coords.x, p.coords.y, p.coords.z, 0.0f, 0.0f, 1.0f);
+				}
+				i ++;
             }
 
             GLuint size = normalPoints.size();
@@ -387,7 +393,7 @@ void Renderer::prepareFrame(Camera &camera, GLfloat deltaTime) {
 }
 
 void Renderer::drawLighting(const std::vector<Vertex> &verts, const std::vector<RendererObjectInfo> &objectInfo, const glm::mat4 &projection, const glm::mat4 &view, const Camera &camera) {
-	constexpr glm::mat4 model = glm::mat4(1.0f);
+	// constexpr glm::mat4 model = glm::mat4(1.0f);
 	// const glm::mat4 MVP = projection * view * model;
 
 	//////////////////////////////////////////////// the normal scene is drawn into the lighting framebuffer, where the bright colors are then separated
