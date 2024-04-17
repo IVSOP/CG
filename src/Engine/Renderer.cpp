@@ -134,17 +134,18 @@ void Renderer::drawCurves(const glm::mat4 &view, const glm::mat4 &projection,
         GLCall(glDrawArrays(GL_LINE_LOOP, 0, size));
 
         if (showCurveNormals) {
-
-			int i = 0;
-            for(auto& p : pair.second) {
+							  // cursed
+			std::vector<Vertex>::const_iterator iter = pair.second.begin();
+            for(iter; iter < pair.second.end() - 1; iter ++) {
                 // Draw lines white
-				if (i % 2) {
-                	normalPoints.emplace_back(p.coords.x, p.coords.y, p.coords.z, 1.0f, 0.0f, 0.0f);
-				} else {
-					normalPoints.emplace_back(p.coords.x, p.coords.y, p.coords.z, 0.0f, 0.0f, 1.0f);
-				}
-				i ++;
-            }
+				const Vertex &v1 = *iter;
+				iter++;
+				const Vertex &v2 = *iter;
+
+				normalPoints.emplace_back(v1.coords.x, v1.coords.y, v1.coords.z, 1.0f, 0.0f, 0.0f);
+				const glm::vec3 new_coords = v1.coords + glm::normalize(v2.coords - v1.coords);
+				normalPoints.emplace_back(new_coords.x, new_coords.y, new_coords.z, 0.0f, 0.0f, 1.0f);
+			}
 
             GLuint size = normalPoints.size();
 
