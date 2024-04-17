@@ -27,7 +27,7 @@ public:
     // Como saber qual o eixo de orientação do objeto?
     Translate(float time, bool align, float x, float y, float z, bool curve, std::vector<Vertex>& curvePoints):
             time(time), x(x), y(y), z(z), align(align), curve(curve), curvePoints(curvePoints),
-            xVector(), yVector(glm::vec3(0.0f,1.0f,0.0f)), zVector(){}
+            xVector(glm::vec3(1.0f,0.0f,0.0f)), yVector(glm::vec3(0.0f,1.0f,0.0f)), zVector(glm::vec3(0.0f,0.0f,1.0f)){}
 
     glm::mat4 getMatrix(float t) override {
         if(!this->curve) return Consts::translateMatrix(this->x, this->y, this->z);
@@ -48,14 +48,34 @@ public:
         // setup para matriz de rotação
         glm::mat4 rotMatrix = glm::mat4(1.0f);
 
+        glm::vec3 desiredOrientation(0.0f,0.0f,1.0f);
+
         if(this->align){
-            this->xVector = glm::vec3(glm::normalize(deriv));
+
+            // Align X
+        //    this->xVector = glm::vec3(glm::normalize(deriv));
+
+        //    this->zVector = glm::normalize(glm::cross(this->xVector,this->yVector));
+
+        //    this->yVector = glm::normalize(glm::cross(this->zVector, this->xVector));
+
+            // Align Z
+        //    this->zVector = glm::vec3(glm::normalize(deriv));
+
+        //    this->xVector = glm::normalize(glm::cross(this->zVector,this->yVector));
+
+        //    this->yVector = glm::normalize(glm::cross(this->xVector, this->zVector));
+
+            // Align Y
+
+            this->yVector = glm::vec3(glm::normalize(deriv));
+
+            this->xVector = glm::normalize(glm::cross(this->yVector, this->zVector));
 
             this->zVector = glm::normalize(glm::cross(this->xVector,this->yVector));
 
-            this->yVector = glm::normalize(glm::cross(this->zVector, this->xVector));
 
-            glm::mat4 rotMatrix = buildRotMatrix(this->xVector,this->yVector,this->zVector);
+            rotMatrix = buildRotMatrix(this->xVector,this->yVector,this->zVector);
         }
 
         // rodar objeto para ficar alinhado com a curva
