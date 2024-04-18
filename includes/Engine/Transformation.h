@@ -171,6 +171,8 @@ public:
     }
 
     std::pair<std::vector<Vertex>, std::vector<Vertex>> getCurvePoints(int tesselation_level){
+        if(!this->curve) return std::pair(std::vector<Vertex>(), std::vector<Vertex>());
+
         float gt;
 
         glm::vec4 pos;

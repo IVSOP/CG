@@ -134,8 +134,12 @@ void Renderer::drawCurves(const glm::mat4 &view, const glm::mat4 &projection,
         GLCall(glDrawArrays(GL_LINE_LOOP, 0, size));
 
         if (showCurveNormals) {
+            // If there are no curve points, there won't be derivates to draw
+            if(size == 0) continue;
+
 							  // cursed
 			std::vector<Vertex>::const_iterator iter = pair.second.begin();
+
             for(iter; iter < pair.second.end() - 1; iter ++) {
                 // Draw lines white
 				const Vertex &v1 = *iter;
