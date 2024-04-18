@@ -73,6 +73,7 @@ uniform mat4 u_View; // view from the MVP
 uniform int u_NumPointLights = 0;
 uniform int u_NumDirLights = 0;
 uniform int u_NumSpotLights = 0;
+uniform float u_Time = 0.0;
 
 uniform float u_BloomThreshold = 1.0;
 
@@ -141,8 +142,15 @@ void main() {
 	// add emissive
 	res_color.rgb += material.emissive.rgb;
 
+
+
+
+	vec2 uv = fs_in.g_TexCoord.xy;
+	uv.y += (cos((uv.y + (u_Time * 0.04)) * 45.0) * 0.0019) + (cos((uv.y + (u_Time * 0.1)) * 10.0) * 0.002);
+    uv.x += (sin((uv.y + (u_Time * 0.07)) * 15.0) * 0.0029) + (sin((uv.y + (u_Time * 0.1)) * 15.0) * 0.002);
+
 	// apply texture at the end, merge colors
-	color = res_color * texture(u_TextureArraySlot, vec3(fs_in.g_TexCoord.xy, material.texture_id));
+	color = res_color * texture(u_TextureArraySlot, vec3(uv, material.texture_id));
 
 
 	// extract bright colors into the separate color attachment

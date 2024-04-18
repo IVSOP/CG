@@ -118,12 +118,12 @@ public:
     
     void getGlobalCatmullRomPoint(float gt, glm::vec4& pos, glm::vec4& deriv) {
 
-        int pointCount = curvePoints.size();
-        float t = gt * pointCount;
-        int index = floor(t);  // which segment
-        t = t - index; // where within  the segment
+        GLuint pointCount = curvePoints.size();
+        float t = gt * static_cast<float>(pointCount);
+		GLuint index = static_cast<GLuint>(floor(t));  // which segment
+        t = t - static_cast<float>(index); // where within  the segment
 
-        int indices[4];
+        GLuint indices[4];
 
         indices[0] = (index + pointCount-1)%pointCount;	
         indices[1] = (indices[0]+1)%pointCount;
@@ -133,7 +133,7 @@ public:
         //pontos atuais da curva a ser considerados
         std::vector<Vertex> currPoints;
 
-        for (int index : indices) {
+        for (GLuint index : indices) {
             currPoints.emplace_back(this->curvePoints[index]);
         }
 
@@ -152,7 +152,7 @@ public:
         glm::mat4 pMatrix; 
 
         //construct pMatrix from currPoints coords
-        for (int i = 0; i < 4; ++i) {
+        for (GLuint i = 0; i < 4; ++i) {
             pMatrix[i] = currPoints[i].coords;
         }
 
