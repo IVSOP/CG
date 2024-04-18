@@ -40,7 +40,7 @@ out VS_OUT {
 
 uniform mat4 u_View;
 uniform samplerBuffer u_ObjectInfoTBO;
-
+uniform float u_Time = 0.0;
 
 
 // objectInfo is accessed here. could access half here and half in frag shader, or have 2 different TBOs, but this is the easiest solution and we are not really worried about performance
@@ -86,5 +86,12 @@ void main()
 	// I left these values untouched since the geometry shader will change the position of the vertices, this way it takes care of everything at once
 	// vs_out.v_FragPos = vec3(u_View * aPos);
 	// gl_Position = u_Projection * u_View * objectInfo.transf * aPos;
-	gl_Position = aPos;
+
+	const vec3 sun_center = vec3(0, 0, 0);
+	vec3 dir = normalize(aPos.xyz - sun_center);
+	vec3 new_dir = dir;
+
+	new_dir += ((cos((dir.y + (u_Time * 0.005)) * 45.0) * 0.1) + (sin((dir.x + (u_Time * 0.005)) * 45.0) * 0.1)) * 0.1;
+
+	gl_Position = aPos + vec4(new_dir, 1.0);
 }
