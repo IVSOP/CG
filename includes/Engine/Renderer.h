@@ -50,8 +50,7 @@ public:
 	Shader hdrBbloomMergeShader;
 	// !! could have reused fbo and textures, but this is simpler and more flexible and less painful to manage
 	
-				// default was 2.2 1.0
-	GLfloat gamma = 1.0f, exposure = 1.0f, bloomThreshold = 1.0f, bloomOffset = 1.0f, explodeCoeff = 0.0f;
+	GLfloat gamma = 2.2f, exposure = 1.0f, bloomThreshold = 1.0f, bloomOffset = 1.0f, explodeCoeff = 0.0f;
 	int bloomBlurPasses = 0; // default was 5
 	bool showAxis = false;
 	bool showNormals = false;
