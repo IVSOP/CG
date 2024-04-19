@@ -41,8 +41,7 @@ void main()
 	objectInfo.transf[2] = texelFetch(u_ObjectInfoTBO, 2 + (aObjectID * VEC4_IN_OBJECTINFO));
 	objectInfo.transf[3] = texelFetch(u_ObjectInfoTBO, 3 + (aObjectID * VEC4_IN_OBJECTINFO));
 
-	// normalize(vec3(vec4(normalMatrix * aNormal, 0.0)));????????????????????????
-	vs_out.v_Normal = mat3(transpose(inverse(u_View * objectInfo.transf))) * aNormal; // inversion is costly and should be done on the CPU, this is temporary
+	vs_out.v_Normal = normalize(mat3(transpose(inverse(u_View * objectInfo.transf))) * aNormal); // inversion is costly and should be done on the CPU, this is temporary
 
 	// projection is not multiplied here. everything goes into view space so it can be calculated on the gs, which will multiply by proj
 	gl_Position = u_View * objectInfo.transf * aPos;

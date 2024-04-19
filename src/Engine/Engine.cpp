@@ -292,7 +292,7 @@ Engine::Engine(XmlParser &xmlParser) :xmlParser(xmlParser) {
 	// after getting the engine object info, translate them to renderer object info (yes very bad but only done once)
 	std::vector<Engine_Object_Info> engineObjInfo = xmlParser.getObjectInfo(0.0f);
 	this->objectInfo = this->renderer.get()->translateEngineObjectInfo(engineObjInfo);
-    this->curvePoints = xmlParser.getCurvePoints(100); // Tesselation level
+    // this->curvePoints = xmlParser.getCurvePoints(100); // Tesselation level
 
 	// early copy to allow renderer to display something
     this->draw_points = points;
