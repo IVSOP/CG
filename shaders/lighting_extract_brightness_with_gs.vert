@@ -79,8 +79,7 @@ void main()
 	
 
 
-	// normalize this??????????????????????????????????????????????
-	vs_out.v_Normal = mat3(transpose(inverse(u_View * objectInfo.transf))) * aNormal; // inversion is costly and should be done on the CPU, this is temporary
+	vs_out.v_Normal = normalize(mat3(transpose(inverse(u_View * objectInfo.transf))) * aNormal); // inversion is costly and should be done on the CPU, this is temporary
 
 
 	// I left these values untouched since the geometry shader will change the position of the vertices, this way it takes care of everything at once
