@@ -423,8 +423,6 @@ void Renderer::drawLighting(const std::vector<Vertex> &verts, const std::vector<
 
 		lightingShader.setFloat("u_BloomThreshold", bloomThreshold);
 
-		lightingShader.setFloat("u_Time", static_cast<GLfloat>(glfwGetTime()));
-
 		// Material materials[8];
 		// materials[0] = {
 		// 	glm::vec3(1.0f, 1.0f, 1.0f),
