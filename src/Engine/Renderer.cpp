@@ -140,7 +140,7 @@ void Renderer::drawCurves(const glm::mat4 &view, const glm::mat4 &projection,
 							  // cursed
 			std::vector<Vertex>::const_iterator iter = pair.second.begin();
 
-            for(iter; iter < pair.second.end() - 1; iter ++) {
+            for(; iter < pair.second.end() - 1; iter ++) {
                 // Draw lines white
 				const Vertex &v1 = *iter;
 				iter++;

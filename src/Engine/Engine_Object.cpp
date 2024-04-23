@@ -36,6 +36,7 @@ std::vector<Engine_Object_Info> Engine_Object::getObjectInfo(float t, Transforma
                 transform = dynamic_cast<Transform*>(&std::get<Scale>(obj));
             } else {
                 perror("Found unrecognized object inside a engine object transformations.");
+                return {};
             }
 
             tmp.appendTransformation(*transform, t);
