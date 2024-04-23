@@ -111,7 +111,8 @@ void Engine::physLoop () {
         std::unique_lock<std::mutex> lock = std::unique_lock<std::mutex>(mtx);
         draw_points = points; // copy the buffer
         // draw_objectInfo = objectInfo;
-        draw_objectInfo = this->renderer.get()->translateEngineObjectInfo(this->xmlParser.getObjectInfo(static_cast<float>(i) * PHYS_STEP));
+        //draw_objectInfo = this->renderer.get()->translateEngineObjectInfo(this->xmlParser.getObjectInfo(static_cast<float>(i) * PHYS_STEP));
+        draw_objectInfo = this->renderer.get()->translateEngineObjectInfo(this->xmlParser.getObjectInfo(glfwGetTime()));
 
         lock.unlock();
 
