@@ -5,6 +5,9 @@
 
 #include "Engine.h"
 
+#include <chrono>
+#include <thread>
+
 #if defined(_MSC_VER) && (_MSC_VER >= 1900) && !defined(IMGUI_DISABLE_WIN32_FUNCTIONS)
 #pragma comment(lib, "legacy_stdio_definitions")
 #endif
@@ -90,45 +93,49 @@ void Engine::renderLoop() {
 }
 
 void Engine::physLoop () {
-    double lastFrameTime, currentFrameTime, deltaTime;
-	// for (unsigned int i = 0; i < points.size(); i++) {
-	// 	float r = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-	// 	float g = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-	// 	float b = static_cast <float> (rand()) / static_cast <float> (RAND_MAX);
-
-	// 	points[i].color.r = r;
-	// 	points[i].color.g = g;
-	// 	points[i].color.b = b;
-		// points[i].tex_id = 1.0f;
-	// }
+    double frameStartTime, frameEndTime, deltaTime;
 
     int i = 0;
 	
     while (!kill) {
-        lastFrameTime = glfwGetTime();
-        // perform calculations............................
+		frameStartTime = glfwGetTime();
+		// printf("%d - frame starting: %lf ", i, frameStartTime);
 
         std::unique_lock<std::mutex> lock = std::unique_lock<std::mutex>(mtx);
         draw_points = points; // copy the buffer
         // draw_objectInfo = objectInfo;
-        //draw_objectInfo = this->renderer.get()->translateEngineObjectInfo(this->xmlParser.getObjectInfo(static_cast<float>(i) * PHYS_STEP));
-        draw_objectInfo = this->renderer.get()->translateEngineObjectInfo(this->xmlParser.getObjectInfo(glfwGetTime()));
+        draw_objectInfo = this->renderer.get()->translateEngineObjectInfo(this->xmlParser.getObjectInfo(static_cast<float>(i) * PHYS_STEP));
 
         lock.unlock();
 
-        currentFrameTime = glfwGetTime();
-        deltaTime = currentFrameTime - lastFrameTime;
-        lastFrameTime = currentFrameTime;
+        frameEndTime = glfwGetTime();
+        deltaTime = frameEndTime - frameStartTime;
+		// printf("frame ending: %lf delta: %lf", frameEndTime, deltaTime);
+
+		// printf("time is %lf. last frame took %lf\n", currentFrameTime, deltaTime);
 
         // draw if delta allows it. sleep until target
+#ifndef linux // active wait, else result is ALWAYS wrong
+	while (deltaTime < PHYS_STEP) {
+		frameEndTime = glfwGetTime();
+        deltaTime = frameEndTime - frameStartTime;
+	}
+#else // usleep to sleep for N miliseconds
         if (deltaTime < PHYS_STEP) {
-            const double sleepTime = (PHYS_STEP - deltaTime) * 10E5; // multiply to get from seconds to microseconds, this is prob platform dependent and very bad
-            usleep(sleepTime);
+            // const int64_t sleepTime = static_cast<int64_t>((PHYS_STEP - deltaTime) * 10E5); // multiply to get from seconds to microseconds
+			// std::this_thread::sleep_for(std::chrono::microseconds(sleepTime));
+			// printf(" sleeping for %lf\n", PHYS_STEP - deltaTime);
+            const double sleepTime = (PHYS_STEP - deltaTime) * 10E5;
+			usleep(sleepTime);
         }
+#endif
+
+		double idk = glfwGetTime();
+		// printf("%d - time is now %lf, total elapsed %lf\n", i, idk, idk - frameStartTime);
 
         i++;
     }
-};
+}
 
 void glfw_error_callback(int error, const char* description)
 {
