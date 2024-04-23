@@ -31,7 +31,7 @@ out GS_OUT {
 	flat float g_TexID;
 } gs_out;
 
-uniform float u_ExplodeCoeff = 1.0;
+uniform float u_ExplodeCoeff = 0.0;
 uniform mat4 u_View;
 uniform mat4 u_Projection;
 
