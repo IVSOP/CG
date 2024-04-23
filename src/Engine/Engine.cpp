@@ -96,7 +96,7 @@ void Engine::physLoop () {
     double frameStartTime, frameEndTime, deltaTime;
 
     int i = 0;
-	
+    
     while (!kill) {
 		frameStartTime = glfwGetTime();
 		// printf("%d - frame starting: %lf ", i, frameStartTime);
@@ -132,6 +132,9 @@ void Engine::physLoop () {
 
 		double idk = glfwGetTime();
 		// printf("%d - time is now %lf, total elapsed %lf\n", i, idk, idk - frameStartTime);
+
+        double idk = glfwGetTime();
+        printf("%d - time is now %lf, total elapsed %lf\n", i, idk, idk - frameStartTime);
 
         i++;
     }
