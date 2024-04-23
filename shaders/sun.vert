@@ -68,7 +68,7 @@ void main()
 
 
 
-	vs_out.v_TexCoord = aTexCoord;
+	// vs_out.v_TexCoord = aTexCoord;
 	vs_out.v_Diffuse = objectInfo.material.diffuse;
 	vs_out.v_Ambient = objectInfo.material.ambient;
 	vs_out.v_Specular = objectInfo.material.specular;
@@ -91,6 +91,11 @@ void main()
 	vec3 new_dir = dir;
 
 	new_dir += ((cos((dir.y + (u_Time * 0.005)) * 45.0) * 0.1) + (sin((dir.x + (u_Time * 0.005)) * 45.0) * 0.1)) * 0.1;
+
+	vec2 uv = aTexCoord.xy;
+	uv.y += ((cos((uv.y + (u_Time * 0.04)) * 45.0) * 0.0019) + (cos((uv.y + (u_Time * 0.1)) * 10.0) * 0.002)) * 0.25;
+    uv.x += ((sin((uv.y + (u_Time * 0.07)) * 15.0) * 0.0029) + (sin((uv.y + (u_Time * 0.1)) * 15.0) * 0.002)) * 0.25;
+	vs_out.v_TexCoord = uv;
 
 	gl_Position = aPos + vec4(new_dir, 0.0);
 }
