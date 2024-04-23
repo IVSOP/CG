@@ -203,7 +203,15 @@ public:
     bool curve;
 
     Rotate(float angle, float time, float x, float y, float z, bool curve) : angle(angle), time(time), x(x), y(y), z(z),
-                                                                             curve(curve) {}
+                                                                             curve(curve) 
+        {
+
+            // vetor de rotate é normalizado, para n afetar o scale
+            glm::vec3 normalizedAxis = glm::normalize(glm::vec3(x,y,z));
+            this->x = normalizedAxis.x;
+            this->y = normalizedAxis.y;
+            this->z = normalizedAxis.z;
+        }
 
     glm::mat4 getMatrix(float t) override {
         if(this->curve){
@@ -211,7 +219,7 @@ public:
             this->angle = 360.0f * t / this->time;
         }
 
-        return Consts::rotMatrixVector(angle, x, y, z);
+        return Consts::rotMatrixVector(angle, this->x, this->y, this->z);
     }
 };
 

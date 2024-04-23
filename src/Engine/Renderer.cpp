@@ -392,6 +392,7 @@ void Renderer::prepareFrame(Camera &camera, GLfloat deltaTime) {
 	ImGui::SliderFloat("bloomOffset", &bloomOffset, 0.0f, 10.0f, "bloomOffset = %.3f");
 	ImGui::Checkbox("Show axis", &showAxis);
 	ImGui::Checkbox("Show normals", &showNormals);
+	ImGui::Checkbox("Show curves", &showCurves);
 	ImGui::Checkbox("Show curve normals", &showCurveNormals);
 	ImGui::Checkbox("Explode", &explode);
 
@@ -645,7 +646,9 @@ void Renderer::draw(const std::vector<std::pair<std::vector<Vertex>, std::vector
 	const glm::mat4 view = camera.GetViewMatrix();
 	drawLighting(verts, objectInfo, projection, view, camera);
 
-    drawCurves(view, projection, curvePoints);
+	if (showCurves) {
+    	drawCurves(view, projection, curvePoints);
+	}
 	bloomBlur(this->bloomBlurPasses);
 	merge();
 
