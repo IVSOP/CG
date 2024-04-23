@@ -130,11 +130,8 @@ void Engine::physLoop () {
         }
 #endif
 
-		double idk = glfwGetTime();
-		// printf("%d - time is now %lf, total elapsed %lf\n", i, idk, idk - frameStartTime);
-
         double idk = glfwGetTime();
-        printf("%d - time is now %lf, total elapsed %lf\n", i, idk, idk - frameStartTime);
+        //printf("%d - time is now %lf, total elapsed %lf\n", i, idk, idk - frameStartTime);
 
         i++;
     }
