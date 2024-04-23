@@ -14,8 +14,6 @@ public:
     static glm::mat4 translateMatrix(float x, float y, float z);
     static glm::mat4 scaleMatrix(float x, float y, float z);
     static glm::mat4 idMatrix();
-    static glm::mat4 bezierCoefficients();
-    static glm::mat4 bezierCoefficientsTranspose();
 };
 
 #endif //CG_CONSTS_H

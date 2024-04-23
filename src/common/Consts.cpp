@@ -100,30 +100,3 @@ glm::mat2 Consts::rotMatrix2D(float angle){
 
     return ans;
 }
-
-glm::mat4 Consts::bezierCoefficients(){
-    glm::mat4 ans = glm::mat4();
-
-    ans[0][0] = 2;
-    ans[0][1] = -2;
-    ans[0][2] = 1;
-    ans[0][3] = 1;
-    ans[1][0] = -3;
-    ans[1][1] = 3;
-    ans[1][2] = -2;
-    ans[1][3] = -1;
-    ans[2][0] = 0;
-    ans[2][1] = 0;
-    ans[2][2] = 1;
-    ans[2][3] = 0;
-    ans[3][0] = 1;
-    ans[3][1] = 0;
-    ans[3][2] = 0;
-    ans[3][3] = 0;
-
-    return ans;
-}
-
-glm::mat4 Consts::bezierCoefficientsTranspose(){
-    return glm::transpose(bezierCoefficients());
-}
