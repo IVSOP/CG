@@ -21,7 +21,11 @@ std::vector<Engine_Object_Info> Engine_Object::getObjectInfo(float t, Transforma
 
     Transform* transform;
 
+    Transformation tmp;
+
     for(auto& p : this->points){
+
+        tmp = Transformation(transformation);
 
         for(auto& obj : this->transformations){
             if(std::holds_alternative<Translate>(obj)){
@@ -34,10 +38,10 @@ std::vector<Engine_Object_Info> Engine_Object::getObjectInfo(float t, Transforma
                 perror("Found unrecognized object inside a engine object transformations.");
             }
 
-            transformation.appendTransformation(*transform, t);
+            tmp.appendTransformation(*transform, t);
         }
 
-        ans.emplace_back(p.first, transformation);
+        ans.emplace_back(p.first, tmp);
     }
 
     for(Engine_Object& engineObject : this->children_objects){
