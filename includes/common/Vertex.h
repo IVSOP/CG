@@ -31,8 +31,6 @@ struct Vertex {
 
     Vertex(glm::vec4 coords, glm::vec3 normal, glm::vec2 tex_coord) : coords(coords), normal(normal), tex_coord(tex_coord) {}
 
-    Vertex(Vertex const &v) : coords(v.coords), normal(v.normal), tex_coord(v.tex_coord), object_id(v.object_id) {}
-
     Vertex() = default;
 
     //getters

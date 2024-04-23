@@ -226,7 +226,6 @@ public:
 class Scale : public Transform {
 public:
     glm::mat4 matrix;
-    int x, y, z;
 
     Scale(float x, float y, float z){
         this->matrix = Consts::scaleMatrix(x, y, z);
