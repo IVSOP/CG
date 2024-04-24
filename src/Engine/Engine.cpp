@@ -10,7 +10,13 @@
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1900) && !defined(IMGUI_DISABLE_WIN32_FUNCTIONS)
 #pragma comment(lib, "legacy_stdio_definitions")
+#define NO_PHYS_THREAD
 #endif
+
+#ifdef NO_PHYS_THREAD
+	#pragma message("Not using physics thread")
+#endif
+
 
 //////////////////////////// CALLBACKS FOR GLFW //////////////////////////////
 void setWindow(GLFWwindow* window, int windowWidth, int windowHeight) {
@@ -70,10 +76,20 @@ void Engine::renderLoop() {
         inputHandler.get()->applyToCamera(*camera.get(), windowWidth, windowHeight, static_cast<GLfloat>(deltaTime));
 
 
+#ifdef NO_PHYS_THREAD
+		draw_points = points; // copy the buffer
+		draw_objectInfo = this->renderer.get()->translateEngineObjectInfo(this->xmlParser.getObjectInfo(glfwGetTime()));
+
+		renderer.get()->draw(curvePoints, draw_points, draw_objectInfo, projection, *camera.get(), window, deltaTime);
+		rendered = true;
+#else
         std::unique_lock<std::mutex> lock = std::unique_lock<std::mutex>(mtx);
         renderer.get()->draw(curvePoints, draw_points, draw_objectInfo, projection, *camera.get(), window, deltaTime);
 		rendered = true;
         lock.unlock();
+
+#endif
+
 
         currentFrameTime = glfwGetTime();
         deltaTime = currentFrameTime - lastFrameTime;
@@ -113,34 +129,37 @@ void Engine::physLoopDeterministic () {
     int i = 0;
     
     while (!kill) {
-		frameStartTime = glfwGetTime();
-		// printf("%d - frame starting: %lf ", i, frameStartTime);
+		if (rendered) { // the current data has been rendered, ready for new data
+			frameStartTime = glfwGetTime();
+			// printf("%d - frame starting: %lf ", i, frameStartTime);
 
-        std::unique_lock<std::mutex> lock = std::unique_lock<std::mutex>(mtx);
-        draw_points = points; // copy the buffer
-        // draw_objectInfo = objectInfo;
-        draw_objectInfo = this->renderer.get()->translateEngineObjectInfo(this->xmlParser.getObjectInfo(static_cast<float>(i) * PHYS_STEP));
+			std::unique_lock<std::mutex> lock = std::unique_lock<std::mutex>(mtx);
+			draw_points = points; // copy the buffer
+			// draw_objectInfo = objectInfo;
+			draw_objectInfo = this->renderer.get()->translateEngineObjectInfo(this->xmlParser.getObjectInfo(static_cast<float>(i) * PHYS_STEP));
 
-        lock.unlock();
+			rendered = false;
+			lock.unlock();
 
-        frameEndTime = glfwGetTime();
-        deltaTime = frameEndTime - frameStartTime;
-		// printf("frame ending: %lf delta: %lf", frameEndTime, deltaTime);
+			frameEndTime = glfwGetTime();
+			deltaTime = frameEndTime - frameStartTime;
+			// printf("frame ending: %lf delta: %lf", frameEndTime, deltaTime);
 
-		// printf("time is %lf. last frame took %lf\n", currentFrameTime, deltaTime);
+			// printf("time is %lf. last frame took %lf\n", currentFrameTime, deltaTime);
 
 
-		if (deltaTime < PHYS_STEP) {
-			// const int64_t sleepTime = static_cast<int64_t>((PHYS_STEP - deltaTime) * 10E5); // multiply to get from seconds to microseconds
-			// std::this_thread::sleep_for(std::chrono::microseconds(sleepTime));
-			// printf(" sleeping for %lf\n", PHYS_STEP - deltaTime);
-			const double sleepTime = (PHYS_STEP - deltaTime) * 10E5;
-			usleep(sleepTime);
+			if (deltaTime < PHYS_STEP) {
+				// const int64_t sleepTime = static_cast<int64_t>((PHYS_STEP - deltaTime) * 10E5); // multiply to get from seconds to microseconds
+				// std::this_thread::sleep_for(std::chrono::microseconds(sleepTime));
+				// printf(" sleeping for %lf\n", PHYS_STEP - deltaTime);
+				const double sleepTime = (PHYS_STEP - deltaTime) * 10E5;
+				usleep(sleepTime);
+			}
+			// double idk = glfwGetTime();
+			//printf("%d - time is now %lf, total elapsed %lf\n", i, idk, idk - frameStartTime);
+
+			i++;
 		}
-        // double idk = glfwGetTime();
-        //printf("%d - time is now %lf, total elapsed %lf\n", i, idk, idk - frameStartTime);
-
-        i++;
     }
 }
 
@@ -316,13 +335,18 @@ Engine::Engine(XmlParser &xmlParser) :xmlParser(xmlParser) {
 
 void Engine::loop() {
 
-#ifdef linux // linux can sleep for microseconds without active wait
-    std::thread physThread(&Engine::physLoopNonDeterministic, this);
-#else
-	std::thread physThread(&Engine::physLoopNonDeterministic, this);
-#endif
+// linux can sleep for microseconds without active wait
+// others cannot do that. however active wait sometimes still lags (in debug build, using clion, etc)
+// so this third state exists where everything is done on the render thread
 
+#ifndef NO_PHYS_THREAD
+	#ifdef linux 
+		std::thread physThread(&Engine::physLoopDeterministic, this);
+	#else
+		std::thread physThread(&Engine::physLoopNonDeterministic, this);
+	#endif
 	physThread.detach();
+#endif
 
 	renderLoop();
 }
