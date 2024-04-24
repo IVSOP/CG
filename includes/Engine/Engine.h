@@ -25,9 +25,11 @@ public:
 	~Engine();
 
 	void loop();
-	void physLoop();
+	void physLoopDeterministic();
+	void physLoopNonDeterministic();
 	void renderLoop();
 
+	bool rendered = false; // sets if the current data has been rendered, so threads can coordinate
 
 	// infro from xml
 	GLdouble windowFov;
