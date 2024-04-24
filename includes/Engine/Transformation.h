@@ -21,21 +21,16 @@ public:
     bool align, curve;
     std::vector<Vertex> curvePoints;
 
-    std::string alignAxis;
-
     glm::vec3 xVector;
     glm::vec3 yVector; // Assumir y inicial
     glm::vec3 zVector;
+    glm::vec3 upVector;
+    glm::vec3 rotVector;
 
     // Como saber qual o eixo de orientação do objeto?
-    Translate(float time, bool align, float x, float y, float z, bool curve, std::vector<Vertex>& curvePoints, const char* alignAxis):
+    Translate(float time, bool align, float x, float y, float z, bool curve, std::vector<Vertex>& curvePoints, glm::vec3 upVector, glm::vec3 rotVector):
             time(time), x(x), y(y), z(z), align(align), curve(curve), curvePoints(curvePoints),
-            xVector(glm::vec3(1.0f,0.0f,0.0f)), yVector(glm::vec3(0.0f,1.0f,0.0f)), zVector(glm::vec3(0.0f,0.0f,-1.0f)){
-        this->alignAxis = alignAxis;
-
-        std::transform(this->alignAxis.begin(), this->alignAxis.end(), this->alignAxis.begin(), ::tolower);
-
-    }
+            xVector(), yVector(glm::normalize(upVector)), zVector(), upVector(glm::normalize(upVector)), rotVector(glm::normalize(rotVector)) {}
 
     glm::mat4 getMatrix(float t) override {
         if(!this->curve) return Consts::translateMatrix(this->x, this->y, this->z);
@@ -59,44 +54,26 @@ public:
         // glm::vec3 desiredOrientation = glm::vec3(0.0f,1.0f,0.0f);
 
         if(this->align){
+            this->zVector = glm::vec3(glm::normalize(deriv));
 
-            // Align Z
-            if(this->alignAxis == "z"){
-                this->zVector = glm::vec3(glm::normalize(deriv));
+            this->xVector = glm::normalize(glm::cross(this->zVector,this->yVector));
 
-                this->xVector = glm::normalize(glm::cross(this->zVector,this->yVector));
+            this->yVector = glm::normalize(glm::cross(this->xVector, this->zVector));
 
-                this->yVector = glm::normalize(glm::cross(this->xVector, this->zVector));
-            }
+            // Calculate the right vector (perpendicular to direction and up vectors)
+            glm::vec3 right = glm::normalize(glm::cross(this->upVector, this->rotVector));
 
-            // Align Y
-            // Se quiseres que o teapot fique virado para cima em vez de para baixo, no construtor do zVector mete -1.0f em vez de 1.0f
+            // Recalculate the up vector (perpendicular to right and direction vectors)
+            this->upVector = glm::cross(this->rotVector, right);
 
-            else if(this->alignAxis == "y"){
-                this->yVector = glm::vec3(glm::normalize(deriv));
+            // Create the rotation matrix to align with the specified direction and up vectors
+            glm::mat4 alignMatrix = glm::mat4(glm::vec4(right, 0.0f),
+                                              glm::vec4(this->upVector, 0.0f),
+                                              glm::vec4(-this->rotVector, 0.0f),
+                                              glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
 
-                this->xVector = glm::normalize(glm::cross(this->yVector, this->zVector));
-
-                this->zVector = glm::normalize(glm::cross(this->xVector,this->yVector));
-            }
-
-            // Default
-            // Align X
-            else {
-                this->xVector = glm::vec3(glm::normalize(deriv));
-
-                this->zVector = glm::normalize(glm::cross(this->xVector,this->yVector));
-
-                this->yVector = glm::normalize(glm::cross(this->zVector, this->xVector));
-            }
-
-//            this->yVector = glm::normalize(deriv);
-//
-//            this->zVector = glm::normalize(glm::cross(this->yVector, glm::vec3(1.0f, 0.0f, 0.0f)));
-//
-//            this->xVector = glm::normalize(glm::cross(this->zVector, this->yVector));
-
-            rotMatrix = buildRotMatrix(this->xVector,this->yVector,this->zVector);
+            // Use glm::lookAt() to create the rotation matrix
+            rotMatrix = buildRotMatrix(this->xVector,this->yVector,this->zVector) * alignMatrix;
         }
 
         // rodar objeto para ficar alinhado com a curva

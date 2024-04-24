@@ -12,7 +12,7 @@
         </transform>
         <group>
             <transform>
-                <translate time="10" align="true" alignAxis="x"> <!-- O campo align diz se o objecto deve ser orientado na curva -->
+                <translate time="10" align="true" upX="0" upY="1" upZ="0" rotX="1" rotY="0" rotZ="0"> <!-- O campo align diz se o objecto deve ser orientado na curva -->
                     <Point x="0" y="0" z="4"/>
                     <Point x="4" y="0" z="0"/>
                     <Point x="0" y="0" z="-4"/>
@@ -28,7 +28,7 @@
 
         <group>
             <transform>
-                <translate time="5" align="true" alignAxis="z"> <!-- O campo align diz se o objecto deve ser orientado na curva -->
+                <translate time="5" align="true" upX="0" upY="1" upZ="0" rotX="0" rotY="0" rotZ="1"> <!-- O campo align diz se o objecto deve ser orientado na curva -->
                     <Point x="10" y="9" z="12"/>
                     <Point x="13" y="7" z="16"/>
                     <Point x="15" y="2" z="15"/>
