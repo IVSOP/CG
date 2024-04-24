@@ -21,28 +21,23 @@ std::vector<Engine_Object_Info> Engine_Object::getObjectInfo(float t, Transforma
 
     Transform* transform;
 
-    Transformation tmp;
-
-    for(auto& p : this->points){
-
-        tmp = Transformation(transformation);
-
-        for(auto& obj : this->transformations){
-            if(std::holds_alternative<Translate>(obj)){
-                transform = dynamic_cast<Transform*>(&std::get<Translate>(obj));
-            } else if(std::holds_alternative<Rotate>(obj)) {
-                transform = dynamic_cast<Transform*>(&std::get<Rotate>(obj));
-            } else if(std::holds_alternative<Scale>(obj)) {
-                transform = dynamic_cast<Transform*>(&std::get<Scale>(obj));
-            } else {
-                perror("Found unrecognized object inside a engine object transformations.");
-                return {};
-            }
-
-            tmp.appendTransformation(*transform, t);
+    for(auto& obj : this->transformations){
+        if(std::holds_alternative<Translate>(obj)){
+            transform = dynamic_cast<Transform*>(&std::get<Translate>(obj));
+        } else if(std::holds_alternative<Rotate>(obj)) {
+            transform = dynamic_cast<Transform*>(&std::get<Rotate>(obj));
+        } else if(std::holds_alternative<Scale>(obj)) {
+            transform = dynamic_cast<Transform*>(&std::get<Scale>(obj));
+        } else {
+            perror("Found unrecognized object inside a engine object transformations.");
+            return {};
         }
 
-        ans.emplace_back(p.first, tmp);
+        transformation.appendTransformation(*transform, t);
+    }
+
+    for(auto& p : this->points){
+        ans.emplace_back(p.first, transformation);
     }
 
     for(Engine_Object& engineObject : this->children_objects){

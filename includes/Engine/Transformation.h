@@ -223,6 +223,9 @@ public:
 
     Transformation()
     : transformMatrix(Consts::idMatrix()) {}
+
+    Transformation(const Transformation& t)
+    : transformMatrix(t.transformMatrix) {}
     
     explicit Transformation(Transform& transform, float t){
         this->transformMatrix = transform.getMatrix(t);

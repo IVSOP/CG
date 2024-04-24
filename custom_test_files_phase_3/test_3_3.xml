@@ -23,6 +23,8 @@
             </transform>
             <models>
                 <model file="bezier_10.3d"/> <!-- generator patch teapot.patch 10 bezier_10.3d -->
+                <model file="comet_5.3d"/> <!-- generator patch custom_test_files_phase_3/comet.patch 5 comet_5.3d -->
+                <model file="comet_tail_5.3d"/> <!-- generator patch custom_test_files_phase_3/comet_tail.patch 5 comet_tail_5.3d -->
             </models>
         </group>
 
