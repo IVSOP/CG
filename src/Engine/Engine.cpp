@@ -10,7 +10,11 @@
 
 #if defined(_MSC_VER) && (_MSC_VER >= 1900) && !defined(IMGUI_DISABLE_WIN32_FUNCTIONS)
 #pragma comment(lib, "legacy_stdio_definitions")
-#define NO_PHYS_THREAD
+
+#endif
+
+#ifndef linux
+	#define NO_PHYS_THREAD
 #endif
 
 #ifdef NO_PHYS_THREAD
@@ -340,12 +344,11 @@ void Engine::loop() {
 // so this third state exists where everything is done on the render thread
 
 #ifndef NO_PHYS_THREAD
-	#ifdef linux 
-		std::thread physThread(&Engine::physLoopDeterministic, this);
-	#else
-		std::thread physThread(&Engine::physLoopNonDeterministic, this);
-	#endif
+	std::thread physThread(&Engine::physLoopDeterministic, this);
 	physThread.detach();
+
+	// este caso e para espera ativa, nao usado
+	// std::thread physThread(&Engine::physLoopNonDeterministic, this);
 #endif
 
 	renderLoop();
