@@ -25,12 +25,12 @@ public:
     glm::vec3 yVector; // Assumir y inicial
     glm::vec3 zVector;
     glm::vec3 upVector;
-    glm::vec3 rotVector;
+    glm::vec3 alignVector;
 
     // Como saber qual o eixo de orientação do objeto?
-    Translate(float time, bool align, float x, float y, float z, bool curve, std::vector<Vertex>& curvePoints, glm::vec3 upVector, glm::vec3 rotVector):
+    Translate(float time, bool align, float x, float y, float z, bool curve, std::vector<Vertex>& curvePoints, glm::vec3 upVector, glm::vec3 alignVector):
             time(time), x(x), y(y), z(z), align(align), curve(curve), curvePoints(curvePoints),
-            xVector(), yVector(glm::normalize(upVector)), zVector(), upVector(glm::normalize(upVector)), rotVector(glm::normalize(rotVector)) {}
+            xVector(), yVector(glm::normalize(upVector)), zVector(), upVector(glm::normalize(upVector)), alignVector(glm::normalize(alignVector)) {}
 
     glm::mat4 getMatrix(float t) override {
         if(!this->curve) return Consts::translateMatrix(this->x, this->y, this->z);
@@ -61,15 +61,15 @@ public:
             this->yVector = glm::normalize(glm::cross(this->xVector, this->zVector));
 
             // Calculate the right vector (perpendicular to direction and up vectors)
-            glm::vec3 right = glm::normalize(glm::cross(this->upVector, this->rotVector));
+            glm::vec3 right = glm::normalize(glm::cross(this->upVector, this->alignVector));
 
             // Recalculate the up vector (perpendicular to right and direction vectors)
-            this->upVector = glm::cross(this->rotVector, right);
+            this->upVector = glm::cross(this->alignVector, right);
 
             // Create the rotation matrix to align with the specified direction and up vectors
             glm::mat4 alignMatrix = glm::mat4(glm::vec4(right, 0.0f),
                                               glm::vec4(this->upVector, 0.0f),
-                                              glm::vec4(-this->rotVector, 0.0f),
+                                              glm::vec4(-this->alignVector, 0.0f),
                                               glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
 
             // Use glm::lookAt() to create the rotation matrix

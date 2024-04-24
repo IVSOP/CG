@@ -204,22 +204,22 @@ std::vector<std::variant<Translate, Rotate, Scale>> XmlParser::parseTransformati
                 }
             }
 
-            float upX, upY, upZ, rotX, rotY, rotZ;
+            float upX, upY, upZ, alignX, alignY, alignZ;
 
             upX = node->FloatAttribute("upX", 0.0f);
             upY = node->FloatAttribute("upY", 1.0f);
             upZ = node->FloatAttribute("upZ", 0.0f);
 
-            rotX = node->FloatAttribute("rotX", 1.0f);
-            rotY = node->FloatAttribute("rotY", 0.0f);
-            rotZ = node->FloatAttribute("rotZ", 0.0f);
+            alignX = node->FloatAttribute("alignX", 1.0f);
+            alignY = node->FloatAttribute("alignY", 0.0f);
+            alignZ = node->FloatAttribute("alignZ", 0.0f);
 
-            if(rotX != 0.0f) rotX *= -1;
+            if(alignX != 0.0f) alignX *= -1;
 
             Translate translate = Translate(node->FloatAttribute("time"), node->BoolAttribute("align", false),
                                             node->FloatAttribute("x"), node->FloatAttribute("y"),
                                             node->FloatAttribute("z"), curve, points,
-                                            glm::vec3(upX, upY, upZ), glm::vec3(rotX, rotY, rotZ));
+                                            glm::vec3(upX, upY, upZ), glm::vec3(alignX, alignY, alignZ));
 
             transformations.emplace_back(translate);
 
