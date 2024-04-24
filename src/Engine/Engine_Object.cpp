@@ -19,21 +19,23 @@ std::vector<std::vector<Vertex>> Engine_Object::getPoints() {
 std::vector<Engine_Object_Info> Engine_Object::getObjectInfo(float t, Transformation transformation){
     std::vector<Engine_Object_Info> ans = std::vector<Engine_Object_Info>();
 
-    Transform* transform;
-
-    for(auto& obj : this->transformations){
-        if(std::holds_alternative<Translate>(obj)){
-            transform = dynamic_cast<Transform*>(&std::get<Translate>(obj));
-        } else if(std::holds_alternative<Rotate>(obj)) {
-            transform = dynamic_cast<Transform*>(&std::get<Rotate>(obj));
-        } else if(std::holds_alternative<Scale>(obj)) {
-            transform = dynamic_cast<Transform*>(&std::get<Scale>(obj));
+    for(auto& obj : this->transformations) {
+        if (std::holds_alternative<Translate>(obj)) {
+            Translate translate = std::get<Translate>(obj);
+            glm::mat4 translateMatrix = translate.getMatrix(t);
+            transformation.appendTransformation(translateMatrix);
+        } else if (std::holds_alternative<Rotate>(obj)) {
+            Rotate rotate = std::get<Rotate>(obj);
+            glm::mat4 rotateMatrix = rotate.getMatrix(t);
+            transformation.appendTransformation(rotateMatrix);
+        } else if (std::holds_alternative<Scale>(obj)) {
+            Scale scale = std::get<Scale>(obj);
+            glm::mat4 scaleMatrix = scale.getMatrix(t);
+            transformation.appendTransformation(scaleMatrix);
         } else {
             perror("Found unrecognized object inside a engine object transformations.");
             return {};
         }
-
-        transformation.appendTransformation(*transform, t);
     }
 
     for(auto& p : this->points){
@@ -49,8 +51,9 @@ std::vector<Engine_Object_Info> Engine_Object::getObjectInfo(float t, Transforma
     return ans;
 }
 
-std::vector<std::pair<std::vector<Vertex>, std::vector<Vertex>>> Engine_Object::getCurvePoints(int tesselation_level){
-    std::vector<std::pair<std::vector<Vertex>, std::vector<Vertex>>> ans = std::vector<std::pair<std::vector<Vertex>, std::vector<Vertex>>>();
+
+std::vector<Engine_Object_Curve> Engine_Object::getCurvePoints(float t, int tesselation_level, Transformation transformation){
+    std::vector<Engine_Object_Curve> ans = std::vector<Engine_Object_Curve>();
 
     Translate* translate;
     bool found;
@@ -63,18 +66,42 @@ std::vector<std::pair<std::vector<Vertex>, std::vector<Vertex>>> Engine_Object::
             if(std::holds_alternative<Translate>(obj)){
                 translate = &std::get<Translate>(obj);
 
-                ans.emplace_back(translate->getCurvePoints(tesselation_level));
+                std::pair<std::vector<Vertex>, std::vector<Vertex>> tmp = translate->getCurvePoints(tesselation_level);
+                Engine_Object_Curve engineCurve = Engine_Object_Curve(tmp.first, tmp.second, transformation);
+
+                ans.emplace_back(engineCurve);
                 found = true;
                 break;
             }
         }
 
         if(!found)
-            ans.emplace_back(std::vector<Vertex>(), std::vector<Vertex>()); //preencher sem pontos e derivadas no caso de não haver curva a ser desenhada
+            ans.emplace_back(Engine_Object_Curve()); //preencher sem pontos e derivadas no caso de não haver curva a ser desenhada
+    }
+
+    Transformation newTransformation = Transformation(transformation);
+
+    for(auto& obj : this->transformations) {
+        if (std::holds_alternative<Translate>(obj)) {
+            Translate translate = std::get<Translate>(obj);
+            glm::mat4 translateMatrix = translate.getMatrix(t);
+            newTransformation.appendTransformation(translateMatrix);
+        } else if (std::holds_alternative<Rotate>(obj)) {
+            Rotate rotate = std::get<Rotate>(obj);
+            glm::mat4 rotateMatrix = rotate.getMatrix(t);
+            newTransformation.appendTransformation(rotateMatrix);
+        } else if (std::holds_alternative<Scale>(obj)) {
+            Scale scale = std::get<Scale>(obj);
+            glm::mat4 scaleMatrix = scale.getMatrix(t);
+            newTransformation.appendTransformation(scaleMatrix);
+        } else {
+            perror("Found unrecognized object inside a engine object transformations.");
+            return {};
+        }
     }
 
     for(Engine_Object& engineObject : this->children_objects){
-        std::vector<std::pair<std::vector<Vertex>, std::vector<Vertex>>> tmp = engineObject.getCurvePoints(tesselation_level);
+        std::vector<Engine_Object_Curve> tmp = engineObject.getCurvePoints(t, tesselation_level, newTransformation);
 
         ans.insert(ans.end(), tmp.begin(), tmp.end());
     }

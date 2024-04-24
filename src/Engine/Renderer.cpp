@@ -101,7 +101,7 @@ void Renderer::drawAxis(const glm::mat4 &model, const glm::mat4 &view, const glm
 }
 
 void Renderer::drawCurves(const glm::mat4 &view, const glm::mat4 &projection,
-                          const std::vector<std::pair<std::vector<Vertex>, std::vector<Vertex>>>& points) {
+                          const std::vector<Engine_Object_Curve>& points) {
 
     std::vector<AxisVertex> curvePoints = std::vector<AxisVertex>();
     std::vector<AxisVertex> normalPoints = std::vector<AxisVertex>();
@@ -115,15 +115,22 @@ void Renderer::drawCurves(const glm::mat4 &view, const glm::mat4 &projection,
     axisShader.setMat4("u_MVP", projection * view * model);
 
     // TODO Try drawing only one time
-    for(auto& pair: points) {
+    for(int i = 0; i < points.size(); i++){
         // pair.first -> curve points
         // pair.second -> each 2 points form the normals of the curve
+
+        Engine_Object_Curve pair = points[i];
+
         curvePoints.clear();
         normalPoints.clear();
 
-        for(auto& p : pair.first){
+        for(auto& p : pair.points){
             // Draw lines white
-            curvePoints.emplace_back(p.coords.x, p.coords.y, p.coords.z, 1.0f, 1.0f, 1.0f);
+            glm::vec4 coords = p.coords;
+
+            coords = pair.transform.transformMatrix * coords;
+
+            curvePoints.emplace_back(coords.x, coords.y, coords.z, 1.0f, 1.0f, 1.0f);
         }
 
         GLuint size = curvePoints.size();
@@ -137,19 +144,19 @@ void Renderer::drawCurves(const glm::mat4 &view, const glm::mat4 &projection,
             // If there are no curve points, there won't be derivates to draw
             if(size == 0) continue;
 
-							  // cursed
-			std::vector<Vertex>::const_iterator iter = pair.second.begin();
+            // cursed
+            std::vector<Vertex>::const_iterator iter = pair.deriv.begin();
 
-            for(; iter < pair.second.end() - 1; iter ++) {
+            for(; iter < pair.deriv.end() - 1; iter ++) {
                 // Draw lines white
-				const Vertex &v1 = *iter;
-				iter++;
-				const Vertex &v2 = *iter;
+                const Vertex &v1 = *iter;
+                iter++;
+                const Vertex &v2 = *iter;
 
-				normalPoints.emplace_back(v1.coords.x, v1.coords.y, v1.coords.z, 1.0f, 0.0f, 0.0f);
-				const glm::vec3 new_coords = v1.coords + glm::normalize(v2.coords - v1.coords);
-				normalPoints.emplace_back(new_coords.x, new_coords.y, new_coords.z, 0.0f, 0.0f, 1.0f);
-			}
+                normalPoints.emplace_back(v1.coords.x, v1.coords.y, v1.coords.z, 1.0f, 0.0f, 0.0f);
+                const glm::vec3 new_coords = v1.coords + glm::normalize(v2.coords - v1.coords);
+                normalPoints.emplace_back(new_coords.x, new_coords.y, new_coords.z, 0.0f, 0.0f, 1.0f);
+            }
 
             GLuint size = normalPoints.size();
 
@@ -641,7 +648,7 @@ std::vector<RendererObjectInfo> Renderer::translateEngineObjectInfo(const std::v
 	return objectInfo;
 }
 
-void Renderer::draw(const std::vector<std::pair<std::vector<Vertex>, std::vector<Vertex>>>& curvePoints, const std::vector<Vertex> &verts, const std::vector<RendererObjectInfo> &objectInfo, const glm::mat4 &projection, Camera &camera, GLFWwindow * window, GLfloat deltaTime) {
+void Renderer::draw(const std::vector<Engine_Object_Curve>& curvePoints, const std::vector<Vertex> &verts, const std::vector<RendererObjectInfo> &objectInfo, const glm::mat4 &projection, Camera &camera, GLFWwindow * window, GLfloat deltaTime) {
 	prepareFrame(camera, deltaTime);
 	const glm::mat4 view = camera.GetViewMatrix();
 	drawLighting(verts, objectInfo, projection, view, camera);

@@ -7,6 +7,17 @@
 #include "Transformation.h"
 #include "Vertex.h"
 
+class Engine_Object_Curve{
+public:
+    std::vector<Vertex> points;
+    std::vector<Vertex> deriv;
+    Transformation transform;
+
+    Engine_Object_Curve(): points(), deriv(), transform(){}
+
+    Engine_Object_Curve(std::vector<Vertex> points, std::vector<Vertex> deriv, const Transformation transform):
+            points(points), deriv(deriv), transform(transform){}
+};
 
 class Engine_Object_Materials {
 public:
@@ -71,7 +82,7 @@ public:
 
     std::vector<Engine_Object_Info> getObjectInfo(float t, Transformation transformation);
 
-    std::vector<std::pair<std::vector<Vertex>, std::vector<Vertex>>> getCurvePoints(int tesselation_level);
+    std::vector<Engine_Object_Curve> getCurvePoints(float t, int tesselation_level, Transformation transformation);
 };
 
 #endif //CG_ENGINE_OBJECT_H

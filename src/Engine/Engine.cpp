@@ -83,6 +83,7 @@ void Engine::renderLoop() {
 #ifdef NO_PHYS_THREAD
 		draw_points = points; // copy the buffer
 		draw_objectInfo = this->renderer.get()->translateEngineObjectInfo(this->xmlParser.getObjectInfo(glfwGetTime()));
+        this->curvePoints = xmlParser.getCurvePoints(glfwGetTime(), 100); // Tesselation level;
 
 		renderer.get()->draw(curvePoints, draw_points, draw_objectInfo, projection, *camera.get(), window, deltaTime);
 		rendered = true;
@@ -120,6 +121,7 @@ void Engine::physLoopNonDeterministic () {
 			draw_points = points; // copy the buffer
 			// draw_objectInfo = objectInfo;
 			draw_objectInfo = this->renderer.get()->translateEngineObjectInfo(this->xmlParser.getObjectInfo(glfwGetTime()));
+            curvePoints = xmlParser.getCurvePoints(glfwGetTime(), 100); // Tesselation level
 
 			rendered = false;
 			lock.unlock();
@@ -141,6 +143,7 @@ void Engine::physLoopDeterministic () {
 			draw_points = points; // copy the buffer
 			// draw_objectInfo = objectInfo;
 			draw_objectInfo = this->renderer.get()->translateEngineObjectInfo(this->xmlParser.getObjectInfo(static_cast<float>(i) * PHYS_STEP));
+            curvePoints = xmlParser.getCurvePoints(static_cast<float>(i) * PHYS_STEP, 100); // Tesselation level
 
 			rendered = false;
 			lock.unlock();
@@ -330,11 +333,12 @@ Engine::Engine(XmlParser &xmlParser) :xmlParser(xmlParser) {
 	// after getting the engine object info, translate them to renderer object info (yes very bad but only done once)
 	std::vector<Engine_Object_Info> engineObjInfo = xmlParser.getObjectInfo(0.0f);
 	this->objectInfo = this->renderer.get()->translateEngineObjectInfo(engineObjInfo);
-    this->curvePoints = xmlParser.getCurvePoints(100); // Tesselation level
+    this->curvePoints = xmlParser.getCurvePoints(5.0f, 100); // Tesselation level
 
 	// early copy to allow renderer to display something
     this->draw_points = points;
 	this->draw_objectInfo = objectInfo;
+    this->curvePoints = curvePoints;
 }
 
 void Engine::loop() {
