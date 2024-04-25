@@ -19,23 +19,21 @@ std::vector<std::vector<Vertex>> Engine_Object::getPoints() {
 std::vector<Engine_Object_Info> Engine_Object::getObjectInfo(float t, Transformation transformation){
     std::vector<Engine_Object_Info> ans = std::vector<Engine_Object_Info>();
 
-    for(auto& obj : this->transformations) {
-        if (std::holds_alternative<Translate>(obj)) {
-            Translate translate = std::get<Translate>(obj);
-            glm::mat4 translateMatrix = translate.getMatrix(t);
-            transformation.appendTransformation(translateMatrix);
-        } else if (std::holds_alternative<Rotate>(obj)) {
-            Rotate rotate = std::get<Rotate>(obj);
-            glm::mat4 rotateMatrix = rotate.getMatrix(t);
-            transformation.appendTransformation(rotateMatrix);
-        } else if (std::holds_alternative<Scale>(obj)) {
-            Scale scale = std::get<Scale>(obj);
-            glm::mat4 scaleMatrix = scale.getMatrix(t);
-            transformation.appendTransformation(scaleMatrix);
+    Transform* transform;
+
+    for(auto& obj : this->transformations){
+        if(std::holds_alternative<Translate>(obj)){
+            transform = dynamic_cast<Transform*>(&std::get<Translate>(obj));
+        } else if(std::holds_alternative<Rotate>(obj)) {
+            transform = dynamic_cast<Transform*>(&std::get<Rotate>(obj));
+        } else if(std::holds_alternative<Scale>(obj)) {
+            transform = dynamic_cast<Transform*>(&std::get<Scale>(obj));
         } else {
             perror("Found unrecognized object inside a engine object transformations.");
             return {};
         }
+
+        transformation.appendTransformation(*transform, t);
     }
 
     for(auto& p : this->points){
@@ -50,7 +48,6 @@ std::vector<Engine_Object_Info> Engine_Object::getObjectInfo(float t, Transforma
 
     return ans;
 }
-
 
 std::vector<Engine_Object_Curve> Engine_Object::getCurvePoints(float t, int tesselation_level, Transformation transformation){
     std::vector<Engine_Object_Curve> ans = std::vector<Engine_Object_Curve>();
