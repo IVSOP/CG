@@ -70,11 +70,13 @@ void handleMouseMov(GLFWwindow *window, double xpos, double ypos) {
 }
 
 void Engine::renderLoop() {
-    double lastFrameTime, currentFrameTime, deltaTime = PHYS_STEP; // to prevent errors when this is first ran, I initialize it to the physics substep
+    double frameStartTime, frameEndTime, deltaTime = PHYS_STEP; // deltaTime starts as PHYS_STEP to prevent errors
+	double totalTime = 0.0;
+
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents(); // at the start due to imgui (??) test moving it to after the unlock()
 
-		lastFrameTime = glfwGetTime();
+		frameStartTime = glfwGetTime();
 
         // printf("delta is %f (%f fps)\n", deltaTime, 1.0f / deltaTime);
         inputHandler.get()->applyToCamera(*camera.get(), windowWidth, windowHeight, static_cast<GLfloat>(deltaTime));
@@ -82,8 +84,8 @@ void Engine::renderLoop() {
 
 #ifdef NO_PHYS_THREAD
 		draw_points = points; // copy the buffer
-		draw_objectInfo = this->renderer.get()->translateEngineObjectInfo(this->xmlParser.getObjectInfo(glfwGetTime()));
-        this->curvePoints = xmlParser.getCurvePoints(glfwGetTime(), 100); // Tesselation level;
+		draw_objectInfo = this->renderer.get()->translateEngineObjectInfo(this->xmlParser.getObjectInfo(totalTime));
+        this->curvePoints = xmlParser.getCurvePoints(totalTime, 100); // Tesselation level;
 
 		renderer.get()->draw(curvePoints, draw_points, draw_objectInfo, projection, *camera.get(), window, deltaTime);
 		rendered = true;
@@ -95,9 +97,9 @@ void Engine::renderLoop() {
 
 #endif
 
-
-        currentFrameTime = glfwGetTime();
-        deltaTime = currentFrameTime - lastFrameTime;
+        frameEndTime = glfwGetTime();
+        deltaTime = frameEndTime - frameStartTime;
+		totalTime += deltaTime;
 
         // no need for sleep, vsync takes care of mantaining timings
 		// HOWEVER macbooks as per usual do not work properly
