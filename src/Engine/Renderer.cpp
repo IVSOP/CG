@@ -402,6 +402,9 @@ void Renderer::prepareFrame(Camera &camera, GLfloat deltaTime) {
 	ImGui::Checkbox("Show curves", &showCurves);
 	ImGui::Checkbox("Show curve normals", &showCurveNormals);
 	ImGui::Checkbox("Explode", &explode);
+	ImGui::SliderFloat("##Engine speed", &engine_speed, 0.0f, 100.0f, "engine speed = %.3f");
+	ImGui::SameLine();
+	ImGui::InputFloat("Engine speed", &engine_speed, 1.0f, 100.0f);
 
 }
 

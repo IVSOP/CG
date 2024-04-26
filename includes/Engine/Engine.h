@@ -36,6 +36,8 @@ public:
 	GLdouble windowZNear;
 	GLdouble windowZFar;
 
+	float *engine_speed = nullptr; // pointer for ease of use, it belongs to the renderer due to imgui. can easily be changed
+
 	int windowWidth;
 	int windowHeight;
 

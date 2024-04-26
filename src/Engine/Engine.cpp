@@ -70,8 +70,10 @@ void handleMouseMov(GLFWwindow *window, double xpos, double ypos) {
 }
 
 void Engine::renderLoop() {
-    double frameStartTime, frameEndTime, deltaTime = PHYS_STEP; // deltaTime starts as PHYS_STEP to prevent errors
-	double totalTime = 0.0;
+    double frameStartTime, frameEndTime, deltaTime = PHYS_STEP, physDeltaTime = PHYS_STEP; // starts as PHYS_STEP to prevent errors
+	double physTotalTime = 0.0;
+	// deltaTime is actual time taken for the frame, so I can sleep, move the camera etc
+	// phys time can be changed to change the physisc without touching the camera
 
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents(); // at the start due to imgui (??) test moving it to after the unlock()
@@ -84,14 +86,14 @@ void Engine::renderLoop() {
 
 #ifdef NO_PHYS_THREAD
 		draw_points = points; // copy the buffer
-		draw_objectInfo = this->renderer.get()->translateEngineObjectInfo(this->xmlParser.getObjectInfo(totalTime));
-        this->curvePoints = xmlParser.getCurvePoints(totalTime, 100); // Tesselation level;
+		draw_objectInfo = this->renderer.get()->translateEngineObjectInfo(this->xmlParser.getObjectInfo(physTotalTime));
+        this->curvePoints = xmlParser.getCurvePoints(physTotalTime, 100); // Tesselation level;
 
-		renderer.get()->draw(curvePoints, draw_points, draw_objectInfo, projection, *camera.get(), window, deltaTime);
+		renderer.get()->draw(curvePoints, draw_points, draw_objectInfo, projection, *camera.get(), window, physDeltaTime);
 		rendered = true;
 #else
         std::unique_lock<std::mutex> lock = std::unique_lock<std::mutex>(mtx);
-        renderer.get()->draw(curvePoints, draw_points, draw_objectInfo, projection, *camera.get(), window, deltaTime);
+        renderer.get()->draw(curvePoints, draw_points, draw_objectInfo, projection, *camera.get(), window, physDeltaTime);
 		rendered = true;
         lock.unlock();
 
@@ -99,7 +101,8 @@ void Engine::renderLoop() {
 
         frameEndTime = glfwGetTime();
         deltaTime = frameEndTime - frameStartTime;
-		totalTime += deltaTime;
+		physDeltaTime = deltaTime * static_cast<double>(*engine_speed);
+		physTotalTime += physDeltaTime;
 
         // no need for sleep, vsync takes care of mantaining timings
 		// HOWEVER macbooks as per usual do not work properly
@@ -132,9 +135,9 @@ void Engine::physLoopNonDeterministic () {
 }
 
 void Engine::physLoopDeterministic () {
-    double frameStartTime, frameEndTime, deltaTime;
+    double frameStartTime, frameEndTime, deltaTime; // deltaTime here is only used for sleep and never for the computations
 
-    int i = 0;
+	GLuint i = 0;
     
     while (!kill) {
 		if (rendered) { // the current data has been rendered, ready for new data
@@ -315,6 +318,7 @@ Engine::Engine(XmlParser &xmlParser) :xmlParser(xmlParser) {
 #endif
 
 	this->renderer = std::make_unique<Renderer>(static_cast<GLsizei>(this->windowWidth), static_cast<GLsizei>(this->windowHeight));
+	engine_speed = &(renderer.get()->engine_speed);
 
 #ifdef __APPLE__
 	GLCall(glDeleteVertexArrays(1, &tempVAO));
