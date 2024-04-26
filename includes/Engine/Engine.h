@@ -71,8 +71,10 @@ public:
 	// ou seja acho que vai ter de ficar assim
 	bool resize = false;
 
-	bool kill = false;
-
+	std::mutex kill_mtx;
+		volatile bool kill = false; // estava a ter um bug quantico em que isto nao dava se eu nao desse print ao valor
+		// experimentar usar a lock cada vez que quero ler o kill, mas podia ter pior performance
+		// ou entao std::atomic<bool>
 };
 
 #endif

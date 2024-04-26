@@ -118,7 +118,6 @@ void Engine::renderLoop() {
 			}
 		}
     }
-	kill = true;
 }
 
 void Engine::physLoopNonDeterministic () {
@@ -146,7 +145,7 @@ void Engine::physLoopNonDeterministic () {
     }
 
 	// signal to renderer that I have exited
-	std::unique_lock<std::mutex> lock = std::unique_lock<std::mutex>(mtx);
+	std::unique_lock<std::mutex> lock = std::unique_lock<std::mutex>(kill_mtx);
 	killCondition.notify_all();
 }
 
@@ -160,42 +159,44 @@ void Engine::physLoopDeterministic () {
 	GLuint i = 0;
     
     while (!kill) {
-		sleepTarget = static_cast<double>(physDeltaTime / (*engine_speed));
-		frameStartTime = glfwGetTime();
-		// if this runs faster than renderer, more work will be done than can be displayed
-		// alternative would be to skip frames by doing i++, but could cause problems later if frames should not be skipped (due to a physics system, etc)
+		if (*engine_speed > 0.0) { // no sense it computing things with 0 time. also would cause an infinite sleep. will cause high cpu usage, but it is simple. cursed solution would be condition that waits for engine speed to not be 0
+			sleepTarget = static_cast<double>(physDeltaTime / (*engine_speed));
+			frameStartTime = glfwGetTime();
+			// if this runs faster than renderer, more work will be done than can be displayed
+			// alternative would be to skip frames by doing i++, but could cause problems later if frames should not be skipped (due to a physics system, etc)
 
-		// phys_points = ...
-		phys_curvePoints = xmlParser.getCurvePoints(static_cast<float>(i) * physDeltaTime, 100); // Tesselation level
-		phys_objectInfo = this->renderer.get()->translateEngineObjectInfo(this->xmlParser.getObjectInfo(static_cast<float>(i) * physDeltaTime));
+			// phys_points = ...
+			phys_curvePoints = xmlParser.getCurvePoints(static_cast<float>(i) * physDeltaTime, 100); // Tesselation level
+			phys_objectInfo = this->renderer.get()->translateEngineObjectInfo(this->xmlParser.getObjectInfo(static_cast<float>(i) * physDeltaTime));
 
-		std::unique_lock<std::mutex> lock = std::unique_lock<std::mutex>(mtx);
-			// copy all the buffers into draw buffers
-			points = phys_points;
-			curvePoints = phys_curvePoints;
-			objectInfo = phys_objectInfo;
-		lock.unlock();
+			std::unique_lock<std::mutex> lock = std::unique_lock<std::mutex>(mtx);
+				// copy all the buffers into draw buffers
+				points = phys_points;
+				curvePoints = phys_curvePoints;
+				objectInfo = phys_objectInfo;
+			lock.unlock();
 
-		frameEndTime = glfwGetTime();
-		deltaTime = frameEndTime - frameStartTime;
+			frameEndTime = glfwGetTime();
+			deltaTime = frameEndTime - frameStartTime;
 
 
-		// the only thing that engine speed changes is how many steps are taken per second, the steps are still the same
-		// for high engine speeds, might become innacurate
-		if (deltaTime < sleepTarget) {
-			// const int64_t sleepTime = ...
-			// std::this_thread::sleep_for(std::chrono::microseconds(sleepTime));
-			const double sleepTime = (sleepTarget - deltaTime) * 10E5; // multiply to get from seconds to microseconds
-			usleep(sleepTime);
+			// the only thing that engine speed changes is how many steps are taken per second, the steps are still the same
+			// for high engine speeds, might become innacurate
+			if (deltaTime < sleepTarget) {
+				// const int64_t sleepTime = ...
+				// std::this_thread::sleep_for(std::chrono::microseconds(sleepTime));
+				const double sleepTime = (sleepTarget - deltaTime) * 10E5; // multiply to get from seconds to microseconds
+				usleep(sleepTime);
+			}
+			// double end = glfwGetTime();
+			// printf("total time of phys frame was %lf (%lf fps)\n", end - frameStartTime, 1.0 / (end - frameStartTime));
+
+			i++;
 		}
-		// double end = glfwGetTime();
-		// printf("total time of phys frame was %lf (%lf fps)\n", end - frameStartTime, 1.0 / (end - frameStartTime));
-
-		i++;
     }
 
 	// signal to renderer that I have exited
-	std::unique_lock<std::mutex> lock = std::unique_lock<std::mutex>(mtx);
+	std::unique_lock<std::mutex> lock = std::unique_lock<std::mutex>(kill_mtx);
 	killCondition.notify_all();
 }
 
@@ -385,9 +386,11 @@ void Engine::loop() {
 	physThread.detach();
 	renderLoop();
 
-	// since using 2 threads, catch renderer leaving here before it exits main and destroys the engine
-	std::unique_lock<std::mutex> lock = std::unique_lock<std::mutex>(mtx);
-	killCondition.wait(lock);
+	// stop rendering from leaving main and destroying everything
+	// wait for physThread to tell us it has exited
+	std::unique_lock<std::mutex> lock = std::unique_lock<std::mutex>(kill_mtx);
+		kill = true; // signal physThread that it should be killed, only right before waiting in the condition. since we already have the lock physThread can never notivy before we wait
+		killCondition.wait(lock);
 #else
 	renderLoop();
 #endif
