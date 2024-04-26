@@ -89,11 +89,11 @@ void Engine::renderLoop() {
 		draw_objectInfo = this->renderer.get()->translateEngineObjectInfo(this->xmlParser.getObjectInfo(physTotalTime));
         this->curvePoints = xmlParser.getCurvePoints(physTotalTime, 100); // Tesselation level;
 
-		renderer.get()->draw(curvePoints, draw_points, draw_objectInfo, projection, *camera.get(), window, physDeltaTime);
+		renderer.get()->draw(curvePoints, draw_points, draw_objectInfo, projection, *camera.get(), window, deltaTime); // this delta is just to calcualte fps, so it can be the render delta
 		rendered = true;
 #else
         std::unique_lock<std::mutex> lock = std::unique_lock<std::mutex>(mtx);
-        renderer.get()->draw(curvePoints, draw_points, draw_objectInfo, projection, *camera.get(), window, physDeltaTime);
+        renderer.get()->draw(curvePoints, draw_points, draw_objectInfo, projection, *camera.get(), window, deltaTime); // this delta is just to calcualte fps, so it can be the render delta
 		rendered = true;
         lock.unlock();
 
@@ -120,16 +120,24 @@ void Engine::renderLoop() {
 }
 
 void Engine::physLoopNonDeterministic () {
+	double frameStartTime, frameEndTime;
+	double totalTime = 0.0;
+
 	while (!kill) {
 		if (rendered) { // the current data has been rendered, ready for new data
+			frameStartTime = glfwGetTime();
 			std::unique_lock<std::mutex> lock = std::unique_lock<std::mutex>(mtx);
 			draw_points = points; // copy the buffer
 			// draw_objectInfo = objectInfo;
-			draw_objectInfo = this->renderer.get()->translateEngineObjectInfo(this->xmlParser.getObjectInfo(glfwGetTime()));
-            curvePoints = xmlParser.getCurvePoints(glfwGetTime(), 100); // Tesselation level
+			draw_objectInfo = this->renderer.get()->translateEngineObjectInfo(this->xmlParser.getObjectInfo(totalTime));
+            curvePoints = xmlParser.getCurvePoints(totalTime, 100); // Tesselation level
 
 			rendered = false;
 			lock.unlock();
+
+			frameEndTime = glfwGetTime();
+
+			totalTime += (frameEndTime - frameStartTime) * static_cast<double>(*engine_speed);
 		}
     }
 }
