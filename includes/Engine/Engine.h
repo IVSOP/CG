@@ -41,13 +41,20 @@ public:
 	int windowHeight;
 
 	std::mutex mtx;
-		// <var> are used by phys thread, copied into draw_<var> to be used in rendering
-		// could be optimized so vectors are switched instead of being deep copied all the time
-		std::vector<Vertex> points;
+		// phys_<var> is used by physics thread
+		// <var> is where that value is copied to
+		// draw_<var> is used by render thread. values are copied from <var>
+		// this way the only critical section is copying buffers
+		// could be optimized to better reuse the vectors
+
+		std::vector<Vertex> phys_points;
+			std::vector<Vertex> points; // protected by mutex
 		std::vector<Vertex> draw_points;
-		std::vector<RendererObjectInfo> objectInfo;
+		std::vector<RendererObjectInfo> phys_objectInfo;
+			std::vector<RendererObjectInfo> objectInfo; // protected by mutex
 		std::vector<RendererObjectInfo> draw_objectInfo;
-        std::vector<Engine_Object_Curve> curvePoints;
+        std::vector<Engine_Object_Curve> phys_curvePoints;
+			std::vector<Engine_Object_Curve> curvePoints; // protected by mutex
 		std::vector<Engine_Object_Curve> draw_curvePoints;
 
 		std::condition_variable killCondition;
