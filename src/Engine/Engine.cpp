@@ -90,12 +90,10 @@ void Engine::renderLoop() {
         draw_curvePoints = xmlParser.getCurvePoints(physTotalTime, 100); // Tesselation level;
 
 		renderer.get()->draw(draw_curvePoints, draw_points, draw_objectInfo, projection, *camera.get(), window, deltaTime); // this delta is just to calcualte fps, so it can be the render delta
-		rendered = true;
 #else
         std::unique_lock<std::mutex> lock = std::unique_lock<std::mutex>(mtx);
-			rendered = true;
+			renderer.get()->draw(draw_curvePoints, draw_points, draw_objectInfo, projection, *camera.get(), window, deltaTime); // this delta is just to calcualte fps, so it can be the render delta
         lock.unlock();
-        renderer.get()->draw(draw_curvePoints, draw_points, draw_objectInfo, projection, *camera.get(), window, deltaTime); // this delta is just to calcualte fps, so it can be the render delta
 
 #endif
 
@@ -124,27 +122,26 @@ void Engine::physLoopNonDeterministic () {
 	double totalTime = 0.0;
 
 	while (!kill) {
-		if (rendered) { // the current data has been rendered, ready for new data. since it just uses current time, will always have a correct result
-			frameStartTime = glfwGetTime();
+		frameStartTime = glfwGetTime();
+		// points = ...
+		objectInfo = this->renderer.get()->translateEngineObjectInfo(this->xmlParser.getObjectInfo(totalTime));
+		curvePoints = xmlParser.getCurvePoints(totalTime, 100); // Tesselation level
 
-			// points = ...
-			objectInfo = this->renderer.get()->translateEngineObjectInfo(this->xmlParser.getObjectInfo(totalTime));
-			curvePoints = xmlParser.getCurvePoints(totalTime, 100); // Tesselation level
+		std::unique_lock<std::mutex> lock = std::unique_lock<std::mutex>(mtx);
+			// copy all the buffers into draw buffers
+			draw_points = points;
+			draw_curvePoints = curvePoints;
+			draw_objectInfo = objectInfo;
+		lock.unlock();
 
-			std::unique_lock<std::mutex> lock = std::unique_lock<std::mutex>(mtx);
-				// copy all the buffers into draw buffers
-				draw_points = points;
-				draw_curvePoints = curvePoints;
-				draw_objectInfo = objectInfo;
+		frameEndTime = glfwGetTime();
 
-				rendered = false;
-			lock.unlock();
-
-			frameEndTime = glfwGetTime();
-
-			totalTime += (frameEndTime - frameStartTime) * static_cast<double>(*engine_speed);
-		}
+		totalTime += (frameEndTime - frameStartTime) * static_cast<double>(*engine_speed);
     }
+
+	// signal to renderer that I have exited
+	std::unique_lock<std::mutex> lock = std::unique_lock<std::mutex>(mtx);
+	killCondition.notify_all();
 }
 
 void Engine::physLoopDeterministic () {
@@ -169,7 +166,6 @@ void Engine::physLoopDeterministic () {
 			draw_points = points;
 			draw_curvePoints = curvePoints;
 			draw_objectInfo = objectInfo;
-			rendered = false;
 		lock.unlock();
 
 		frameEndTime = glfwGetTime();
@@ -189,6 +185,10 @@ void Engine::physLoopDeterministic () {
 
 		i++;
     }
+
+	// signal to renderer that I have exited
+	std::unique_lock<std::mutex> lock = std::unique_lock<std::mutex>(mtx);
+	killCondition.notify_all();
 }
 
 void glfw_error_callback(int error, const char* description)
@@ -371,13 +371,18 @@ void Engine::loop() {
 
 #ifndef NO_PHYS_THREAD
 	std::thread physThread(&Engine::physLoopDeterministic, this);
-	physThread.detach();
-
 	// este caso e para espera ativa, nao usado
 	// std::thread physThread(&Engine::physLoopNonDeterministic, this);
-#endif
 
+	physThread.detach();
 	renderLoop();
+
+	// since using 2 threads, catch renderer leaving here before it exits main and destroys the engine
+	std::unique_lock<std::mutex> lock = std::unique_lock<std::mutex>(mtx);
+	killCondition.wait(lock);
+#else
+	renderLoop();
+#endif
 }
 
 Engine::~Engine() {

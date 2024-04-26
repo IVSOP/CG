@@ -16,6 +16,7 @@
 #include "InputHandler.h"
 #include <thread>
 #include <mutex>
+#include <condition_variable>
 
 class Engine {
 public:
@@ -28,8 +29,6 @@ public:
 	void physLoopDeterministic();
 	void physLoopNonDeterministic();
 	void renderLoop();
-
-	bool rendered = false; // sets if the current data has been rendered, so threads can coordinate
 
 	// infro from xml
 	GLdouble windowFov;
@@ -50,6 +49,8 @@ public:
 		std::vector<RendererObjectInfo> draw_objectInfo;
         std::vector<Engine_Object_Curve> curvePoints;
 		std::vector<Engine_Object_Curve> draw_curvePoints;
+
+		std::condition_variable killCondition;
 
 	GLFWwindow *window = nullptr;
 	std::unique_ptr<Camera> camera = nullptr;
