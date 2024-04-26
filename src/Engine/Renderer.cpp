@@ -147,11 +147,13 @@ void Renderer::drawCurves(const glm::mat4 &view, const glm::mat4 &projection,
             // cursed
             std::vector<Vertex>::const_iterator iter = pair.deriv.begin();
 
-            for(; iter < pair.deriv.end() - 1; iter ++) {
-                // Draw lines white
-                const Vertex &v1 = *iter;
-                iter++;
-                const Vertex &v2 = *iter;
+            for(int iter = 0; iter < pair.deriv.size() - 1; iter ++) {
+                // Draw normals
+                Vertex &v1 = pair.deriv[iter++];
+                Vertex &v2 = pair.deriv[iter];
+
+                v1.coords = pair.transform.transformMatrix * v1.coords;
+                v2.coords = pair.transform.transformMatrix * v2.coords;
 
                 normalPoints.emplace_back(v1.coords.x, v1.coords.y, v1.coords.z, 1.0f, 0.0f, 0.0f);
                 const glm::vec3 new_coords = v1.coords + glm::normalize(v2.coords - v1.coords);
