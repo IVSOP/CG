@@ -85,17 +85,17 @@ void Engine::renderLoop() {
 
 
 #ifdef NO_PHYS_THREAD
-		draw_points = points; // copy the buffer
+		// draw_points = points; 
 		draw_objectInfo = this->renderer.get()->translateEngineObjectInfo(this->xmlParser.getObjectInfo(physTotalTime));
-        this->curvePoints = xmlParser.getCurvePoints(physTotalTime, 100); // Tesselation level;
+        draw_curvePoints = xmlParser.getCurvePoints(physTotalTime, 100); // Tesselation level;
 
-		renderer.get()->draw(curvePoints, draw_points, draw_objectInfo, projection, *camera.get(), window, deltaTime); // this delta is just to calcualte fps, so it can be the render delta
+		renderer.get()->draw(draw_curvePoints, draw_points, draw_objectInfo, projection, *camera.get(), window, deltaTime); // this delta is just to calcualte fps, so it can be the render delta
 		rendered = true;
 #else
         std::unique_lock<std::mutex> lock = std::unique_lock<std::mutex>(mtx);
-        renderer.get()->draw(curvePoints, draw_points, draw_objectInfo, projection, *camera.get(), window, deltaTime); // this delta is just to calcualte fps, so it can be the render delta
-		rendered = true;
+			rendered = true;
         lock.unlock();
+        renderer.get()->draw(draw_curvePoints, draw_points, draw_objectInfo, projection, *camera.get(), window, deltaTime); // this delta is just to calcualte fps, so it can be the render delta
 
 #endif
 
@@ -124,15 +124,20 @@ void Engine::physLoopNonDeterministic () {
 	double totalTime = 0.0;
 
 	while (!kill) {
-		if (rendered) { // the current data has been rendered, ready for new data
+		if (rendered) { // the current data has been rendered, ready for new data. since it just uses current time, will always have a correct result
 			frameStartTime = glfwGetTime();
-			std::unique_lock<std::mutex> lock = std::unique_lock<std::mutex>(mtx);
-			draw_points = points; // copy the buffer
-			// draw_objectInfo = objectInfo;
-			draw_objectInfo = this->renderer.get()->translateEngineObjectInfo(this->xmlParser.getObjectInfo(totalTime));
-            curvePoints = xmlParser.getCurvePoints(totalTime, 100); // Tesselation level
 
-			rendered = false;
+			// points = ...
+			objectInfo = this->renderer.get()->translateEngineObjectInfo(this->xmlParser.getObjectInfo(totalTime));
+			curvePoints = xmlParser.getCurvePoints(totalTime, 100); // Tesselation level
+
+			std::unique_lock<std::mutex> lock = std::unique_lock<std::mutex>(mtx);
+				// copy all the buffers into draw buffers
+				draw_points = points;
+				draw_curvePoints = curvePoints;
+				draw_objectInfo = objectInfo;
+
+				rendered = false;
 			lock.unlock();
 
 			frameEndTime = glfwGetTime();
@@ -143,43 +148,46 @@ void Engine::physLoopNonDeterministic () {
 }
 
 void Engine::physLoopDeterministic () {
-    double frameStartTime, frameEndTime, deltaTime; // deltaTime here is only used for sleep and never for the computations
+    double frameStartTime, frameEndTime, deltaTime; // this deltatime is just to know for how long to sleep
+	constexpr GLfloat physDeltaTime = PHYS_STEP; // this is the delta time used in calculations
+	double sleepTarget;
 
 	GLuint i = 0;
     
     while (!kill) {
-		if (rendered) { // the current data has been rendered, ready for new data
-			frameStartTime = glfwGetTime();
-			// printf("%d - frame starting: %lf ", i, frameStartTime);
+		sleepTarget = static_cast<double>(PHYS_STEP / (*engine_speed));
+		frameStartTime = glfwGetTime();
+		// if this runs faster than renderer, more work will be done than can be displayed
+		// alternative would be to skip frames by doing i++, but could cause problems later if frames should not be skipped (due to a physics system, etc)
 
-			std::unique_lock<std::mutex> lock = std::unique_lock<std::mutex>(mtx);
-			draw_points = points; // copy the buffer
-			// draw_objectInfo = objectInfo;
-			draw_objectInfo = this->renderer.get()->translateEngineObjectInfo(this->xmlParser.getObjectInfo(static_cast<float>(i) * PHYS_STEP));
-            curvePoints = xmlParser.getCurvePoints(static_cast<float>(i) * PHYS_STEP, 100); // Tesselation level
+		// points = ...
+		curvePoints = xmlParser.getCurvePoints(static_cast<float>(i) * physDeltaTime, 100); // Tesselation level
+		objectInfo = this->renderer.get()->translateEngineObjectInfo(this->xmlParser.getObjectInfo(static_cast<float>(i) * physDeltaTime));
 
+		std::unique_lock<std::mutex> lock = std::unique_lock<std::mutex>(mtx);
+			// copy all the buffers into draw buffers
+			draw_points = points;
+			draw_curvePoints = curvePoints;
+			draw_objectInfo = objectInfo;
 			rendered = false;
-			lock.unlock();
+		lock.unlock();
 
-			frameEndTime = glfwGetTime();
-			deltaTime = frameEndTime - frameStartTime;
-			// printf("frame ending: %lf delta: %lf", frameEndTime, deltaTime);
-
-			// printf("time is %lf. last frame took %lf\n", currentFrameTime, deltaTime);
+		frameEndTime = glfwGetTime();
+		deltaTime = frameEndTime - frameStartTime;
 
 
-			if (deltaTime < PHYS_STEP) {
-				// const int64_t sleepTime = static_cast<int64_t>((PHYS_STEP - deltaTime) * 10E5); // multiply to get from seconds to microseconds
-				// std::this_thread::sleep_for(std::chrono::microseconds(sleepTime));
-				// printf(" sleeping for %lf\n", PHYS_STEP - deltaTime);
-				const double sleepTime = (PHYS_STEP - deltaTime) * 10E5;
-				usleep(sleepTime);
-			}
-			// double idk = glfwGetTime();
-			//printf("%d - time is now %lf, total elapsed %lf\n", i, idk, idk - frameStartTime);
-
-			i++;
+		// the only thing that engine speed changes is how many steps are taken per second, the steps are still the same
+		// for high engine speeds, might become innacurate
+		if (deltaTime < sleepTarget) {
+			// const int64_t sleepTime = ...
+			// std::this_thread::sleep_for(std::chrono::microseconds(sleepTime));
+			const double sleepTime = (sleepTarget - deltaTime) * 10E5; // multiply to get from seconds to microseconds
+			usleep(sleepTime);
 		}
+		// double end = glfwGetTime();
+		// printf("total time of phys frame was %lf (%lf fps)\n", end - frameStartTime, 1.0 / (end - frameStartTime));
+
+		i++;
     }
 }
 

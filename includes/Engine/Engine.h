@@ -42,11 +42,14 @@ public:
 	int windowHeight;
 
 	std::mutex mtx;
+		// <var> are used by phys thread, copied into draw_<var> to be used in rendering
+		// could be optimized so vectors are switched instead of being deep copied all the time
 		std::vector<Vertex> points;
 		std::vector<Vertex> draw_points;
 		std::vector<RendererObjectInfo> objectInfo;
 		std::vector<RendererObjectInfo> draw_objectInfo;
         std::vector<Engine_Object_Curve> curvePoints;
+		std::vector<Engine_Object_Curve> draw_curvePoints;
 
 	GLFWwindow *window = nullptr;
 	std::unique_ptr<Camera> camera = nullptr;
