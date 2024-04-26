@@ -65,7 +65,8 @@ public:
 
 
 	std::vector<RendererObjectInfo> translateEngineObjectInfo(const std::vector<Engine_Object_Info> &engineObjectInfo);
-	void draw(const std::vector<Engine_Object_Curve>& curvePoints, const std::vector<Vertex> &verts, const std::vector<RendererObjectInfo> &objectInfo, const glm::mat4 &projection, Camera &camera, GLFWwindow * window, GLfloat deltatime); // const
+	// deltas: delta time it took to render, delta time considered for the physics step, delta time taken to calculate the physics
+	void draw(const std::vector<Engine_Object_Curve>& curvePoints, const std::vector<Vertex> &verts, const std::vector<RendererObjectInfo> &objectInfo, const glm::mat4 &projection, Camera &camera, GLFWwindow * window, GLfloat deltaTime, GLfloat physicsDeltaTime, GLfloat physicsProcessingDeltaTime);
 	void drawAxis(const glm::mat4 &model, const glm::mat4 &view, const glm::mat4 &projection);
 	void drawNormals(const glm::mat4 &view, const glm::mat4 &projection, const std::vector<Vertex> &vertices); // vector is copied over on purpose
     void drawCurves(const glm::mat4 &view, const glm::mat4 &projection, const std::vector<Engine_Object_Curve>& points);
@@ -77,7 +78,7 @@ public:
 	void checkFrameBuffer();
 
 private:
-	void prepareFrame(Camera &camera, GLfloat deltatime);
+	void prepareFrame(Camera &camera, GLfloat deltaTime, GLfloat physicsDeltaTime, GLfloat physicsProcessingDeltaTime);
 	void drawLighting(const std::vector<Vertex> &verts, const std::vector<RendererObjectInfo> &objectInfo, const glm::mat4 &projection, const glm::mat4 &view, const Camera &camera); // camera is for debugging
 	void bloomBlur(int passes);
 	void merge();

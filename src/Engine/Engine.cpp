@@ -72,6 +72,7 @@ void handleMouseMov(GLFWwindow *window, double xpos, double ypos) {
 void Engine::renderLoop() {
     double frameStartTime, frameEndTime, deltaTime = PHYS_STEP, physDeltaTime = PHYS_STEP; // starts as PHYS_STEP to prevent errors
 	double physTotalTime = 0.0;
+	double physDeltaTime_renderer_copy, physProcessingDeltaTime_renderer_copy; // for case of using physics thread
 	// deltaTime is actual time taken for the frame, so I can sleep, move the camera etc
 	// phys time can be changed to change the physisc without touching the camera
 
@@ -89,16 +90,17 @@ void Engine::renderLoop() {
 		draw_objectInfo = this->renderer.get()->translateEngineObjectInfo(this->xmlParser.getObjectInfo(physTotalTime));
         draw_curvePoints = xmlParser.getCurvePoints(physTotalTime, 100); // Tesselation level;
 
-		renderer.get()->draw(draw_curvePoints, draw_points, draw_objectInfo, projection, *camera.get(), window, deltaTime); // this delta is just to calcualte fps, so it can be the render delta
+		renderer.get()->draw(draw_curvePoints, draw_points, draw_objectInfo, projection, *camera.get(), window, deltaTime, physDeltaTime, deltaTime); // deltas will be wrong for this case
 #else
         std::unique_lock<std::mutex> lock = std::unique_lock<std::mutex>(mtx);
 			draw_points = points;
 			draw_objectInfo = objectInfo;
 			draw_curvePoints = curvePoints;
+			physDeltaTime_renderer_copy = physDeltaTime_renderer;
+			physProcessingDeltaTime_renderer_copy = physProcessingDeltaTime_renderer;
         lock.unlock();
 		// frame end time here or after??????????????????????????
-		renderer.get()->draw(draw_curvePoints, draw_points, draw_objectInfo, projection, *camera.get(), window, deltaTime); // this delta is just to calcualte fps, so it can be the render delta
-
+		renderer.get()->draw(draw_curvePoints, draw_points, draw_objectInfo, projection, *camera.get(), window, deltaTime, physDeltaTime_renderer_copy, physProcessingDeltaTime_renderer_copy);
 #endif
 
         frameEndTime = glfwGetTime();
@@ -121,7 +123,7 @@ void Engine::renderLoop() {
 }
 
 void Engine::physLoopNonDeterministic () {
-	double frameStartTime, frameEndTime;
+	double frameStartTime, frameEndTime, deltaTime = 0.0f;
 	double totalTime = 0.0;
 
 	phys_points = points;
@@ -137,9 +139,12 @@ void Engine::physLoopNonDeterministic () {
 			points = phys_points;
 			curvePoints = phys_curvePoints;
 			objectInfo = phys_objectInfo;
+			physDeltaTime_renderer = deltaTime;
+			physProcessingDeltaTime_renderer = deltaTime;
 		lock.unlock();
 
 		frameEndTime = glfwGetTime();
+		deltaTime = frameEndTime - frameStartTime;
 
 		totalTime += (frameEndTime - frameStartTime) * static_cast<double>(*engine_speed);
     }
@@ -150,7 +155,7 @@ void Engine::physLoopNonDeterministic () {
 }
 
 void Engine::physLoopDeterministic () {
-    double frameStartTime, frameEndTime, deltaTime; // this deltatime is just to know for how long to sleep
+    double frameStartTime, frameEndTime, deltaTime = PHYS_STEP; // this deltatime is just to know for how long to sleep
 	constexpr GLfloat physDeltaTime = PHYS_STEP; // this is the delta time used in calculations
 	double sleepTarget;
 
@@ -174,6 +179,8 @@ void Engine::physLoopDeterministic () {
 				points = phys_points;
 				curvePoints = phys_curvePoints;
 				objectInfo = phys_objectInfo;
+				physDeltaTime_renderer = physDeltaTime;
+				physProcessingDeltaTime_renderer = deltaTime;
 			lock.unlock();
 
 			frameEndTime = glfwGetTime();
@@ -192,7 +199,12 @@ void Engine::physLoopDeterministic () {
 			// printf("total time of phys frame was %lf (%lf fps)\n", end - frameStartTime, 1.0 / (end - frameStartTime));
 
 			i++;
+
+			// just so that debug info is correct
+			frameEndTime = glfwGetTime();
+			deltaTime = frameEndTime - frameStartTime;
 		}
+		physProcessingDeltaTime_renderer = INFINITY; // so debug shows as 0
     }
 
 	// signal to renderer that I have exited

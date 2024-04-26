@@ -75,6 +75,11 @@ public:
 		volatile bool kill = false; // estava a ter um bug quantico em que isto nao dava se eu nao desse print ao valor
 		// experimentar usar a lock cada vez que quero ler o kill, mas podia ter pior performance
 		// ou entao std::atomic<bool>
+
+#if not defined(NO_PHYS_THREAD)
+	GLfloat physDeltaTime_renderer = 0.0f;
+	GLfloat physProcessingDeltaTime_renderer = 0.0f;
+#endif
 };
 
 #endif

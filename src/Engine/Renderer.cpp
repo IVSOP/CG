@@ -379,7 +379,7 @@ GLfloat Renderer::getTextureID(const std::string &name) {
     // tex->addTexture("test_files_phase_4/teapot.jpg"); // 9
 }
 
-void Renderer::prepareFrame(Camera &camera, GLfloat deltaTime) {
+void Renderer::prepareFrame(Camera &camera, GLfloat deltaTime, GLfloat physicsDeltaTime, GLfloat physicsProcessingDeltaTime) {
 	ImGui_ImplOpenGL3_NewFrame();
 	ImGui_ImplGlfw_NewFrame();
 	ImGui::NewFrame();
@@ -387,6 +387,8 @@ void Renderer::prepareFrame(Camera &camera, GLfloat deltaTime) {
 	ImGui::Begin("Debug");
 	// ImGui::ShowDemoWindow();
 	ImGui::Text("FPS: %lf", 1.0f / deltaTime);
+	ImGui::Text("Physics FPS: %lf", 1.0f / physicsDeltaTime);
+	ImGui::Text("Physics processing FPS: %lf", 1.0f / physicsProcessingDeltaTime);
 	ImGui::Text("Facing x:%f y:%f z:%f", camera.Front.x, camera.Front.y, camera.Front.z);
 	ImGui::InputFloat3("Position", glm::value_ptr(camera.Position));
 	ImGui::SliderFloat("##Camera_speed", &camera.MovementSpeed, 0.0f, 1000.0f, "Camera speed = %.3f");
@@ -653,8 +655,8 @@ std::vector<RendererObjectInfo> Renderer::translateEngineObjectInfo(const std::v
 	return objectInfo;
 }
 
-void Renderer::draw(const std::vector<Engine_Object_Curve>& curvePoints, const std::vector<Vertex> &verts, const std::vector<RendererObjectInfo> &objectInfo, const glm::mat4 &projection, Camera &camera, GLFWwindow * window, GLfloat deltaTime) {
-	prepareFrame(camera, deltaTime);
+void Renderer::draw(const std::vector<Engine_Object_Curve>& curvePoints, const std::vector<Vertex> &verts, const std::vector<RendererObjectInfo> &objectInfo, const glm::mat4 &projection, Camera &camera, GLFWwindow * window, GLfloat deltaTime, GLfloat physicsDeltaTime, GLfloat physicsProcessingDeltaTime) {
+	prepareFrame(camera, deltaTime, physicsDeltaTime, physicsProcessingDeltaTime);
 	const glm::mat4 view = camera.GetViewMatrix();
 	drawLighting(verts, objectInfo, projection, view, camera);
 
