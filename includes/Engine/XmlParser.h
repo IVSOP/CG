@@ -6,6 +6,7 @@
 #include "Engine_Object.h"
 #include "tinyxml2.h"
 #include "Transformation.h"
+#include "RendererObjectInfo.h" // just for the sun
 
 #include <vector>
 #include <map>
@@ -118,6 +119,11 @@ public:
     std::vector<std::vector<Vertex>> getPoints();
     std::vector<Engine_Object_Info> getObjectInfo(float t);
     std::vector<Engine_Object_Curve> getCurvePoints(float t, int tesselation_level);
+
+
+	// sun
+	RendererObjectInfo sunInfo;
+	std::vector<SunVertex> sunVertices;
 };
 
 

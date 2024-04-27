@@ -90,7 +90,11 @@ void Engine::renderLoop() {
 		draw_objectInfo = this->renderer.get()->translateEngineObjectInfo(this->xmlParser.getObjectInfo(physTotalTime));
         draw_curvePoints = xmlParser.getCurvePoints(physTotalTime, 100); // Tesselation level;
 
-		renderer.get()->draw(draw_curvePoints, draw_points, draw_objectInfo, projection, *camera.get(), window, deltaTime, physDeltaTime, deltaTime); // deltas will be wrong for this case
+		renderer.get()->draw(draw_curvePoints, draw_points, draw_objectInfo,
+			xmlParser.sunVertices, xmlParser.sunInfo, physTotalTime,
+			projection, *camera.get(), window,
+			physTotalTime,
+			deltaTime, physDeltaTime, deltaTime); // deltas will be wrong for this case
 #else
         std::unique_lock<std::mutex> lock = std::unique_lock<std::mutex>(mtx);
 			draw_points = points;
@@ -100,7 +104,10 @@ void Engine::renderLoop() {
 			physProcessingDeltaTime_renderer_copy = physProcessingDeltaTime_renderer;
         lock.unlock();
 		// frame end time here or after??????????????????????????
-		renderer.get()->draw(draw_curvePoints, draw_points, draw_objectInfo, projection, *camera.get(), window, deltaTime, physDeltaTime_renderer_copy, physProcessingDeltaTime_renderer_copy);
+		renderer.get()->draw(draw_curvePoints, draw_points, draw_objectInfo,
+			xmlParser.sunVertices, xmlParser.sunInfo, physTotalTime, // time not entirely accurate but good enough for now
+			projection, *camera.get(), window,
+			deltaTime, physDeltaTime_renderer_copy, physProcessingDeltaTime_renderer_copy);
 #endif
 
         frameEndTime = glfwGetTime();

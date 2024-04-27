@@ -30,6 +30,7 @@ struct Vertex {
     Vertex(float x, float y, float z) : coords(x, y, z, 1.0f) {}
 
     Vertex(glm::vec4 coords, glm::vec3 normal, glm::vec2 tex_coord) : coords(coords), normal(normal), tex_coord(tex_coord) {}
+	Vertex(glm::vec4 coords, glm::vec3 normal, glm::vec2 tex_coord, GLint _object_id) : coords(coords), normal(normal), tex_coord(tex_coord), object_id(_object_id) {}
 
     Vertex() = default;
 
@@ -55,6 +56,14 @@ struct ViewportVertex {
 	glm::vec2 tex_coord = glm::vec2(0.0f, 0.0f);
 
 	ViewportVertex(float x, float y, float z, float tex_x, float tex_y) : coords(x, y, z, 1.0f), tex_coord(tex_x, tex_y) {}
+};
+
+struct SunVertex {
+	glm::vec4 coords = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+	glm::vec2 tex_coord = glm::vec2(0.0f, 0.0f);
+
+	SunVertex(const Vertex &vertex)
+	: coords(vertex.coords), tex_coord(vertex.tex_coord) {}
 };
 
 #endif //CG_VERTEX_H

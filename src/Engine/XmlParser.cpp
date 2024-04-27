@@ -162,6 +162,15 @@ std::vector<std::pair<Engine_Object_Materials, std::vector<Vertex>>> XmlParser::
             continue;
         }
 
+		if (name == "sun") {
+			for (const Vertex &vertex : this->parseVertex(node)) {
+				this->sunVertices.push_back(vertex);
+			}
+			this->sunInfo = RendererObjectInfo(0.0f, Engine_Object_Info(this->parseEngineObjectMaterials(node), Transformation())); // FALTA AQUI A TRANSFORMATION
+
+			continue;
+		}
+
         perror("Found unrecognized tag inside a models tag.");
         std::cout << name << std::endl;
     }

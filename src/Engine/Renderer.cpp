@@ -189,6 +189,7 @@ void Renderer::drawNormals(const glm::mat4 &view, const glm::mat4 &projection, c
 Renderer::Renderer(GLsizei viewport_width, GLsizei viewport_height)
 : viewport_width(viewport_width), viewport_height(viewport_height), VAO(0), vertexBuffer(0),
   lightingShader("shaders/lighting_extract_brightness_with_gs.vert", "shaders/lighting_extract_brightness_with_gs.frag", "shaders/explode.gs"),
+  sunShader("shaders/sun.vert", "shaders/sun.frag", "shaders/sun.gs"),
   axisShader("shaders/basic.vert", "shaders/basic.frag"),
   normalsShader("shaders/normals.vert", "shaders/normals.frag", "shaders/normals.gs"),
   blurShader("shaders/blur.vert", "shaders/blur.frag"),
@@ -222,6 +223,26 @@ Renderer::Renderer(GLsizei viewport_width, GLsizei viewport_height)
 		GLCall(glEnableVertexAttribArray(vertex_matid_layout));					// size appart				// offset
 		GLCall(glVertexAttribIPointer(vertex_matid_layout, 1, GL_INT, sizeof(Vertex), (const void *)offsetof(Vertex, object_id)));
 		// GLCall(glVertexAttribDivisor(vertex_color_layout, 0)); // values are per triangle, but I am not using instancing
+	}
+
+	//////////////////////////// LOADING VAO  FOR SUN ////////////////////////////
+	GLCall(glGenVertexArrays(1, &this->VAO_sun));
+	GLCall(glBindVertexArray(this->VAO_sun));
+
+	//////////////////////////// LOADING VBO ////////////////////////////////
+	GLCall(glGenBuffers(1, &this->vertexBuffer_sun));
+	GLCall(glBindBuffer(GL_ARRAY_BUFFER, this->vertexBuffer_sun));
+	// GLCall(glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW));
+	{
+		GLuint vertex_position_layout = 0;
+		GLCall(glEnableVertexAttribArray(vertex_position_layout));					// size appart				// offset
+		GLCall(glVertexAttribPointer(vertex_position_layout, 4, GL_FLOAT, GL_FALSE, sizeof(SunVertex), (const void *)offsetof(SunVertex, coords)));
+		// GLCall(glVertexAttribDivisor(vertex_position_layout, 0)); // values are per vertex
+
+		GLuint vertex_texcoord_layout = 1;
+		GLCall(glEnableVertexAttribArray(vertex_texcoord_layout));					// size appart				// offset
+		GLCall(glVertexAttribPointer(vertex_texcoord_layout, 2, GL_FLOAT, GL_FALSE, sizeof(SunVertex), (const void *)offsetof(SunVertex, tex_coord)));
+		// GLCall(glVertexAttribDivisor(vertex_color_layout, 0)); // values are per vertex
 	}
 
 	//////////////////////////// LOADING VAO FOR AXIS ////////////////////////////
@@ -441,24 +462,6 @@ void Renderer::drawLighting(const std::vector<Vertex> &verts, const std::vector<
 
 		lightingShader.setFloat("u_BloomThreshold", bloomThreshold);
 
-		// Material materials[8];
-		// materials[0] = {
-		// 	glm::vec3(1.0f, 1.0f, 1.0f),
-		// 	glm::vec3(1.0f, 1.0f, 1.0f),
-		// 	glm::vec3(1.0f, 1.0f, 1.0f),
-		// 	// glm::vec3(2.99f, 0.72f, 0.0745f),
-		// 	glm::vec3(0.1f),
-		// 	32.0f,
-		// 	9
-		// };
-
-		// GLCall(glBindBuffer(GL_TEXTURE_BUFFER, materialBuffer));
-		// GLCall(glBufferData(GL_TEXTURE_BUFFER, MAX_MATERIALS * sizeof(Material), materials, GL_STATIC_DRAW));
-		// GLCall(glActiveTexture(GL_TEXTURE0 + MATERIAL_TEXTURE_BUFFER_SLOT));
-		// GLCall(glBindTexture(GL_TEXTURE_BUFFER, materialTBO));
-		// // GLCall(glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, materialBuffer)); // bind the buffer to the texture (has been done while setting up)
-		// lightingShader.setInt("u_MaterialTBO", MATERIAL_TEXTURE_BUFFER_SLOT);
-
 		GLCall(glBindBuffer(GL_TEXTURE_BUFFER, objectInfoBuffer));
 		GLCall(glBufferData(GL_TEXTURE_BUFFER, sizeof(RendererObjectInfo) * objectInfo.size(), objectInfo.data(), GL_STATIC_DRAW));
 		GLCall(glActiveTexture(GL_TEXTURE0 + OBJECT_INFO_TEXTURE_BUFFER_SLOT));
@@ -555,6 +558,51 @@ void Renderer::drawLighting(const std::vector<Vertex> &verts, const std::vector<
 		}
 
 		// GLCall(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
+}
+
+void Renderer::drawSun(const std::vector<SunVertex> &verts, const RendererObjectInfo &sunInfo, const glm::mat4 &projection, const glm::mat4 &view, GLfloat totalTime) {
+	GLCall(glBindFramebuffer(GL_FRAMEBUFFER, lightingFBO));
+		GLCall(glBindVertexArray(this->VAO_sun));
+		GLCall(glBindBuffer(GL_ARRAY_BUFFER, this->vertexBuffer_sun));
+
+		// load vertices
+		GLCall(glBufferData(GL_ARRAY_BUFFER, verts.size() * sizeof(Vertex), verts.data(), GL_STATIC_DRAW));
+
+		// bind program, load uniforms
+		sunShader.use();
+
+
+		this->textureArray.get()->setTextureArrayToSlot(TEX_ARRAY_SLOT);
+		sunShader.setInt("u_TextureArraySlot", TEX_ARRAY_SLOT);
+		sunShader.setMat4("u_View", view);
+		sunShader.setMat4("u_Projection", projection);
+
+		sunShader.setFloat("u_BloomThreshold", bloomThreshold);
+
+		GLCall(glBindBuffer(GL_TEXTURE_BUFFER, objectInfoBuffer));
+		GLCall(glBufferData(GL_TEXTURE_BUFFER, sizeof(RendererObjectInfo) * 1, &sunInfo, GL_STATIC_DRAW));
+		GLCall(glActiveTexture(GL_TEXTURE0 + OBJECT_INFO_TEXTURE_BUFFER_SLOT));
+		GLCall(glBindTexture(GL_TEXTURE_BUFFER, objectInfoTBO));
+		// GLCall(glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, materialBuffer)); // bind the buffer to the texture (has been done while setting up)
+		sunShader.setInt("u_ObjectInfoTBO", OBJECT_INFO_TEXTURE_BUFFER_SLOT);
+
+		sunShader.setFloat("u_Time", totalTime);
+
+
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, lightingFBODepthBuffer);
+
+		constexpr GLuint attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
+		GLCall(glDrawBuffers(2, attachments));
+
+		if (explode) {
+			sunShader.setFloat("u_ExplodeCoeff", explodeCoeff);
+		} else {
+			if (explodeCoeff > 0.0f) {
+				lightingShader.setFloat("u_ExplodeCoeff", 0.0f);
+			}
+		}
+
+		GLCall(glDrawArrays(GL_TRIANGLES, 0, verts.size()));
 }
 
 void Renderer::bloomBlur(int passes) {
@@ -657,10 +705,14 @@ std::vector<RendererObjectInfo> Renderer::translateEngineObjectInfo(const std::v
 	return objectInfo;
 }
 
-void Renderer::draw(const std::vector<Engine_Object_Curve>& curvePoints, const std::vector<Vertex> &verts, const std::vector<RendererObjectInfo> &objectInfo, const glm::mat4 &projection, Camera &camera, GLFWwindow * window, GLfloat deltaTime, GLfloat physicsDeltaTime, GLfloat physicsProcessingDeltaTime) {
+void Renderer::draw(const std::vector<Engine_Object_Curve>& curvePoints, const std::vector<Vertex> &verts, const std::vector<RendererObjectInfo> &objectInfo,
+		const std::vector<SunVertex> &sun_verts, const RendererObjectInfo &sunInfo, GLfloat totalTime,
+		const glm::mat4 &projection, Camera &camera, GLFWwindow * window, GLfloat deltaTime, GLfloat physicsDeltaTime, GLfloat physicsProcessingDeltaTime) {
+
 	prepareFrame(camera, deltaTime, physicsDeltaTime, physicsProcessingDeltaTime);
 	const glm::mat4 view = camera.GetViewMatrix();
 	drawLighting(verts, objectInfo, projection, view, camera);
+	drawSun(sun_verts, sunInfo, projection, view, totalTime);
 
 	if (showCurves) {
     	drawCurves(view, projection, curvePoints);

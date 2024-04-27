@@ -30,9 +30,9 @@ public:
 
 
 	// lighting FBO into wich scene gets rendered normally, but bright colors are extracted for bloom
-	GLuint VAO, VAO_axis;
-	GLuint vertexBuffer, vertexBuffer_axis;
-	Shader lightingShader, axisShader, normalsShader;
+	GLuint VAO, VAO_sun, VAO_axis;
+	GLuint vertexBuffer, vertexBuffer_sun, vertexBuffer_axis;
+	Shader lightingShader, sunShader, axisShader, normalsShader;
 	GLuint lightingFBO = 0, lightingFBODepthBuffer = 0;
 	GLuint lightingTexture = 0; // color atttachment 0, scene renders into this
 	GLuint brightTexture = 0; // color atttachment 1, extraction of brightly lit areas
@@ -66,10 +66,9 @@ public:
 
 	std::vector<RendererObjectInfo> translateEngineObjectInfo(const std::vector<Engine_Object_Info> &engineObjectInfo);
 	// deltas: delta time it took to render, delta time considered for the physics step, delta time taken to calculate the physics
-	void draw(const std::vector<Engine_Object_Curve>& curvePoints, const std::vector<Vertex> &verts, const std::vector<RendererObjectInfo> &objectInfo, const glm::mat4 &projection, Camera &camera, GLFWwindow * window, GLfloat deltaTime, GLfloat physicsDeltaTime, GLfloat physicsProcessingDeltaTime);
-	void drawAxis(const glm::mat4 &model, const glm::mat4 &view, const glm::mat4 &projection);
-	void drawNormals(const glm::mat4 &view, const glm::mat4 &projection, const std::vector<Vertex> &vertices); // vector is copied over on purpose
-    void drawCurves(const glm::mat4 &view, const glm::mat4 &projection, const std::vector<Engine_Object_Curve>& points);
+	void draw(const std::vector<Engine_Object_Curve>& curvePoints, const std::vector<Vertex> &verts, const std::vector<RendererObjectInfo> &objectInfo,
+		const std::vector<SunVertex> &sun_verts, const RendererObjectInfo &sunInfo, GLfloat totalTime,
+		const glm::mat4 &projection, Camera &camera, GLFWwindow * window, GLfloat deltaTime, GLfloat physicsDeltaTime, GLfloat physicsProcessingDeltaTime);
 
 	GLfloat getTextureID(const std::string &name); // will load it into the texture buffer if it is not in the map
 	void resizeViewport(GLsizei viewport_width, GLsizei viewport_height);
@@ -80,6 +79,10 @@ public:
 private:
 	void prepareFrame(Camera &camera, GLfloat deltaTime, GLfloat physicsDeltaTime, GLfloat physicsProcessingDeltaTime);
 	void drawLighting(const std::vector<Vertex> &verts, const std::vector<RendererObjectInfo> &objectInfo, const glm::mat4 &projection, const glm::mat4 &view, const Camera &camera); // camera is for debugging
+	void drawSun(const std::vector<SunVertex> &verts, const RendererObjectInfo &sunInfo, const glm::mat4 &projection, const glm::mat4 &view, GLfloat totalTime);
+	void drawAxis(const glm::mat4 &model, const glm::mat4 &view, const glm::mat4 &projection);
+	void drawNormals(const glm::mat4 &view, const glm::mat4 &projection, const std::vector<Vertex> &vertices); // vector is copied over on purpose
+    void drawCurves(const glm::mat4 &view, const glm::mat4 &projection, const std::vector<Engine_Object_Curve>& points);
 	void bloomBlur(int passes);
 	void merge();
 	void endFrame(GLFWwindow * window);
