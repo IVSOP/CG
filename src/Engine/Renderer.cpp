@@ -406,6 +406,9 @@ void Renderer::prepareFrame(Camera &camera, GLfloat deltaTime, GLfloat physicsDe
 	ImGui::Checkbox("Show curves", &showCurves);
 	ImGui::Checkbox("Show curve normals", &showCurveNormals);
 	ImGui::Checkbox("Explode", &explode);
+	if (explode) {
+		ImGui::SliderFloat("explodeCoeff", &explodeCoeff, 0.0f, 10.0f, "explodeCoeff = %.3f");
+	}
 	ImGui::SliderFloat("##Engine speed", &engine_speed, 0.0f, 100.0f, "engine speed = %.3f");
 	ImGui::SameLine();
 	ImGui::InputFloat("Engine speed", &engine_speed, 1.0f, 100.0f);
@@ -532,9 +535,8 @@ void Renderer::drawLighting(const std::vector<Vertex> &verts, const std::vector<
 		constexpr GLuint attachments[2] = { GL_COLOR_ATTACHMENT0, GL_COLOR_ATTACHMENT1 };
 		GLCall(glDrawBuffers(2, attachments));
 
-		lightingShader.setFloat("u_ExplodeCoeff", explodeCoeff);
 		if (explode) {
-			ImGui::SliderFloat("explodeCoeff", &explodeCoeff, 0.0f, 10.0f, "explodeCoeff = %.3f");
+			lightingShader.setFloat("u_ExplodeCoeff", explodeCoeff);
 		} else {
 			if (explodeCoeff > 0.0f) {
 				lightingShader.setFloat("u_ExplodeCoeff", 0.0f);
