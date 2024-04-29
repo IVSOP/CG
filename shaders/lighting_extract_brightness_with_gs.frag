@@ -86,7 +86,8 @@ void main() {
 	vec4 res_color = vec4(0.0, 0.0, 0.0, 1.0);
 
 	// normal and viewDir
-	// !!!!!!!!!!!!!!!!!!!!!!!!!! IMPORTANTE tudo em view space	vec3 viewDir = normalize(-fs_in.g_FragPos); // the viewer is always at (0,0,0) in view-space, so viewDir = (0,0,0) - FragPosition <=> viewDir = -FragPosition
+	// !!!!!!!!!!!!!!!!!!!!!!!!!! IMPORTANTE tudo em view space
+	vec3 viewDir = normalize(-fs_in.g_FragPos); // the viewer is always at (0,0,0) in view-space, so viewDir = (0,0,0) - FragPosition <=> viewDir = -FragPosition
 	vec3 normal = normalize(fs_in.g_Normal);
 
 	
