@@ -504,23 +504,34 @@ void Renderer::drawLighting(const std::vector<Vertex> &verts, const std::vector<
 		GLCall(glBindTexture(GL_TEXTURE_BUFFER, dirLightTBO));
 		// GLCall(glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, pointLightBuffer)); // bind the buffer to the texture (has been done while setting up)
 		lightingShader.setInt("u_DirLightTBO", DIRLIGHT_TEXTURE_BUFFER_SLOT);
-		lightingShader.setInt("u_NumDirLights", 1);
+		lightingShader.setInt("u_NumDirLights", 0);
 
 		SpotLight spotLights[MAX_LIGHTS];
 		spotLights[0] = {
-			.position = camera.Position,
-			// .position = glm::vec3(0.0f, 1.0f, 3.0f),
-			.direction = camera.Front,
-			// .direction = glm::vec3(0.0f, -0.25f, -0.97f),
-			.cutOff = glm::cos(glm::radians(12.5f)),
-			.outerCutOff = glm::cos(glm::radians(17.5f)),
+			// .position = camera.Position,
+			// // .position = glm::vec3(0.0f, 1.0f, 3.0f),
+			// .direction = camera.Front,
+			// // .direction = glm::vec3(0.0f, -0.25f, -0.97f),
+			// .cutOff = glm::cos(glm::radians(12.5f)),
+			// .outerCutOff = glm::cos(glm::radians(17.5f)),
+			// .constant = 1.0f,
+			// .linear = 0.09f,
+			// .quadratic = 0.032f,
+			// .ambient = glm::vec3(0.1f, 0.1f, 0.1f),
+			// .diffuse = glm::vec3(0.8f, 0.8f, 0.8f),
+			// .specular = glm::vec3(1.0f, 1.0f, 1.0f)
+			.position = glm::vec3(0.0f, 2.0f, 4.0f),
+			.direction = glm::normalize(glm::vec3(0.0f, -2.0f, -4.0f)),
+			.cutOff = glm::cos(glm::radians(0.0f)),
+			.outerCutOff = glm::cos(glm::radians(10.0f)),
 			.constant = 1.0f,
 			.linear = 0.09f,
 			.quadratic = 0.032f,
-			.ambient = glm::vec3(0.1f, 0.1f, 0.1f),
-			.diffuse = glm::vec3(0.8f, 0.8f, 0.8f),
-			.specular = glm::vec3(1.0f, 1.0f, 1.0f)
+			.ambient = glm::vec3(1.0f),
+			.diffuse = glm::vec3(1.0f),
+			.specular = glm::vec3(1.0f)
 		};
+		// <light type="spot" posx="0" posy="2" posz="4" dirx="0" diry="-2" dirz="-4" cutoff="10"/>
 
 		GLCall(glBindBuffer(GL_TEXTURE_BUFFER, spotLightBuffer));
 		GLCall(glBufferData(GL_TEXTURE_BUFFER, MAX_LIGHTS * sizeof(SpotLight), spotLights, GL_STATIC_DRAW));
@@ -528,7 +539,7 @@ void Renderer::drawLighting(const std::vector<Vertex> &verts, const std::vector<
 		GLCall(glBindTexture(GL_TEXTURE_BUFFER, spotLightTBO));
 		// GLCall(glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, spotLightBuffer)); // bind the buffer to the texture (has been done while setting up)
 		lightingShader.setInt("u_SpotLightTBO", SPOTLIGHT_TEXTURE_BUFFER_SLOT);
-		lightingShader.setInt("u_NumSpotLights", 0);
+		lightingShader.setInt("u_NumSpotLights", 1);
 
 		// bind the render buffer to this FBO (maybe this is missing actualy binding it, idk, but it gets regenerated automatically when screen is resized)
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, lightingFBODepthBuffer);

@@ -93,7 +93,6 @@ void Engine::renderLoop() {
 		renderer.get()->draw(draw_curvePoints, draw_points, draw_objectInfo,
 			xmlParser.sunVertices, xmlParser.sunInfo, physTotalTime,
 			projection, *camera.get(), window,
-			physTotalTime,
 			deltaTime, physDeltaTime, deltaTime); // deltas will be wrong for this case
 #else
         std::unique_lock<std::mutex> lock = std::unique_lock<std::mutex>(mtx);
