@@ -24,9 +24,11 @@ find_package(OpenGL REQUIRED)
 if (LINUX_TO_WINDOWS)
 	include_directories(external/glew/include)
 	link_directories(
-		external/glew/lib/Release/Win32/
-		external/glew/bin/Release/Win32/
+		external/glew/lib/Release/x64/
+		external/glew/bin/Release/x64/
 	)
+	file(COPY external/glew/bin/Release/x64/glew32.dll DESTINATION ${CMAKE_BINARY_DIR})
+
 else (LINUX_TO_WINDOWS)
 	if (WIN32)
 
