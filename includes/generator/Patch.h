@@ -13,10 +13,10 @@ public:
     static std::vector<Vertex> tessellatePatches(std::vector<std::vector<Vertex>>& patches, int divisions);
     static std::vector<Vertex> dividePatch(std::vector<Vertex>& patch, int divisions);
 
-    static Vertex interpolateVertex(Vertex& p0, Vertex& p1, Vertex& p2, Vertex& p3, float t,float u, float v);
-    static Vertex interpolateVertex(Vertex& p0, Vertex& p1, Vertex& p2, Vertex& p3, float t);
-
     static void writePatchesToFile(std::vector<std::vector<Vertex>>& patches, std::string& filename);
+
+    static Vertex calculatePatchPoint(std::vector<Vertex>& patch, float v, float u);
+    static float interpolateCoords(std::vector<Vertex>& patch, glm::mat4& bezierM, glm::mat4& bezierMT, glm::vec4& uM, glm::vec4& vM, int coord);
 };
 
 

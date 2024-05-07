@@ -100,3 +100,33 @@ glm::mat2 Consts::rotMatrix2D(float angle){
 
     return ans;
 }
+
+glm::mat4 Consts::bezierCoefficients(){
+    glm::mat4 bezierMatrix = glm::mat4(1.0f);
+
+    // First row
+    bezierMatrix[0][0] = -1;
+    bezierMatrix[0][1] = 3;
+    bezierMatrix[0][2] = -3;
+    bezierMatrix[0][3] = 1;
+
+    // Second row
+    bezierMatrix[1][0] = 3;
+    bezierMatrix[1][1] = -6;
+    bezierMatrix[1][2] = 3;
+    bezierMatrix[1][3] = 0;
+
+    // Third row
+    bezierMatrix[2][0] = -3;
+    bezierMatrix[2][1] = 3;
+    bezierMatrix[2][2] = 0;
+    bezierMatrix[2][3] = 0;
+
+    // Forth row
+    bezierMatrix[3][0] = 1;
+    bezierMatrix[3][1] = 0;
+    bezierMatrix[3][2] = 0;
+    bezierMatrix[3][3] = 0;
+
+    return bezierMatrix;
+}

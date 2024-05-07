@@ -134,6 +134,7 @@ void Patch::writePatchesToFile(std::vector<std::vector<Vertex>>& patches, std::s
     }
     outFile.close();
 }
+
 /*
  * Produce object using each of the given patches
  * */
@@ -158,7 +159,6 @@ std::vector<Vertex> Patch::dividePatch(std::vector<Vertex>& patch, int divisions
     std::vector<Vertex> ans = std::vector<Vertex>();
     std::vector<Vertex> prevPoints = std::vector<Vertex>();
     std::vector<Vertex> curPoints = std::vector<Vertex>();
-    std::vector<Vertex> curvePoints = std::vector<Vertex>();
 
     float u, v;
 
@@ -166,13 +166,6 @@ std::vector<Vertex> Patch::dividePatch(std::vector<Vertex>& patch, int divisions
     for(int i = 0; i <= divisions; i++){
         v = static_cast<float>(i) / divisions;
         curPoints.clear();
-        curvePoints.clear();
-
-        // Calculate control points of bezier curve defined by v
-        // For each curve of the patch, calculate P(v) (walk through the current curve until you reach v value and store the point)
-        for(int k = 0; k < 4; k++){
-            curvePoints.emplace_back(interpolateVertex(patch[4*k], patch[4*k + 1], patch[4*k + 2], patch[4*k + 3], v));
-        }
 
         // Traverse each u value
         for(int j = 0; j <= divisions; j++){
@@ -180,7 +173,7 @@ std::vector<Vertex> Patch::dividePatch(std::vector<Vertex>& patch, int divisions
 
             // With the 4 control points obtained (1 for each previous curve), define a new curve and calculate P(u) on the given curve
             // Equivalent to calculate P(u, v)
-            curPoints.emplace_back(interpolateVertex(curvePoints[0], curvePoints[1], curvePoints[2], curvePoints[3], u, u, v));
+            curPoints.emplace_back(calculatePatchPoint(patch, v, u));
         }
 
         // Calculate and store triangles that constitute the new object
@@ -195,16 +188,16 @@ std::vector<Vertex> Patch::dividePatch(std::vector<Vertex>& patch, int divisions
                 // Triangle  |‾/
                 //           |/
 
-                ans.emplace_back(curV);
-                ans.emplace_back(rightV);
                 ans.emplace_back(rightDownV);
+                ans.emplace_back(rightV);
+                ans.emplace_back(curV);
 
                 // Triangle  /|
                 //          /_|
 
-                ans.emplace_back(rightDownV);
-                ans.emplace_back(downV);
                 ans.emplace_back(curV);
+                ans.emplace_back(downV);
+                ans.emplace_back(rightDownV);
             }
         }
 
@@ -215,99 +208,50 @@ std::vector<Vertex> Patch::dividePatch(std::vector<Vertex>& patch, int divisions
     return ans;
 }
 
-/*
- * Calculate P(v) for current curve of the patch
- *
- * Simple version because point's normal and texture coordinates are meaningless
- * */
-Vertex Patch::interpolateVertex(Vertex& p0, Vertex& p1, Vertex& p2, Vertex& p3, float t){
-    float mt = 1-t;
+float Patch::interpolateCoords(std::vector<Vertex>& patch, glm::mat4& bezierM, glm::mat4& bezierMT, glm::vec4& uM, glm::vec4& vM, int coord){
+    glm::mat4 points = glm::mat4();
+    float ans = 0;
+    glm::vec4 tmp;
 
-    // Bernstein polynomials
-    float coordX = pow(mt, 3) * p0.coords.x + 3.0f * pow(mt, 2) * t * p1.coords.x + 3.0f * mt * pow(t, 2) * p2.coords.x + pow(t, 3) * p3.coords.x;
-    float coordY = pow(mt, 3) * p0.coords.y + 3.0f * pow(mt, 2) * t * p1.coords.y + 3.0f * mt * pow(t, 2) * p2.coords.y + pow(t, 3) * p3.coords.y;
-    float coordZ = pow(mt, 3) * p0.coords.z + 3.0f * pow(mt, 2) * t * p1.coords.z + 3.0f * mt * pow(t, 2) * p2.coords.z + pow(t, 3) * p3.coords.z;
+    for(int i = 0; i < patch.size(); i++){
+        points[i/4][i%4] = patch[i].coords[coord];
+    }
 
-    return Vertex(coordX, coordY, coordZ);
+    tmp = uM * bezierM * points * bezierMT;
+
+    for(int i = 0; i < 4; i++){
+        ans += tmp[i] * vM[i];
+    }
+
+    return ans;
 }
 
-/*
- * Calculate P(u) for new bezier curve (result of the calculated control points P(v) )
- *
- * More complex version: gives coordinates, normal and texture coordinates
- * */
-Vertex Patch::interpolateVertex(Vertex& p0, Vertex& p1, Vertex& p2, Vertex& p3, float t, float u, float v){
-    float mt = 1-t;
+Vertex Patch::calculatePatchPoint(std::vector<Vertex>& patch, float v, float u){
+    glm::vec4 coords = glm::vec4();
+    glm::vec2 text = glm::vec2(1 - v, 1 - u);
+    glm::vec3 normal = glm::vec3();
 
-    // Using Bernstein Polynomial to calculate P(u)
-    // Final result will be equivalent to the method taught in class
+    glm::vec4 uM = glm::vec4(powf(u, 3), powf(u, 2), u, 1);
+    glm::vec4 uMDeriv = glm::vec4(3 * powf(u, 2), 2 * u, 1, 0);
 
-    // FIXME fix normal calculations
+    glm::vec4 vM = glm::vec4(powf(v, 3), powf(v, 2), v, 1);
+    glm::vec4 vMDeriv = glm::vec4(3 * powf(v, 2), 2 * v, 1, 0);
 
-    // Derivative of a bezier curve of third degree is a bezier curve of second degree
-    // This will be the tangent of the current curve
+    glm::mat4 bezierM = Consts::bezierCoefficients();
+    glm::mat4 bezierMT = glm::transpose(bezierM);
 
-    // Control points of a bezier curve of second degree (first derivative)
-    glm::vec4 p0DCoords = 3.0f * (p1.coords - p0.coords);
-    glm::vec4 p1DCoords = 3.0f * (p2.coords - p1.coords);
-    glm::vec4 p2DCoords = 3.0f * (p3.coords - p2.coords);
+    glm::vec3 uVector = glm::vec3();
+    glm::vec3 vVector = glm::vec3();
 
-    // Calculate first derivative
-    float firstDerivativeX = pow(mt, 2) * p0DCoords.x + 2 * mt * t * p1DCoords.x + pow(t, 2) * p2DCoords.x;
-    float firstDerivativeY = pow(mt, 2) * p0DCoords.y + 2 * mt * t * p1DCoords.y + pow(t, 2) * p2DCoords.y;
-    float firstDerivativeZ = pow(mt, 2) * p0DCoords.z + 2 * mt * t * p1DCoords.z + pow(t, 2) * p2DCoords.z;
+    for(int i = 0; i < 3; i++){
+        coords[i] = interpolateCoords(patch, bezierM, bezierMT, uM, vM, i);
+        uVector[i] = interpolateCoords(patch, bezierM, bezierMT, uMDeriv, vM, i);
+        vVector[i] = interpolateCoords(patch, bezierM, bezierMT, uM, vMDeriv, i);
+    }
 
-    // Store normalized firstDerivative
-    glm::vec3 firstDerivative = glm::vec3(firstDerivativeX, firstDerivativeY, firstDerivativeZ);
-    glm::vec3 firstDerivativeNormalized = glm::normalize(firstDerivative);
+    coords[3] = 1;
 
-    // Derivative of a bezier curve of second degree is a bezier curve of first degree
-    // This would be the next point's tangent if the curve stopped changing (the same first and second derivative for the remaining curve)
+    normal = glm::cross(uVector, vVector);
 
-    // Calculate control points of first degree bezier curve (second derivative)
-    glm::vec4 p0DDCoords = 2.0f * (p1DCoords - p0DCoords);
-    glm::vec4 p1DDCoords = 2.0f * (p2DCoords - p1DCoords);
-
-    // Calculate second derivative
-    float secondDerivativeX = mt * p0DDCoords.x + t * p1DDCoords.x;
-    float secondDerivativeY = mt * p0DDCoords.y + t * p1DDCoords.y;
-    float secondDerivativeZ = mt * p0DDCoords.z + t * p1DDCoords.z;
-
-    // Store second derivative
-    glm::vec3 secondDerivative = glm::vec3(secondDerivativeX, secondDerivativeY, secondDerivativeZ);
-
-
-    // Formula retrieved from https://pomax.github.io/bezierinfo/#pointvectors3d
-    /*
-     * a = normalize(B'(t))
-     * b = normalize(a + B''(t))
-     * r = normalize(b × a)
-     * normal = normalize(r × a)
-     * */
-
-    // b from the formula above
-    glm::vec3 sumFirstSecondDerivatives = glm::normalize(firstDerivativeNormalized + secondDerivative);
-
-    // r from the formula above
-    glm::vec3 crossProdNormalized = glm::normalize(glm::cross(sumFirstSecondDerivatives, firstDerivativeNormalized));
-
-    // Point's normal
-    glm::vec3 normal = glm::normalize(glm::cross(crossProdNormalized, firstDerivativeNormalized));
-
-    // Bernstein polynomials for third degree bezier curve (used to calculate P(u) coordinates)
-    float coordX = pow(mt, 3) * p0.coords.x + 3.0f * pow(mt, 2) * t * p1.coords.x + 3.0f * mt * pow(t, 2) * p2.coords.x + pow(t, 3) * p3.coords.x;
-    float coordY = pow(mt, 3) * p0.coords.y + 3.0f * pow(mt, 2) * t * p1.coords.y + 3.0f * mt * pow(t, 2) * p2.coords.y + pow(t, 3) * p3.coords.y;
-    float coordZ = pow(mt, 3) * p0.coords.z + 3.0f * pow(mt, 2) * t * p1.coords.z + 3.0f * mt * pow(t, 2) * p2.coords.z + pow(t, 3) * p3.coords.z;
-
-    // Point's normal coordinates
-    float normalX = normal.x;
-    float normalY = normal.y;
-    float normalZ = normal.z;
-
-    // Point's texture coordinate
-    // TODO Find explanation for the current results
-    float textX = 1 - v; // flip texture vertical position
-    float textY = 1 - u; // flip texture horizontal position
-
-    return Vertex(coordX, coordY, coordZ, normalX, normalY, normalZ, textX, textY);
+    return Vertex(coords, normal, text);
 }
