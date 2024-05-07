@@ -91,7 +91,7 @@ void Engine::renderLoop() {
         draw_curvePoints = xmlParser.getCurvePoints(physTotalTime, 100); // Tesselation level;
 
 		renderer.get()->draw(draw_curvePoints, draw_points, draw_objectInfo,
-			xmlParser.sunVertices, xmlParser.sunInfo, physTotalTime,
+			// xmlParser.sunVertices, xmlParser.sunInfo, physTotalTime,
 			projection, *camera.get(), window,
 			deltaTime, physDeltaTime, deltaTime); // deltas will be wrong for this case
 #else
@@ -104,7 +104,7 @@ void Engine::renderLoop() {
         lock.unlock();
 		// frame end time here or after??????????????????????????
 		renderer.get()->draw(draw_curvePoints, draw_points, draw_objectInfo,
-			xmlParser.sunVertices, xmlParser.sunInfo, physTotalTime, // time not entirely accurate but good enough for now
+			// xmlParser.sunVertices, xmlParser.sunInfo, physTotalTime, // time not entirely accurate but good enough for now
 			projection, *camera.get(), window,
 			deltaTime, physDeltaTime_renderer_copy, physProcessingDeltaTime_renderer_copy);
 #endif

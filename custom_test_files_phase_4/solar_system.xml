@@ -21,7 +21,7 @@
                 <scale x="10" y="10" z="10"/> <!-- Real proportion = 109 -->
             </transform>
             <models>
-                <sun file="sphere_1_20_20.3d"> <!-- generator sphere 1 20 20 sphere_1_20_20.3d -->
+                <model file="sphere_1_20_20.3d"> <!-- generator sphere 1 20 20 sphere_1_20_20.3d -->
                     <color>
                         <diffuse R="255" G="255" B="255"/>
                         <ambient R="255" G="255" B="255"/>
@@ -30,7 +30,7 @@
                         <shininess value="32"/>
                     </color>
                     <texture file="sun.jpg"/>
-                </sun>
+                </model>
             </models>
         </group>
 

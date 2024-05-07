@@ -10,6 +10,3 @@
 [submodule "external/stb"]
 	path = external/stb
 	url = git@github.com:nothings/stb.git
-[submodule "external/glew"]
-	path = external/glew
-	url = git@github.com:nigels-com/glew.git

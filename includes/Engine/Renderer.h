@@ -67,7 +67,7 @@ public:
 	std::vector<RendererObjectInfo> translateEngineObjectInfo(const std::vector<Engine_Object_Info> &engineObjectInfo);
 	// deltas: delta time it took to render, delta time considered for the physics step, delta time taken to calculate the physics
 	void draw(const std::vector<Engine_Object_Curve>& curvePoints, const std::vector<Vertex> &verts, const std::vector<RendererObjectInfo> &objectInfo,
-		const std::vector<SunVertex> &sun_verts, const RendererObjectInfo &sunInfo, GLfloat totalTime,
+		// const std::vector<SunVertex> &sun_verts, const RendererObjectInfo &sunInfo, GLfloat totalTime,
 		const glm::mat4 &projection, Camera &camera, GLFWwindow * window, GLfloat deltaTime, GLfloat physicsDeltaTime, GLfloat physicsProcessingDeltaTime);
 
 	GLfloat getTextureID(const std::string &name); // will load it into the texture buffer if it is not in the map

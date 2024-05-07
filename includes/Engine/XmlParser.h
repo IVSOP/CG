@@ -122,8 +122,8 @@ public:
 
 
 	// sun
-	RendererObjectInfo sunInfo;
-	std::vector<SunVertex> sunVertices;
+	// RendererObjectInfo sunInfo;
+	// std::vector<SunVertex> sunVertices;
 };
 
 
