@@ -49,11 +49,7 @@ GLsizei TextureArray::addTexture(const char path[]) {
 	}
 
 	if (_width != this->width || _height != this->height) {
-		// #ifndef __WIN32
-		// 	fprintf(stderr, "%s: %sWARNING%s image dimensions for %s: Expected %d %d got %d %d. The image will be automatically resized.\n", __PRETTY_FUNCTION__, YELLOW, RESET, path, this->width, this->height, _width, _height);
-		// #else
-			fprintf(stderr, "WARNING: image dimensions for %s: Expected %d %d got %d %d. The image will be automatically resized.\n", path, this->width, this->height, _width, _height);
-		// #endif
+		fprintf(stderr, "WARNING: image dimensions for %s: Expected %d %d got %d %d. The image will be automatically resized.\n", path, this->width, this->height, _width, _height);
 		unsigned char * resized_buffer = (unsigned char*) malloc(this->width * this->height * STBIR_RGBA); // STBIR_RGBA???????
 		stbir_resize_uint8_linear(buffer, _width, _height, 0, resized_buffer, this->width, this->height, 0, STBIR_RGBA);
 
@@ -65,16 +61,6 @@ GLsizei TextureArray::addTexture(const char path[]) {
 	if (BPP != 4) {
 		fprintf(stderr, "%sWARNING:%s %s is not RGBA, BPP is %d\n", YELLOW, RESET, path, BPP);
 	}
-
-	// in the future, if needed, can use
-	/*
-	#define STB_IMAGE_RESIZE_IMPLEMENTATION
-	#include "stb_image_resize2.h"
-
-	unsigned char * resized_image = (unsigned char*) malloc(new_width * new_height * STBIR_RGBA);
-	stbir_resize_uint8_linear(image, width, height, 0, resized_image, new_width, new_height, 0, STBIR_RGBA);
-	*/
-	// to resize the image
 
 	constexpr GLint LOD = 0,
 	xoffset = 0,
