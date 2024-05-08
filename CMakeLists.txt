@@ -170,4 +170,3 @@ else (LINUX_TO_WINDOWS)
 	endif (WIN32)
 	# ?????? o glm funciona por magia sem linking nenhum????? e usar so link_libraries nao funcionou, isto ja me ultrapassa
 endif (LINUX_TO_WINDOWS)
-
