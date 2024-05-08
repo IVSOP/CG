@@ -7,6 +7,7 @@
 #include "tinyxml2.h"
 #include "Transformation.h"
 #include "RendererObjectInfo.h" // just for the sun
+#include "Lights.h"
 
 #include <vector>
 #include <map>
@@ -35,9 +36,17 @@ private:
     GLdouble cameraZUp;
 
     Engine_Object engineObject;
-    std::vector<Vertex> points;
+
+    SceneLights lights;
 
     Engine_Object parseEngineObject(tinyxml2::XMLElement *group);
+    void parseSceneLights(tinyxml2::XMLElement *lights);
+
+    PointLight parsePointLight(tinyxml2::XMLElement *light);
+
+    DirLight parseDirectionalLight(tinyxml2::XMLElement *light);
+
+    SpotLight parseSpotLight(tinyxml2::XMLElement *light);
 
     std::vector<Vertex> parseVertex(tinyxml2::XMLElement *model);
 
@@ -68,7 +77,8 @@ public:
         this->cameraZUp = -1.0f;
 
         this->engineObject = Engine_Object();
-        this->points = std::vector<Vertex>();
+
+        this->lights = SceneLights();
     }
 
     void parseXML(char * xmlFile);
@@ -115,7 +125,9 @@ public:
     void setCameraZUp(GLdouble cameraZUp);
     GLdouble getCameraZUp();
 
-    void setPoints(std::vector<Vertex>& points);
+    void setLights(SceneLights lights);
+    SceneLights getLights();
+
     std::vector<std::vector<Vertex>> getPoints();
     std::vector<Engine_Object_Info> getObjectInfo(float t);
     std::vector<Engine_Object_Curve> getCurvePoints(float t, int tesselation_level);

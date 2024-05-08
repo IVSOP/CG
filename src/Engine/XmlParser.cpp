@@ -5,136 +5,132 @@
 #include <iosfwd>
 #include <fstream>
 
-void XmlParser::setWindowWidth(int width){
-        this->windowWidth = width;
+void XmlParser::setWindowWidth(int width) {
+    this->windowWidth = width;
 }
 
-int XmlParser::getWindowWidth(){
-        return this->windowWidth;
+int XmlParser::getWindowWidth() {
+    return this->windowWidth;
 }
 
 
-void XmlParser::setWindowHeight(int height){
+void XmlParser::setWindowHeight(int height) {
     this->windowHeight = height;
 }
 
-int XmlParser::getWindowHeight(){
+int XmlParser::getWindowHeight() {
     return this->windowHeight;
 }
 
 
-void XmlParser::setWindowFov(GLdouble windowFov){
+void XmlParser::setWindowFov(GLdouble windowFov) {
     this->windowFov = windowFov;
 }
 
-GLdouble XmlParser::getWindowFov(){
+GLdouble XmlParser::getWindowFov() {
     return this->windowFov;
 }
 
 
-void XmlParser::setWindowZNear(GLdouble windowZNear){
+void XmlParser::setWindowZNear(GLdouble windowZNear) {
     this->windowZNear = windowZNear;
 }
 
-GLdouble XmlParser::getWindowZNear(){
+GLdouble XmlParser::getWindowZNear() {
     return this->windowZNear;
 }
 
 
-void XmlParser::setWindowZFar(GLdouble windowZFar){
+void XmlParser::setWindowZFar(GLdouble windowZFar) {
     this->windowZFar = windowZFar;
 }
 
-GLdouble XmlParser::getWindowZFar(){
+GLdouble XmlParser::getWindowZFar() {
     return this->windowZFar;
 }
 
 
-void XmlParser::setCameraXPos(GLdouble cameraXPos){
+void XmlParser::setCameraXPos(GLdouble cameraXPos) {
     this->cameraXPos = cameraXPos;
 }
 
-GLdouble XmlParser::getCameraXPos(){
+GLdouble XmlParser::getCameraXPos() {
     return this->cameraXPos;
 }
 
 
-void XmlParser::setCameraYPos(GLdouble cameraYPos){
+void XmlParser::setCameraYPos(GLdouble cameraYPos) {
     this->cameraYPos = cameraYPos;
 }
 
-GLdouble XmlParser::getCameraYPos(){
+GLdouble XmlParser::getCameraYPos() {
     return this->cameraYPos;
 }
 
 
-void XmlParser::setCameraZPos(GLdouble cameraZPos){
+void XmlParser::setCameraZPos(GLdouble cameraZPos) {
     this->cameraZPos = cameraZPos;
 }
 
-GLdouble XmlParser::getCameraZPos(){
+GLdouble XmlParser::getCameraZPos() {
     return this->cameraZPos;
 }
 
 
-void XmlParser::setCameraXLook(GLdouble cameraXLook){
+void XmlParser::setCameraXLook(GLdouble cameraXLook) {
     this->cameraXLook = cameraXLook;
 }
 
-GLdouble XmlParser::getCameraXLook(){
+GLdouble XmlParser::getCameraXLook() {
     return this->cameraXLook;
 }
 
 
-void XmlParser::setCameraYLook(GLdouble cameraYLook){
+void XmlParser::setCameraYLook(GLdouble cameraYLook) {
     this->cameraYLook = cameraYLook;
 }
 
-GLdouble XmlParser::getCameraYLook(){
+GLdouble XmlParser::getCameraYLook() {
     return this->cameraYLook;
 }
 
 
-void XmlParser::setCameraZLook(GLdouble cameraZLook){
+void XmlParser::setCameraZLook(GLdouble cameraZLook) {
     this->cameraZLook = cameraZLook;
 }
 
-GLdouble XmlParser::getCameraZLook(){
+GLdouble XmlParser::getCameraZLook() {
     return this->cameraZLook;
 }
 
 
-void XmlParser::setCameraXUp(GLdouble cameraXUp){
+void XmlParser::setCameraXUp(GLdouble cameraXUp) {
     this->cameraXUp = cameraXUp;
 }
 
-GLdouble XmlParser::getCameraXUp(){
+GLdouble XmlParser::getCameraXUp() {
     return this->cameraXUp;
 }
 
 
-void XmlParser::setCameraYUp(GLdouble cameraYUp){
+void XmlParser::setCameraYUp(GLdouble cameraYUp) {
     this->cameraYUp = cameraYUp;
 }
 
-GLdouble XmlParser::getCameraYUp(){
+GLdouble XmlParser::getCameraYUp() {
     return this->cameraYUp;
 }
 
 
-void XmlParser::setCameraZUp(GLdouble cameraZUp){
+void XmlParser::setCameraZUp(GLdouble cameraZUp) {
     this->cameraZUp = cameraZUp;
 }
 
-GLdouble XmlParser::getCameraZUp(){
+GLdouble XmlParser::getCameraZUp() {
     return this->cameraZUp;
 }
 
-void XmlParser::setPoints(std::vector<Vertex>& points){
-    this->points = std::vector<Vertex>(points);
-}
-
-std::vector<std::vector<Vertex>> XmlParser::getPoints(){
+std::vector<std::vector<Vertex>> XmlParser::getPoints() {
     return this->engineObject.getPoints();
 }
 
@@ -146,13 +142,22 @@ std::vector<Engine_Object_Curve> XmlParser::getCurvePoints(float t, int tesselat
     return this->engineObject.getCurvePoints(t, tesselation_level, Transformation());
 }
 
-std::vector<std::pair<Engine_Object_Materials, std::vector<Vertex>>> XmlParser::parseModels(tinyxml2::XMLElement *models){
+void XmlParser::setLights(SceneLights lights) {
+    this->lights = lights;
+}
+
+SceneLights XmlParser::getLights() {
+    return this->lights;
+}
+
+std::vector<std::pair<Engine_Object_Materials, std::vector<Vertex>>>
+XmlParser::parseModels(tinyxml2::XMLElement *models) {
     std::vector<std::pair<Engine_Object_Materials, std::vector<Vertex>>> ans = std::vector<std::pair<Engine_Object_Materials, std::vector<Vertex>>>();
 
-    for (tinyxml2::XMLElement* node = models->FirstChildElement(); node != nullptr; node = node->NextSiblingElement()){
+    for (tinyxml2::XMLElement *node = models->FirstChildElement(); node != nullptr; node = node->NextSiblingElement()) {
         std::string name = std::string(node->Name());
 
-        if(name == "model"){
+        if (name == "model") {
             std::vector<Vertex> tmp = this->parseVertex(node);
 
             Engine_Object_Materials engineObjectMaterials = this->parseEngineObjectMaterials(node);
@@ -162,14 +167,14 @@ std::vector<std::pair<Engine_Object_Materials, std::vector<Vertex>>> XmlParser::
             continue;
         }
 
-		// if (name == "sun") {
-		// 	for (const Vertex &vertex : this->parseVertex(node)) {
-		// 		this->sunVertices.push_back(vertex);
-		// 	}
-		// 	this->sunInfo = RendererObjectInfo(0.0f, Engine_Object_Info(this->parseEngineObjectMaterials(node), Transformation())); // FALTA AQUI A TRANSFORMATION
+        // if (name == "sun") {
+        // 	for (const Vertex &vertex : this->parseVertex(node)) {
+        // 		this->sunVertices.push_back(vertex);
+        // 	}
+        // 	this->sunInfo = RendererObjectInfo(0.0f, Engine_Object_Info(this->parseEngineObjectMaterials(node), Transformation())); // FALTA AQUI A TRANSFORMATION
 
-		// 	continue;
-		// }
+        // 	continue;
+        // }
 
         perror("Found unrecognized tag inside a models tag.");
         std::cout << name << std::endl;
@@ -179,31 +184,36 @@ std::vector<std::pair<Engine_Object_Materials, std::vector<Vertex>>> XmlParser::
 }
 
 // TODO Acabar
-std::vector<std::variant<Translate, Rotate, Scale>> XmlParser::parseTransformation(tinyxml2::XMLElement *transform){
+std::vector<std::variant<Translate, Rotate, Scale>> XmlParser::parseTransformation(tinyxml2::XMLElement *transform) {
     std::vector<std::variant<Translate, Rotate, Scale>> transformations = std::vector<std::variant<Translate, Rotate, Scale>>();
 
-    for (tinyxml2::XMLElement* node = transform->FirstChildElement(); node != nullptr; node = node->NextSiblingElement()){
+    for (tinyxml2::XMLElement *node = transform->FirstChildElement();
+         node != nullptr; node = node->NextSiblingElement()) {
         std::string name = std::string(node->Name());
 
-        if(name == "rotate"){
-            Rotate r = Rotate(node->DoubleAttribute("angle"), node->FloatAttribute("time"), node->FloatAttribute("x"), node->FloatAttribute("y"), node->FloatAttribute("z"), node->FindAttribute("time") != nullptr);
+        if (name == "rotate") {
+            Rotate r = Rotate(node->DoubleAttribute("angle"), node->FloatAttribute("time"), node->FloatAttribute("x"),
+                              node->FloatAttribute("y"), node->FloatAttribute("z"),
+                              node->FindAttribute("time") != nullptr);
 
             transformations.emplace_back(r);
 
             continue;
         }
 
-        if(name == "translate"){
+        if (name == "translate") {
             std::vector<Vertex> points = std::vector<Vertex>();
 
             bool curve = node->FindAttribute("time") != nullptr;
 
-            if(curve){
-                for(tinyxml2::XMLElement* point = node->FirstChildElement(); point != nullptr; point = point->NextSiblingElement()){
+            if (curve) {
+                for (tinyxml2::XMLElement *point = node->FirstChildElement();
+                     point != nullptr; point = point->NextSiblingElement()) {
                     std::string point_name = std::string(point->Name());
 
-                    if(point_name == "Point"){
-                        points.emplace_back(point->FloatAttribute("x"), point->FloatAttribute("y"), point->FloatAttribute("z"));
+                    if (point_name == "Point") {
+                        points.emplace_back(point->FloatAttribute("x"), point->FloatAttribute("y"),
+                                            point->FloatAttribute("z"));
 
                         continue;
                     }
@@ -223,7 +233,7 @@ std::vector<std::variant<Translate, Rotate, Scale>> XmlParser::parseTransformati
             alignY = node->FloatAttribute("alignY", 0.0f);
             alignZ = node->FloatAttribute("alignZ", 0.0f);
 
-            if(alignX != 0.0f) alignX *= -1;
+            if (alignX != 0.0f) alignX *= -1;
 
             Translate translate = Translate(node->FloatAttribute("time"), node->BoolAttribute("align", false),
                                             node->FloatAttribute("x"), node->FloatAttribute("y"),
@@ -235,7 +245,7 @@ std::vector<std::variant<Translate, Rotate, Scale>> XmlParser::parseTransformati
             continue;
         }
 
-        if(name == "scale"){
+        if (name == "scale") {
             Scale s = Scale(node->FloatAttribute("x"), node->FloatAttribute("y"), node->FloatAttribute("z"));
 
             transformations.emplace_back(s);
@@ -250,7 +260,7 @@ std::vector<std::variant<Translate, Rotate, Scale>> XmlParser::parseTransformati
     return transformations;
 }
 
-std::vector<Vertex> XmlParser::parseVertex(tinyxml2::XMLElement *model){
+std::vector<Vertex> XmlParser::parseVertex(tinyxml2::XMLElement *model) {
     std::vector<Vertex> points;
     std::ifstream inFile(model->Attribute("file"), std::ios::binary);
 
@@ -260,7 +270,7 @@ std::vector<Vertex> XmlParser::parseVertex(tinyxml2::XMLElement *model){
         inFile.seekg(0, std::ios::beg);
 
         points.resize(fileSize / sizeof(Vertex));
-        inFile.read(reinterpret_cast<char*>(points.data()), fileSize);
+        inFile.read(reinterpret_cast<char *>(points.data()), fileSize);
         inFile.close();
 
     } else {
@@ -270,7 +280,7 @@ std::vector<Vertex> XmlParser::parseVertex(tinyxml2::XMLElement *model){
     return points;
 }
 
-Engine_Object_Materials XmlParser::parseEngineObjectMaterials(tinyxml2::XMLElement *model){
+Engine_Object_Materials XmlParser::parseEngineObjectMaterials(tinyxml2::XMLElement *model) {
     glm::vec3 diffuse = glm::vec3(1.0f);
     glm::vec3 ambient = glm::vec3(1.0f);
     glm::vec3 specular = glm::vec3(1.0f);
@@ -281,23 +291,27 @@ Engine_Object_Materials XmlParser::parseEngineObjectMaterials(tinyxml2::XMLEleme
 
     bool hasTexture = false, hasColor = false;
 
-    for (tinyxml2::XMLElement* node = model->FirstChildElement(); node != nullptr; node = node->NextSiblingElement()){
+    for (tinyxml2::XMLElement *node = model->FirstChildElement(); node != nullptr; node = node->NextSiblingElement()) {
         std::string name = std::string(node->Name());
 
-        if(name == "color"){
+        if (name == "color") {
             hasColor = true;
 
-            tinyxml2::XMLElement* nodeChild = node->FirstChildElement("diffuse");
-            diffuse = glm::vec3(nodeChild->FloatAttribute("R") / 255.0f, nodeChild->FloatAttribute("G") / 255.0f, nodeChild->FloatAttribute("B") / 255.0f);
+            tinyxml2::XMLElement *nodeChild = node->FirstChildElement("diffuse");
+            diffuse = glm::vec3(nodeChild->FloatAttribute("R") / 255.0f, nodeChild->FloatAttribute("G") / 255.0f,
+                                nodeChild->FloatAttribute("B") / 255.0f);
 
             nodeChild = node->FirstChildElement("ambient");
-            ambient = glm::vec3(nodeChild->FloatAttribute("R") / 255.0f, nodeChild->FloatAttribute("G") / 255.0f, nodeChild->FloatAttribute("B") / 255.0f);
+            ambient = glm::vec3(nodeChild->FloatAttribute("R") / 255.0f, nodeChild->FloatAttribute("G") / 255.0f,
+                                nodeChild->FloatAttribute("B") / 255.0f);
 
             nodeChild = node->FirstChildElement("specular");
-            specular = glm::vec3(nodeChild->FloatAttribute("R") / 255.0f, nodeChild->FloatAttribute("G") / 255.0f, nodeChild->FloatAttribute("B") / 255.0f);
+            specular = glm::vec3(nodeChild->FloatAttribute("R") / 255.0f, nodeChild->FloatAttribute("G") / 255.0f,
+                                 nodeChild->FloatAttribute("B") / 255.0f);
 
             nodeChild = node->FirstChildElement("emissive");
-            emissive = glm::vec3(nodeChild->FloatAttribute("R") / 255.0f, nodeChild->FloatAttribute("G") / 255.0f, nodeChild->FloatAttribute("B") / 255.0f);
+            emissive = glm::vec3(nodeChild->FloatAttribute("R") / 255.0f, nodeChild->FloatAttribute("G") / 255.0f,
+                                 nodeChild->FloatAttribute("B") / 255.0f);
 
             nodeChild = node->FirstChildElement("shininess");
             shininess = nodeChild->IntAttribute("value");
@@ -305,7 +319,7 @@ Engine_Object_Materials XmlParser::parseEngineObjectMaterials(tinyxml2::XMLEleme
             continue;
         }
 
-        if(name == "texture"){
+        if (name == "texture") {
             hasTexture = true;
 
             texture = std::string(node->Attribute("file"));
@@ -317,7 +331,7 @@ Engine_Object_Materials XmlParser::parseEngineObjectMaterials(tinyxml2::XMLEleme
         std::cout << name << std::endl;
     }
 
-    if(!hasColor && !hasTexture){
+    if (!hasColor && !hasTexture) {
         diffuse = glm::vec3(200 / 255.0f, 200 / 255.0f, 200 / 255.0f);
         ambient = glm::vec3(50 / 255.0f, 50 / 255.0f, 50 / 255.0f);
         specular = glm::vec3(0, 0, 0);
@@ -328,29 +342,29 @@ Engine_Object_Materials XmlParser::parseEngineObjectMaterials(tinyxml2::XMLEleme
     return Engine_Object_Materials(diffuse, ambient, specular, emissive, shininess, texture);
 }
 
-Engine_Object XmlParser::parseEngineObject(tinyxml2::XMLElement *group){
+Engine_Object XmlParser::parseEngineObject(tinyxml2::XMLElement *group) {
     std::vector<std::variant<Translate, Rotate, Scale>> transformations = std::vector<std::variant<Translate, Rotate, Scale>>();
     std::vector<std::pair<Engine_Object_Materials, std::vector<Vertex>>> obj_points = std::vector<std::pair<Engine_Object_Materials, std::vector<Vertex>>>();
     std::vector<Engine_Object> child_objs = std::vector<Engine_Object>();
 
-    for (tinyxml2::XMLElement* node = group->FirstChildElement(); node != nullptr; node = node->NextSiblingElement()){
+    for (tinyxml2::XMLElement *node = group->FirstChildElement(); node != nullptr; node = node->NextSiblingElement()) {
         std::string name = std::string(node->Name());
 
-        if(name == "transform"){
+        if (name == "transform") {
             std::vector<std::variant<Translate, Rotate, Scale>> t = parseTransformation(node);
             transformations.insert(transformations.end(), t.begin(), t.end());
 
             continue;
         }
 
-        if(name == "models"){
+        if (name == "models") {
             std::vector<std::pair<Engine_Object_Materials, std::vector<Vertex>>> tmp_points = parseModels(node);
             obj_points.insert(obj_points.end(), tmp_points.begin(), tmp_points.end());
 
             continue;
         }
 
-        if(name == "group"){
+        if (name == "group") {
             Engine_Object child = parseEngineObject(node);
             child_objs.emplace_back(child.transformations, child.points, child.children_objects);
 
@@ -364,7 +378,186 @@ Engine_Object XmlParser::parseEngineObject(tinyxml2::XMLElement *group){
     return Engine_Object(transformations, obj_points, child_objs);
 }
 
-void XmlParser::parseXML(char * xmlFile) {
+PointLight XmlParser::parsePointLight(tinyxml2::XMLElement *light) {
+    glm::vec3 position = glm::vec3(light->FloatAttribute("posx", 0.0f), light->FloatAttribute("posy", 2.0f),
+                                   light->FloatAttribute("posz", 5.0f));
+    GLfloat constant = 1.0f;
+    GLfloat linear = 0.09f;
+    GLfloat quadratic = 0.032f;
+    glm::vec3 ambient = glm::vec3(0.2f, 0.2f, 0.0f);
+    glm::vec3 diffuse = glm::vec3(0.78f, 0.78f, 0.0f);
+    glm::vec3 specular = glm::vec3(1.0f, 1.0f, 1.0f);
+    GLfloat padding_1 = 0.0f;
+
+    if (light != nullptr) {
+        for (tinyxml2::XMLElement *node = light->FirstChildElement();
+             node != nullptr; node = node->NextSiblingElement()) {
+            std::string name = std::string(node->Name());
+
+            if (name == "diffuse") {
+                diffuse = glm::vec3(node->FloatAttribute("R", 0.0f) / 255.0f, node->FloatAttribute("G", 0.0f) / 255.0f,
+                                    node->FloatAttribute("B", 0.0f) / 255.0f);
+
+                continue;
+            }
+
+            if (name == "ambient") {
+                ambient = glm::vec3(node->FloatAttribute("R", 0.0f) / 255.0f, node->FloatAttribute("G", 0.0f) / 255.0f,
+                                    node->FloatAttribute("B", 0.0f) / 255.0f);
+
+                continue;
+            }
+
+            if (name == "specular") {
+                specular = glm::vec3(node->FloatAttribute("R", 0.0f) / 255.0f, node->FloatAttribute("G", 0.0f) / 255.0f,
+                                     node->FloatAttribute("B", 0.0f) / 255.0f);
+
+                continue;
+            }
+
+            perror("Found unrecognized tag inside a light tag.");
+            std::cout << name << std::endl;
+        }
+    }
+
+    return PointLight(position, constant, linear, quadratic, ambient, diffuse, specular, padding_1);
+}
+
+DirLight XmlParser::parseDirectionalLight(tinyxml2::XMLElement *light) {
+    glm::vec3 direction = glm::vec3(light->FloatAttribute("dirx", 0.0f), light->FloatAttribute("diry", 2.0f),
+                                    light->FloatAttribute("dirz", 5.0f));
+    glm::vec3 ambient = glm::vec3(0.2f, 0.2f, 0.0f);
+    glm::vec3 diffuse = glm::vec3(0.78f, 0.78f, 0.0f);
+    glm::vec3 specular = glm::vec3(1.0f, 1.0f, 1.0f);
+
+    if (light != nullptr) {
+        for (tinyxml2::XMLElement *node = light->FirstChildElement();
+             node != nullptr; node = node->NextSiblingElement()) {
+            std::string name = std::string(node->Name());
+
+            if (name == "diffuse") {
+                diffuse = glm::vec3(node->FloatAttribute("R", 0.0f) / 255.0f, node->FloatAttribute("G", 0.0f) / 255.0f,
+                                    node->FloatAttribute("B", 0.0f) / 255.0f);
+
+                continue;
+            }
+
+            if (name == "ambient") {
+                ambient = glm::vec3(node->FloatAttribute("R", 0.0f) / 255.0f, node->FloatAttribute("G", 0.0f) / 255.0f,
+                                    node->FloatAttribute("B", 0.0f) / 255.0f);
+
+                continue;
+            }
+
+            if (name == "specular") {
+                specular = glm::vec3(node->FloatAttribute("R", 0.0f) / 255.0f, node->FloatAttribute("G", 0.0f) / 255.0f,
+                                     node->FloatAttribute("B", 0.0f) / 255.0f);
+
+                continue;
+            }
+
+            perror("Found unrecognized tag inside a light tag.");
+            std::cout << name << std::endl;
+        }
+    }
+
+    return DirLight(direction, ambient, diffuse, specular);
+}
+
+SpotLight XmlParser::parseSpotLight(tinyxml2::XMLElement *light) {
+    glm::vec3 position = glm::vec3(light->FloatAttribute("posx", 0.0f), light->FloatAttribute("posy", 2.0f),
+                                   light->FloatAttribute("posz", 5.0f));
+    glm::vec3 direction = glm::vec3(light->FloatAttribute("dirx", 0.0f), light->FloatAttribute("diry", 2.0f),
+                                    light->FloatAttribute("dirz", 5.0f));
+    GLfloat cutOff = light->FloatAttribute("cutoff", glm::cos(glm::radians(0.0f)));
+    GLfloat outerCutOff = light->FloatAttribute("outtercutoff", glm::cos(glm::radians(10.0f)));
+    GLfloat constant = 1.0f;
+    GLfloat linear = 0.09f;
+    GLfloat quadratic = 0.032f;
+    glm::vec3 ambient = glm::vec3(1.0f);
+    glm::vec3 diffuse = glm::vec3(1.0f);
+    glm::vec3 specular = glm::vec3(1.0f);
+
+    if (light != nullptr) {
+        for (tinyxml2::XMLElement *node = light->FirstChildElement();
+             node != nullptr; node = node->NextSiblingElement()) {
+            std::string name = std::string(node->Name());
+
+            if (name == "diffuse") {
+                diffuse = glm::vec3(node->FloatAttribute("R", 0.0f) / 255.0f, node->FloatAttribute("G", 0.0f) / 255.0f,
+                                    node->FloatAttribute("B", 0.0f) / 255.0f);
+
+                continue;
+            }
+
+            if (name == "ambient") {
+                ambient = glm::vec3(node->FloatAttribute("R", 0.0f) / 255.0f, node->FloatAttribute("G", 0.0f) / 255.0f,
+                                    node->FloatAttribute("B", 0.0f) / 255.0f);
+
+                continue;
+            }
+
+            if (name == "specular") {
+                specular = glm::vec3(node->FloatAttribute("R", 0.0f) / 255.0f, node->FloatAttribute("G", 0.0f) / 255.0f,
+                                     node->FloatAttribute("B", 0.0f) / 255.0f);
+
+                continue;
+            }
+
+            perror("Found unrecognized tag inside a light tag.");
+            std::cout << name << std::endl;
+        }
+    }
+
+    return SpotLight(position, direction, cutOff, outerCutOff, constant, linear, quadratic, ambient, diffuse, specular);
+}
+
+void XmlParser::parseSceneLights(tinyxml2::XMLElement *lights) {
+    // TODO Should i have default values for when there are no explicit lights?
+    if (lights == nullptr) {
+        this->lights.pointLights.emplace_back(this->parsePointLight(nullptr));
+        this->lights.spotLights.emplace_back(this->parseSpotLight(nullptr));
+        this->lights.dirLights.emplace_back(this->parseDirectionalLight(nullptr));
+
+        return;
+    }
+
+    for (tinyxml2::XMLElement *node = lights->FirstChildElement(); node != nullptr; node = node->NextSiblingElement()) {
+        std::string name = std::string(node->Name());
+
+        if (name == "light") {
+            std::string type = node->Attribute("type");
+
+            std::transform(type.begin(), type.end(), type.begin(),
+                           [](char c) { return std::tolower(c); });
+
+            if (type == "point") {
+                this->lights.pointLights.emplace_back(this->parsePointLight(node));
+                continue;
+            }
+
+            if (type == "spot") {
+                this->lights.spotLights.emplace_back(this->parseSpotLight(node));
+                continue;
+            }
+
+            if (type == "directional") {
+                this->lights.dirLights.emplace_back(this->parseDirectionalLight(node));
+                continue;
+            }
+
+            perror("Found unrecognized type inside a light tag.");
+            std::cout << type << std::endl;
+
+            continue;
+        }
+
+        perror("Found unrecognized tag inside a group tag.");
+        std::cout << name << std::endl;
+    }
+}
+
+void XmlParser::parseXML(char *xmlFile) {
     tinyxml2::XMLDocument xmlDoc;
 
     /*
@@ -389,6 +582,7 @@ void XmlParser::parseXML(char * xmlFile) {
     /* Acquire all needed elements from the XML file */
     tinyxml2::XMLElement *window = root->FirstChildElement("window");
     tinyxml2::XMLElement *camera = root->FirstChildElement("camera");
+    tinyxml2::XMLElement *lights = root->FirstChildElement("lights");
     tinyxml2::XMLElement *group = root->FirstChildElement("group");
 
     /* Acquire all needed sub-elements from the camera element */
@@ -418,5 +612,6 @@ void XmlParser::parseXML(char * xmlFile) {
     this->cameraYUp = up->DoubleAttribute("y");
     this->cameraZUp = up->DoubleAttribute("z");
 
+    this->parseSceneLights(lights);
     this->engineObject = parseEngineObject(group);
 }

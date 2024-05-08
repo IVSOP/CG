@@ -228,7 +228,7 @@ float Patch::interpolateCoords(std::vector<Vertex>& patch, glm::mat4& bezierM, g
 
 Vertex Patch::calculatePatchPoint(std::vector<Vertex>& patch, float v, float u){
     glm::vec4 coords = glm::vec4();
-    glm::vec2 text = glm::vec2(1 - v, 1 - u);
+    glm::vec2 text = glm::vec2(1 - u, 1 - v);
     glm::vec3 normal = glm::vec3();
 
     glm::vec4 uM = glm::vec4(powf(u, 3), powf(u, 2), u, 1);

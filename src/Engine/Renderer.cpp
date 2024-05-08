@@ -6,6 +6,7 @@
 #include "Vertex.h"
 #include "Camera.h"
 #include "Consts.h"
+#include "Lights.h"
 
 #define TEX_ARRAY_SLOT 0
 #define BRIGHT_TEXTURE_SLOT 1 // slot to go into blur shader and final bloom shader
@@ -17,46 +18,6 @@
 
 #define MAX_LIGHTS 8
 
-struct PointLight {
-    glm::vec3 position;
-
-    GLfloat constant;
-    GLfloat linear;
-    GLfloat quadratic; 
-
-    glm::vec3 ambient;
-    glm::vec3 diffuse;
-    glm::vec3 specular;
-
-	// need one extra float for 16. read Material.h
-	GLfloat padding_1;
-};
-static_assert(sizeof(PointLight) == 4 * sizeof(glm::vec4), "Error: PointLight has unexpected size");
-
-struct DirLight {
-    glm::vec3 direction;
-  
-    glm::vec3 ambient;
-    glm::vec3 diffuse;
-    glm::vec3 specular;
-};
-static_assert(sizeof(DirLight) == 3 * sizeof(glm::vec4), "Error: DirLight has unexpected size");
-
-struct SpotLight {
-    glm::vec3 position;
-    glm::vec3 direction;
-    GLfloat cutOff;
-    GLfloat outerCutOff;
-  
-    GLfloat constant;
-    GLfloat linear;
-    GLfloat quadratic;
-  
-    glm::vec3 ambient;
-    glm::vec3 diffuse;
-    glm::vec3 specular;
-};
-static_assert(sizeof(SpotLight) == 5 * sizeof(glm::vec4), "Error: SpotLight has unexpected size");
 
 
 // quad filling entire screen
@@ -471,16 +432,14 @@ void Renderer::drawLighting(const std::vector<Vertex> &verts, const std::vector<
 
 
 		PointLight pointLights[MAX_LIGHTS];
-		pointLights[0] = {
-			.position = glm::vec3(0.0f, 2.0f, 5.0f),
-			.constant = 1.0f,
-			.linear = 0.09f,
-			.quadratic = 0.032f,
-			.ambient = glm::vec3(0.2f, 0.2f, 0.0f),
-			.diffuse = glm::vec3(0.78f, 0.78f, 0.0f),
-			.specular = glm::vec3(1.0f, 1.0f, 1.0f),
-			.padding_1 = 0.0f
-		};
+        pointLights[0].position = glm::vec3(0.0f, 2.0f, 5.0f);
+        pointLights[0].constant = 1.0f;
+        pointLights[0].linear = 0.09f;
+        pointLights[0].quadratic = 0.032f;
+        pointLights[0].ambient = glm::vec3(0.2f, 0.2f, 0.0f);
+        pointLights[0].diffuse = glm::vec3(0.78f, 0.78f, 0.0f);
+        pointLights[0].specular = glm::vec3(1.0f, 1.0f, 1.0f);
+        pointLights[0].padding_1 = 0.0f;
 
 		GLCall(glBindBuffer(GL_TEXTURE_BUFFER, pointLightBuffer));
 		GLCall(glBufferData(GL_TEXTURE_BUFFER, MAX_LIGHTS * sizeof(PointLight), pointLights, GL_STATIC_DRAW));
@@ -491,12 +450,10 @@ void Renderer::drawLighting(const std::vector<Vertex> &verts, const std::vector<
 		lightingShader.setInt("u_NumPointLights", 0);
 
 		DirLight dirLights[MAX_LIGHTS];
-		dirLights[0] = {
-			.direction = glm::normalize(glm::vec3(1.0f, 0.0f, 0.0f)),
-			.ambient = glm::vec3(0.2f, 0.2f, 0.0f),
-			.diffuse = glm::vec3(0.78f, 0.78f, 0.0f),
-			.specular = glm::vec3(1.0f, 1.0f, 1.0f)
-		};
+        dirLights[0].direction = glm::normalize(glm::vec3(1.0f, 0.0f, 0.0f));
+        dirLights[0].ambient = glm::vec3(0.2f, 0.2f, 0.0f);
+        dirLights[0].diffuse = glm::vec3(0.78f, 0.78f, 0.0f);
+        dirLights[0].specular = glm::vec3(1.0f, 1.0f, 1.0f);
 
 		GLCall(glBindBuffer(GL_TEXTURE_BUFFER, dirLightBuffer));
 		GLCall(glBufferData(GL_TEXTURE_BUFFER, MAX_LIGHTS * sizeof(DirLight), dirLights, GL_STATIC_DRAW));
@@ -507,30 +464,28 @@ void Renderer::drawLighting(const std::vector<Vertex> &verts, const std::vector<
 		lightingShader.setInt("u_NumDirLights", 1);
 
 		SpotLight spotLights[MAX_LIGHTS];
-		spotLights[0] = {
-			// .position = camera.Position,
-			// // .position = glm::vec3(0.0f, 1.0f, 3.0f),
-			// .direction = camera.Front,
-			// // .direction = glm::vec3(0.0f, -0.25f, -0.97f),
-			// .cutOff = glm::cos(glm::radians(12.5f)),
-			// .outerCutOff = glm::cos(glm::radians(17.5f)),
-			// .constant = 1.0f,
-			// .linear = 0.09f,
-			// .quadratic = 0.032f,
-			// .ambient = glm::vec3(0.1f, 0.1f, 0.1f),
-			// .diffuse = glm::vec3(0.8f, 0.8f, 0.8f),
-			// .specular = glm::vec3(1.0f, 1.0f, 1.0f)
-			.position = glm::vec3(0.0f, 2.0f, 4.0f),
-			.direction = glm::normalize(glm::vec3(0.0f, -2.0f, -4.0f)),
-			.cutOff = glm::cos(glm::radians(0.0f)),
-			.outerCutOff = glm::cos(glm::radians(10.0f)),
-			.constant = 1.0f,
-			.linear = 0.09f,
-			.quadratic = 0.032f,
-			.ambient = glm::vec3(1.0f),
-			.diffuse = glm::vec3(1.0f),
-			.specular = glm::vec3(1.0f)
-		};
+        // spotLights[0].position = camera.Position;
+        // // spotLights[0].position = glm::vec3(0.0f, 1.0f, 3.0f);
+        // spotLights[0].direction = camera.Front;
+        // // spotLights[0].direction = glm::vec3(0.0f, -0.25f, -0.97f);
+        // spotLights[0].cutOff = glm::cos(glm::radians(12.5f));
+        // spotLights[0].outerCutOff = glm::cos(glm::radians(17.5f));
+        // spotLights[0].constant = 1.0f;
+        // spotLights[0].linear = 0.09f;
+        // spotLights[0].quadratic = 0.032f;
+        // spotLights[0].ambient = glm::vec3(0.1f, 0.1f, 0.1f);
+        // spotLights[0].diffuse = glm::vec3(0.8f, 0.8f, 0.8f);
+        // spotLights[0].specular = glm::vec3(1.0f, 1.0f, 1.0f);
+        spotLights[0].position = glm::vec3(0.0f, 2.0f, 4.0f);
+        spotLights[0].direction = glm::normalize(glm::vec3(0.0f, -2.0f, -4.0f));
+        spotLights[0].cutOff = glm::cos(glm::radians(0.0f));
+        spotLights[0].outerCutOff = glm::cos(glm::radians(10.0f));
+        spotLights[0].constant = 1.0f;
+        spotLights[0].linear = 0.09f;
+        spotLights[0].quadratic = 0.032f;
+        spotLights[0].ambient = glm::vec3(1.0f);
+        spotLights[0].diffuse = glm::vec3(1.0f);
+        spotLights[0].specular = glm::vec3(1.0f);
 
 		GLCall(glBindBuffer(GL_TEXTURE_BUFFER, spotLightBuffer));
 		GLCall(glBufferData(GL_TEXTURE_BUFFER, MAX_LIGHTS * sizeof(SpotLight), spotLights, GL_STATIC_DRAW));
