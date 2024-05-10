@@ -379,8 +379,7 @@ Engine_Object XmlParser::parseEngineObject(tinyxml2::XMLElement *group) {
 }
 
 PointLight XmlParser::parsePointLight(tinyxml2::XMLElement *light) {
-    glm::vec3 position = glm::vec3(light->FloatAttribute("posx", 0.0f), light->FloatAttribute("posy", 2.0f),
-                                   light->FloatAttribute("posz", 5.0f));
+	glm::vec3 position(0.0f);
     GLfloat constant = 1.0f;
     GLfloat linear = 0.09f;
     GLfloat quadratic = 0.032f;
@@ -389,7 +388,10 @@ PointLight XmlParser::parsePointLight(tinyxml2::XMLElement *light) {
     glm::vec3 specular = glm::vec3(1.0f, 1.0f, 1.0f);
     GLfloat padding_1 = 0.0f;
 
+
     if (light != nullptr) {
+		position = glm::vec3(light->FloatAttribute("posx", 0.0f), light->FloatAttribute("posy", 2.0f),
+							 light->FloatAttribute("posz", 5.0f));
         for (tinyxml2::XMLElement *node = light->FirstChildElement();
              node != nullptr; node = node->NextSiblingElement()) {
             std::string name = std::string(node->Name());
@@ -424,13 +426,15 @@ PointLight XmlParser::parsePointLight(tinyxml2::XMLElement *light) {
 }
 
 DirLight XmlParser::parseDirectionalLight(tinyxml2::XMLElement *light) {
-    glm::vec3 direction = glm::vec3(light->FloatAttribute("dirx", 0.0f), light->FloatAttribute("diry", 2.0f),
-                                    light->FloatAttribute("dirz", 5.0f));
+	glm::vec3 direction(0.0f);
+
     glm::vec3 ambient = glm::vec3(0.2f, 0.2f, 0.0f);
     glm::vec3 diffuse = glm::vec3(0.78f, 0.78f, 0.0f);
     glm::vec3 specular = glm::vec3(1.0f, 1.0f, 1.0f);
 
     if (light != nullptr) {
+		direction = glm::vec3(light->FloatAttribute("dirx", 0.0f), light->FloatAttribute("diry", 2.0f),
+							  light->FloatAttribute("dirz", 5.0f));
         for (tinyxml2::XMLElement *node = light->FirstChildElement();
              node != nullptr; node = node->NextSiblingElement()) {
             std::string name = std::string(node->Name());
@@ -465,12 +469,10 @@ DirLight XmlParser::parseDirectionalLight(tinyxml2::XMLElement *light) {
 }
 
 SpotLight XmlParser::parseSpotLight(tinyxml2::XMLElement *light) {
-    glm::vec3 position = glm::vec3(light->FloatAttribute("posx", 0.0f), light->FloatAttribute("posy", 2.0f),
-                                   light->FloatAttribute("posz", 5.0f));
-    glm::vec3 direction = glm::vec3(light->FloatAttribute("dirx", 0.0f), light->FloatAttribute("diry", 2.0f),
-                                    light->FloatAttribute("dirz", 5.0f));
-    GLfloat cutOff = light->FloatAttribute("cutoff", glm::cos(glm::radians(0.0f)));
-    GLfloat outerCutOff = light->FloatAttribute("outtercutoff", glm::cos(glm::radians(10.0f)));
+	glm::vec3 position(0.0f);
+	glm::vec3 direction(0.0f);
+	GLfloat cutOff = 0.0f;
+	GLfloat outerCutOff = 10.0f;
     GLfloat constant = 1.0f;
     GLfloat linear = 0.09f;
     GLfloat quadratic = 0.032f;
@@ -479,6 +481,13 @@ SpotLight XmlParser::parseSpotLight(tinyxml2::XMLElement *light) {
     glm::vec3 specular = glm::vec3(1.0f);
 
     if (light != nullptr) {
+		position = glm::vec3(light->FloatAttribute("posx", 0.0f), light->FloatAttribute("posy", 2.0f),
+                              light->FloatAttribute("posz", 5.0f));
+		direction = glm::vec3(light->FloatAttribute("dirx", 0.0f), light->FloatAttribute("diry", 2.0f),
+                              light->FloatAttribute("dirz", 5.0f));
+		cutOff = light->FloatAttribute("cutoff", glm::cos(glm::radians(0.0f)));
+		outerCutOff = light->FloatAttribute("outerCutoff", glm::cos(glm::radians(0.0f)));
+		outerCutOff = light->FloatAttribute("outtercutoff", glm::cos(glm::radians(10.0f)));
         for (tinyxml2::XMLElement *node = light->FirstChildElement();
              node != nullptr; node = node->NextSiblingElement()) {
             std::string name = std::string(node->Name());
