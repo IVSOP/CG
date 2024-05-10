@@ -76,6 +76,8 @@ void Engine::renderLoop() {
 	// deltaTime is actual time taken for the frame, so I can sleep, move the camera etc
 	// phys time can be changed to change the physisc without touching the camera
 
+	SceneLights lights = xmlParser.getLights();
+
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents(); // at the start due to imgui (??) test moving it to after the unlock()
 
@@ -93,7 +95,8 @@ void Engine::renderLoop() {
 		renderer.get()->draw(draw_curvePoints, draw_points, draw_objectInfo,
 			// xmlParser.sunVertices, xmlParser.sunInfo, physTotalTime,
 			projection, *camera.get(), window,
-			deltaTime, physDeltaTime, deltaTime); // deltas will be wrong for this case
+			deltaTime, physDeltaTime, deltaTime,
+			lights); // deltas will be wrong for this case
 #else
         std::unique_lock<std::mutex> lock = std::unique_lock<std::mutex>(mtx);
 			draw_points = points;
@@ -106,7 +109,8 @@ void Engine::renderLoop() {
 		renderer.get()->draw(draw_curvePoints, draw_points, draw_objectInfo,
 			// xmlParser.sunVertices, xmlParser.sunInfo, physTotalTime, // time not entirely accurate but good enough for now
 			projection, *camera.get(), window,
-			deltaTime, physDeltaTime_renderer_copy, physProcessingDeltaTime_renderer_copy);
+			deltaTime, physDeltaTime_renderer_copy, physProcessingDeltaTime_renderer_copy,
+			lights);
 #endif
 
         frameEndTime = glfwGetTime();

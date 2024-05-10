@@ -16,10 +16,6 @@
 #define DIRLIGHT_TEXTURE_BUFFER_SLOT 5
 #define SPOTLIGHT_TEXTURE_BUFFER_SLOT 6
 
-#define MAX_LIGHTS 8
-
-
-
 // quad filling entire screen
 ViewportVertex viewportVertices[] = {
 	{-1.0f, -1.0f, 0.0f, 0.0f, 0.0f},
@@ -397,7 +393,7 @@ void Renderer::prepareFrame(Camera &camera, GLfloat deltaTime, GLfloat physicsDe
 
 }
 
-void Renderer::drawLighting(const std::vector<Vertex> &verts, const std::vector<RendererObjectInfo> &objectInfo, const glm::mat4 &projection, const glm::mat4 &view, const Camera &camera) {
+void Renderer::drawLighting(const std::vector<Vertex> &verts, const std::vector<RendererObjectInfo> &objectInfo, const glm::mat4 &projection, const glm::mat4 &view, const Camera &camera, const SceneLights &lights) {
 	// constexpr glm::mat4 model = glm::mat4(1.0f);
 	// const glm::mat4 MVP = projection * view * model;
 
@@ -430,70 +426,30 @@ void Renderer::drawLighting(const std::vector<Vertex> &verts, const std::vector<
 		// GLCall(glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, materialBuffer)); // bind the buffer to the texture (has been done while setting up)
 		lightingShader.setInt("u_ObjectInfoTBO", OBJECT_INFO_TEXTURE_BUFFER_SLOT);
 
-
-		PointLight pointLights[MAX_LIGHTS];
-        pointLights[0].position = glm::vec3(0.0f, 2.0f, 5.0f);
-        pointLights[0].constant = 1.0f;
-        pointLights[0].linear = 0.09f;
-        pointLights[0].quadratic = 0.032f;
-        pointLights[0].ambient = glm::vec3(0.2f, 0.2f, 0.0f);
-        pointLights[0].diffuse = glm::vec3(0.78f, 0.78f, 0.0f);
-        pointLights[0].specular = glm::vec3(1.0f, 1.0f, 1.0f);
-        pointLights[0].padding_1 = 0.0f;
-
 		GLCall(glBindBuffer(GL_TEXTURE_BUFFER, pointLightBuffer));
-		GLCall(glBufferData(GL_TEXTURE_BUFFER, MAX_LIGHTS * sizeof(PointLight), pointLights, GL_STATIC_DRAW));
+		GLCall(glBufferData(GL_TEXTURE_BUFFER, lights.pointLights.size() * sizeof(PointLight), lights.pointLights.data(), GL_STATIC_DRAW));
 		GLCall(glActiveTexture(GL_TEXTURE0 + POINTLIGHT_TEXTURE_BUFFER_SLOT));
 		GLCall(glBindTexture(GL_TEXTURE_BUFFER, pointLightTBO));
 		// GLCall(glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, pointLightBuffer)); // bind the buffer to the texture (has been done while setting up)
 		lightingShader.setInt("u_PointLightTBO", POINTLIGHT_TEXTURE_BUFFER_SLOT);
-		lightingShader.setInt("u_NumPointLights", 0);
-
-		DirLight dirLights[MAX_LIGHTS];
-        dirLights[0].direction = glm::normalize(glm::vec3(1.0f, 0.0f, 0.0f));
-        dirLights[0].ambient = glm::vec3(0.2f, 0.2f, 0.0f);
-        dirLights[0].diffuse = glm::vec3(0.78f, 0.78f, 0.0f);
-        dirLights[0].specular = glm::vec3(1.0f, 1.0f, 1.0f);
+		lightingShader.setInt("u_NumPointLights", lights.pointLights.size());
 
 		GLCall(glBindBuffer(GL_TEXTURE_BUFFER, dirLightBuffer));
-		GLCall(glBufferData(GL_TEXTURE_BUFFER, MAX_LIGHTS * sizeof(DirLight), dirLights, GL_STATIC_DRAW));
+		GLCall(glBufferData(GL_TEXTURE_BUFFER, lights.dirLights.size() * sizeof(DirLight), lights.dirLights.data(), GL_STATIC_DRAW));
 		GLCall(glActiveTexture(GL_TEXTURE0 + DIRLIGHT_TEXTURE_BUFFER_SLOT));
 		GLCall(glBindTexture(GL_TEXTURE_BUFFER, dirLightTBO));
 		// GLCall(glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, pointLightBuffer)); // bind the buffer to the texture (has been done while setting up)
 		lightingShader.setInt("u_DirLightTBO", DIRLIGHT_TEXTURE_BUFFER_SLOT);
-		lightingShader.setInt("u_NumDirLights", 1);
+		lightingShader.setInt("u_NumDirLights", lights.dirLights.size());
 
-		SpotLight spotLights[MAX_LIGHTS];
-        // spotLights[0].position = camera.Position;
-        // // spotLights[0].position = glm::vec3(0.0f, 1.0f, 3.0f);
-        // spotLights[0].direction = camera.Front;
-        // // spotLights[0].direction = glm::vec3(0.0f, -0.25f, -0.97f);
-        // spotLights[0].cutOff = glm::cos(glm::radians(12.5f));
-        // spotLights[0].outerCutOff = glm::cos(glm::radians(17.5f));
-        // spotLights[0].constant = 1.0f;
-        // spotLights[0].linear = 0.09f;
-        // spotLights[0].quadratic = 0.032f;
-        // spotLights[0].ambient = glm::vec3(0.1f, 0.1f, 0.1f);
-        // spotLights[0].diffuse = glm::vec3(0.8f, 0.8f, 0.8f);
-        // spotLights[0].specular = glm::vec3(1.0f, 1.0f, 1.0f);
-        spotLights[0].position = glm::vec3(0.0f, 2.0f, 4.0f);
-        spotLights[0].direction = glm::normalize(glm::vec3(0.0f, -2.0f, -4.0f));
-        spotLights[0].cutOff = glm::cos(glm::radians(0.0f));
-        spotLights[0].outerCutOff = glm::cos(glm::radians(10.0f));
-        spotLights[0].constant = 1.0f;
-        spotLights[0].linear = 0.09f;
-        spotLights[0].quadratic = 0.032f;
-        spotLights[0].ambient = glm::vec3(1.0f);
-        spotLights[0].diffuse = glm::vec3(1.0f);
-        spotLights[0].specular = glm::vec3(1.0f);
 
 		GLCall(glBindBuffer(GL_TEXTURE_BUFFER, spotLightBuffer));
-		GLCall(glBufferData(GL_TEXTURE_BUFFER, MAX_LIGHTS * sizeof(SpotLight), spotLights, GL_STATIC_DRAW));
+		GLCall(glBufferData(GL_TEXTURE_BUFFER, lights.spotLights.size() * sizeof(SpotLight), lights.spotLights.data(), GL_STATIC_DRAW));
 		GLCall(glActiveTexture(GL_TEXTURE0 + SPOTLIGHT_TEXTURE_BUFFER_SLOT));
 		GLCall(glBindTexture(GL_TEXTURE_BUFFER, spotLightTBO));
 		// GLCall(glTexBuffer(GL_TEXTURE_BUFFER, GL_RGBA32F, spotLightBuffer)); // bind the buffer to the texture (has been done while setting up)
 		lightingShader.setInt("u_SpotLightTBO", SPOTLIGHT_TEXTURE_BUFFER_SLOT);
-		lightingShader.setInt("u_NumSpotLights", 0);
+		lightingShader.setInt("u_NumSpotLights", lights.spotLights.size());
 
 		// bind the render buffer to this FBO (maybe this is missing actualy binding it, idk, but it gets regenerated automatically when screen is resized)
 		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, lightingFBODepthBuffer);
@@ -672,11 +628,12 @@ std::vector<RendererObjectInfo> Renderer::translateEngineObjectInfo(const std::v
 
 void Renderer::draw(const std::vector<Engine_Object_Curve>& curvePoints, const std::vector<Vertex> &verts, const std::vector<RendererObjectInfo> &objectInfo,
 		// const std::vector<SunVertex> &sun_verts, const RendererObjectInfo &sunInfo, GLfloat totalTime,
-		const glm::mat4 &projection, Camera &camera, GLFWwindow * window, GLfloat deltaTime, GLfloat physicsDeltaTime, GLfloat physicsProcessingDeltaTime) {
+		const glm::mat4 &projection, Camera &camera, GLFWwindow * window, GLfloat deltaTime, GLfloat physicsDeltaTime, GLfloat physicsProcessingDeltaTime,
+		const SceneLights &lights) {
 
 	prepareFrame(camera, deltaTime, physicsDeltaTime, physicsProcessingDeltaTime);
 	const glm::mat4 view = camera.GetViewMatrix();
-	drawLighting(verts, objectInfo, projection, view, camera);
+	drawLighting(verts, objectInfo, projection, view, camera, lights);
 	// drawSun(sun_verts, sunInfo, projection, view, totalTime);
 
 	if (showCurves) {
