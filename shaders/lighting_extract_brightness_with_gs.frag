@@ -158,8 +158,9 @@ vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir, Material material)
 	// ambient
     vec3 ambient = light.ambient * material.ambient.xyz;
 
-	// diffuse 
-    vec3 lightDir = normalize(- (mat3(u_View) * light.direction)); // pretty sure this is bad but it works fine??????????????
+	// diffuse
+	// removed the '-' since it is the direction TOWARDS the light
+    vec3 lightDir = normalize( (mat3(u_View) * light.direction)); // pretty sure this is bad but it works fine??????????????
     float diff = max(dot(normal, lightDir), 0.0);
     vec3 diffuse = light.diffuse * (diff * material.diffuse.xyz);
 
