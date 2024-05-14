@@ -281,9 +281,9 @@ std::vector<Vertex> XmlParser::parseVertex(tinyxml2::XMLElement *model) {
 }
 
 Engine_Object_Materials XmlParser::parseEngineObjectMaterials(tinyxml2::XMLElement *model) {
-    glm::vec3 diffuse = glm::vec3(1.0f);
-    glm::vec3 ambient = glm::vec3(1.0f);
-    glm::vec3 specular = glm::vec3(1.0f);
+    glm::vec3 diffuse = glm::vec3(0.78431372549019607843f);
+    glm::vec3 ambient = glm::vec3(0.19607843137254901960f);
+    glm::vec3 specular = glm::vec3(0.0f);
     glm::vec3 emissive = glm::vec3(0.0f);
     int shininess = 0;
 
@@ -383,9 +383,9 @@ PointLight XmlParser::parsePointLight(tinyxml2::XMLElement *light) {
     GLfloat constant = 1.0f;
     GLfloat linear = 0.09f;
     GLfloat quadratic = 0.032f;
-    glm::vec3 ambient = glm::vec3(0.2f, 0.2f, 0.0f);
-    glm::vec3 diffuse = glm::vec3(0.78f, 0.78f, 0.0f);
-    glm::vec3 specular = glm::vec3(1.0f, 1.0f, 1.0f);
+    glm::vec3 ambient = glm::vec3(1.0f);
+    glm::vec3 diffuse = glm::vec3(1.0f);
+    glm::vec3 specular = glm::vec3(1.0f);
     GLfloat padding_1 = 0.0f;
 
 
