@@ -226,6 +226,13 @@ vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir, Mat
     // spotlight intensity
 									   // - here since we use direction towards the light. could also do - lightdir, whatever
     float theta = dot(lightDir, normalize(-(mat3(u_View) * light.direction)));
+
+	// outra forma de interpolar, mas nao usa outerCutOff
+	// float intensity = 0.0;
+	// if (theta > light.cutOff) {
+	// 	intensity = (1.0 - ((1.0 - theta) / (1.0 - light.cutOff)));
+	// }
+
     float epsilon = light.cutOff - light.outerCutOff;
     float intensity = clamp((theta - light.outerCutOff) / epsilon, 0.0, 1.0);
 
