@@ -225,7 +225,7 @@ vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir, Mat
     float theta = dot(lightDir, normalize(-(mat3(u_View) * light.direction)));
     float epsilon = light.cutOff - light.outerCutOff;
     float intensity = clamp((theta - light.outerCutOff) / epsilon, 0.0, 1.0);
-    
+
 	return ((light.ambient * material.ambient.xyz) /* intensity not applied to ambient */
 			+ (light.diffuse * diff * material.diffuse.xyz * intensity)
 			+ (light.specular * spec * material.specular.xyz * intensity)) * attenuation;
