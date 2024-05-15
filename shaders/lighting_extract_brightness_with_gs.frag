@@ -159,8 +159,8 @@ vec3 CalcDirLight(DirLight light, vec3 normal, vec3 viewDir, Material material)
     vec3 ambient = light.ambient * material.ambient.xyz;
 
 	// diffuse
-	// removed the '-' since it is the direction TOWARDS the light
-    vec3 lightDir = normalize( (mat3(u_View) * light.direction)); // pretty sure this is bad but it works fine??????????????
+	// removed the '-' since we need direction TOWARDS the light and already have it, no need to invert the vector
+    vec3 lightDir = normalize( (mat3(u_View) * light.direction));
     float diff = max(dot(normal, lightDir), 0.0);
     vec3 diffuse = light.diffuse * (diff * material.diffuse.xyz);
 
@@ -180,6 +180,7 @@ vec3 CalcPointLight(PointLight light, vec3 normal, vec3 fragPos, vec3 viewDir, M
 	vec3 viewSpace_position = vec3(u_View * vec4(light.position, 1.0));
 	vec3 fragToLight = viewSpace_position - fragPos;
 
+	// lightDir TOWARDS light, it is more useful
     vec3 lightDir = normalize(fragToLight);
     // diffuse shading
 	float diff = max(dot(normal, lightDir), 0.0);
@@ -210,6 +211,7 @@ vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir, Mat
 	vec3 viewSpace_position = vec3(u_View * vec4(light.position, 1.0));
 	vec3 fragToLight = viewSpace_position - fragPos;
 
+	// lightDir TOWARDS the light, it is more useful
     vec3 lightDir = normalize(fragToLight);
     // diffuse shading
     float diff = max(dot(normal, lightDir), 0.0);
@@ -222,6 +224,7 @@ vec3 CalcSpotLight(SpotLight light, vec3 normal, vec3 fragPos, vec3 viewDir, Mat
     float distance = length(fragToLight);
     float attenuation = 1.0 / (light.constant + light.linear * distance + light.quadratic * (distance * distance));    
     // spotlight intensity
+									   // - here since we use direction towards the light. could also do - lightdir, whatever
     float theta = dot(lightDir, normalize(-(mat3(u_View) * light.direction)));
     float epsilon = light.cutOff - light.outerCutOff;
     float intensity = clamp((theta - light.outerCutOff) / epsilon, 0.0, 1.0);
