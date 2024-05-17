@@ -14,6 +14,13 @@
         <projection fov="60" near="1" far="1000"/> <!-- optional, use these values as default-->
     </camera>
 
+    <lights>
+        <light type="Point" posx="0" posy="0" posz="0">
+			<diffuse R="2550" G="2550" B="2550"/>
+			<ambient R="2550" G="2550" B="2550"/>
+			<specular R="2550" G="2550" B="2550"/>
+		</light>
+    </lights>
     <group>
         <!-- Sun -->
         <group>
