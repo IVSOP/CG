@@ -61,6 +61,7 @@ public:
 	bool showCurves = true;
 	bool showCurveNormals = false;
 	float engine_speed = 1.0;
+	bool wireframe = false;
 
 	std::unique_ptr<TextureArray> textureArray = nullptr; // pointer since it starts as null and gets initialized later. unique_ptr so it always gets deleted
 

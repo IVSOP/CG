@@ -390,17 +390,19 @@ void Renderer::prepareFrame(Camera &camera, GLfloat deltaTime, GLfloat physicsDe
 	ImGui::SliderFloat("##Engine speed", &engine_speed, 0.0f, 100.0f, "engine speed = %.3f");
 	ImGui::SameLine();
 	ImGui::InputFloat("Engine speed", &engine_speed, 1.0f, 100.0f);
-
+	ImGui::Checkbox("Wireframe", &wireframe);
 }
 
 void Renderer::drawLighting(const std::vector<Vertex> &verts, const std::vector<RendererObjectInfo> &objectInfo, const glm::mat4 &projection, const glm::mat4 &view, const Camera &camera, const SceneLights &lights) {
 	// constexpr glm::mat4 model = glm::mat4(1.0f);
 	// const glm::mat4 MVP = projection * view * model;
+	if (wireframe) {
+		GLCall(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
+	}
 
 	//////////////////////////////////////////////// the normal scene is drawn into the lighting framebuffer, where the bright colors are then separated
 	GLCall(glBindFramebuffer(GL_FRAMEBUFFER, lightingFBO));
     	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		// GLCall(glPolygonMode(GL_FRONT_AND_BACK, GL_LINE));
 
 		GLCall(glBindVertexArray(this->VAO));
 		GLCall(glBindBuffer(GL_ARRAY_BUFFER, this->vertexBuffer));
@@ -478,7 +480,9 @@ void Renderer::drawLighting(const std::vector<Vertex> &verts, const std::vector<
 			drawAxis(glm::mat4(1.0f), view, projection);
 		}
 
-		// GLCall(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
+		if (wireframe) {
+			GLCall(glPolygonMode(GL_FRONT_AND_BACK, GL_FILL));
+		}
 }
 
 void Renderer::drawSun(const std::vector<SunVertex> &verts, const RendererObjectInfo &sunInfo, const glm::mat4 &projection, const glm::mat4 &view, GLfloat totalTime) {
@@ -536,11 +540,11 @@ void Renderer::bloomBlur(int passes) {
 	if (passes == 0) {
 		// if this happens, instead of switching verything just clear pingpongTextures[1], which will be used in merging the textures
 		// bind FBO, attach texture, clear color buffer
+		// the tone mapping shader expects the result from blur to be placed in pingpongTextures[1]
 		GLCall(glBindFramebuffer(GL_FRAMEBUFFER, pingpongFBO[1]));
 		GLCall(glActiveTexture(GL_TEXTURE0 + BRIGHT_TEXTURE_SLOT));
 		GLCall(glActiveTexture(GL_TEXTURE0 + BRIGHT_TEXTURE_SLOT));
 		GLCall(glBindTexture(GL_TEXTURE_2D, pingpongTextures[1])); // use texture from pong
-		blurShader.setInt("u_BlurBuffer", BRIGHT_TEXTURE_SLOT);
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		return;

@@ -16,6 +16,7 @@
 
     <lights>
         <light type="Point" posx="0" posy="0" posz="0">
+		<!-- com 10000 funciona mas tem de se mexer na gamma etc -->
 			<diffuse R="2550" G="2550" B="2550"/>
 			<ambient R="2550" G="2550" B="2550"/>
 			<specular R="2550" G="2550" B="2550"/>
@@ -31,6 +32,7 @@
                 <model file="sphere_1_20_20.3d"> <!-- generator sphere 1 20 20 sphere_1_20_20.3d -->
                     <color>
                         <diffuse R="255" G="255" B="255"/>
+						<!-- TESTAR COM ISTO A 0 -->
                         <ambient R="255" G="255" B="255"/>
                         <specular R="255" G="255" B="255"/>
                         <emissive R="762" G="183" B="19"/>
