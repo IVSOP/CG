@@ -9,13 +9,6 @@ uniform sampler2D u_SceneBuffer;
 uniform float u_Gamma;
 uniform float u_Exposure;
 
-// void main()
-// {
-//     vec3 hdrColor = texture(u_HdrBuffer, v_TexCoord).rgb;
-//     color = vec4(hdrColor, 1.0);
-// }
-
-
 // Reinhard tone mapping
 // void main()
 // {             
@@ -30,19 +23,19 @@ uniform float u_Exposure;
 //     color = vec4(mapped, 1.0);
 // }
 
-// tone mapping with gamma and exposure and bloom
 void main()
 {
-    // const float gamma = 2.2;
-	// const float exposure = 1.0;
+    // extract both colors
     vec3 hdrColor = texture(u_SceneBuffer, v_TexCoord).rgb;
 	vec3 bloomColor = texture(u_BrightBuffer, v_TexCoord).rgb;
 
-	hdrColor += bloomColor; // additive blending
+	// additive blending
+	hdrColor += bloomColor;
 
     // exposure tone mapping
     vec3 mapped = vec3(1.0) - exp(-hdrColor * u_Exposure);
-    // gamma correction 
+
+	// gamma correction 
     mapped = pow(mapped, vec3(1.0 / u_Gamma));
   
     color = vec4(mapped, 1.0);

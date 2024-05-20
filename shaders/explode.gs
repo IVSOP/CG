@@ -44,7 +44,6 @@ vec3 getAvgNormal()
 {
     vec3 a = vec3(gl_in[0].gl_Position) - vec3(gl_in[1].gl_Position);
     vec3 b = vec3(gl_in[2].gl_Position) - vec3(gl_in[1].gl_Position);
-	// No setimo dia, descansou e disse: se aqui ainda estiveres em world space, vais ter de trocar a ordem aqui senao o cross product da a seta para baixo e nao para cima
 	return normalize(cross(b, a));
 }
 
