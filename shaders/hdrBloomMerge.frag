@@ -15,7 +15,7 @@ uniform float u_Exposure;
 //     // const float gamma = 2.2;
 //     vec3 hdrColor = texture(u_HdrBuffer, v_TexCoord).rgb;
   
-//     // reinhard tone mapping
+//     // basic reinhard tone mapping
 //     vec3 mapped = hdrColor / (hdrColor + vec3(1.0));
 //     // gamma correction 
 //     mapped = pow(mapped, vec3(1.0 / u_Gamma));
