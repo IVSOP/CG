@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/bash
 
 ./build/Generator plane 5 2 plane_5_2.3d
 ./build/Generator plane 2 3 plane_2_3.3d
@@ -14,6 +14,7 @@
 ./build/Generator sphere 1 10 10 sphere_1_10_10.3d
 ./build/Generator sphere 1 20 20 sphere_1_20_20.3d
 ./build/Generator sphere 1 8 8 sphere_1_8_8.3d
+./build/Generator sphere 1 20 20 sphere_1_20_20.3d
 ./build/Generator patch teapot.patch 10 bezier_10.3d
 ./build/Generator patch custom_test_files_phase_3/comet_tail.patch 5 comet_tail_5.3d
 ./build/Generator patch custom_test_files_phase_3/comet.patch 5 comet_5.3d
