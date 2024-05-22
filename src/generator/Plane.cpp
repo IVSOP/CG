@@ -57,8 +57,8 @@ std::vector<Vertex> Plane::createPlanePoints_TextWholeObj(const float length, co
 
     const float step = length / fdivisions;
 
-    for(int i = 0; i <= divisions; i++) { // lines (x)
-        for(int j = 0; j <= divisions; j++) { // columns (z)
+    for(int i = 0; i <= divisions; i++) { // columns (x)
+        for(int j = 0; j <= divisions; j++) { // lines (z)
             ans.emplace_back(static_cast<float>(i) * step - length / 2.0f, 0.0f, static_cast<float>(j) * step - length / 2.0f, 0.0f, 1.0f, 0.0f, 1.0f - (step * static_cast<float>(i) / length), 1.0f - (step * static_cast<float>(j) / length));
         }
     }

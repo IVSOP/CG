@@ -46,13 +46,13 @@ std::vector<Vertex> Sphere::createSpherePoints(const float radius, const int sli
             texU = static_cast<float>(currSlice) / slices;
 
             if (currStack == 0) {
-                // ans.emplace_back(0.0f,radius,0.0f,0.0f,1.0f,0.0f,texU,1.0f); // pontos correspondentes ao ponto mais alto da esfera
-                ans.emplace_back(0.0f,radius,0.0f,0.0f,1.0f,0.0f,texU + 1.0f / (slices * 2),1.0f); // alternativa para os triângulos parecerem centrados, meter que pontos do topo estão em texU = media entre texU do pontos da linha seguinte na esfera
+                ans.emplace_back(0.0f,radius,0.0f,0.0f,1.0f,0.0f,texU,1.0f); // pontos correspondentes ao ponto mais alto da esfera
+                // ans.emplace_back(0.0f,radius,0.0f,0.0f,1.0f,0.0f,texU + 1.0f / (slices * 2),1.0f); // alternativa para os triângulos parecerem centrados, meter que pontos do topo estão em texU = media entre texU do pontos da linha seguinte na esfera
             }
 
             else if (currStack == stacks) {
-                // ans.emplace_back(0.0f,-radius,0.0f,0.0f,-1.0f,0.0f,texU,0.0f); // pontos correspondentes ao ponto mais baixo da esfera
-                ans.emplace_back(0.0f,-radius,0.0f,0.0f,-1.0f,0.0f,texU + 1.0f / (slices * 2),0.0f); // alternativa para os triângulos parecerem centrados
+                ans.emplace_back(0.0f,-radius,0.0f,0.0f,-1.0f,0.0f,texU,0.0f); // pontos correspondentes ao ponto mais baixo da esfera
+                // ans.emplace_back(0.0f,-radius,0.0f,0.0f,-1.0f,0.0f,texU + 1.0f / (slices * 2),0.0f); // alternativa para os triângulos parecerem centrados
             }
 
             else {
@@ -76,11 +76,11 @@ std::vector<Vertex> Sphere::createSpherePoints(const float radius, const int sli
         currLinePoints = currStack  * slices; // início da linha de pontos atual
         nextLinePoints = (currStack +1) * slices; // início da próxima linha de pontos
         
-        for (int currStack=0; currStack < slices; currStack++) {
-            Vertex lastVertexCurrLine = ans[currLinePoints + ((currStack + 1) % slices)];
-            Vertex lastVertexNextLine = ans[nextLinePoints + ((currStack + 1) % slices)];
+        for (int currSlice = 0; currSlice < slices; currSlice ++) {
+            Vertex lastVertexCurrLine = ans[currLinePoints + ((currSlice + 1) % slices)];
+            Vertex lastVertexNextLine = ans[nextLinePoints + ((currSlice + 1) % slices)];
 
-            if (currStack + 1 == slices) { // preciso de explicitamente meter o text_U da última coordenada da linha a 1, para nao dar texture seams!
+            if (currSlice + 1 == slices) { // preciso de explicitamente meter o text_U da última coordenada da linha a 1, para nao dar texture seams!
                 lastVertexCurrLine.tex_coord.x = 1.0f;
                 lastVertexNextLine.tex_coord.x = 1.0f;
             }
@@ -88,13 +88,13 @@ std::vector<Vertex> Sphere::createSpherePoints(const float radius, const int sli
             // para cada quadrado do círculo fazem-se dois triangulos:
             /* |\
                |_\ */
-            ans2.emplace_back(ans[currLinePoints + currStack]);
-            ans2.emplace_back(ans[nextLinePoints + currStack]);
+            ans2.emplace_back(ans[currLinePoints + currSlice]);
+            ans2.emplace_back(ans[nextLinePoints + currSlice]);
             ans2.emplace_back(lastVertexNextLine);
 
             /*  /|
                /_| */
-            ans2.emplace_back(ans[currLinePoints + currStack]);
+            ans2.emplace_back(ans[currLinePoints + currSlice]);
             ans2.emplace_back(lastVertexNextLine);
             ans2.emplace_back(lastVertexCurrLine);
         }
