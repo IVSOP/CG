@@ -13,10 +13,6 @@
     </lights>
     <group>
         <group>
-            <transform>
-                <translate x="0.5" y="0.2" z="0.5"/>
-                <scale x="1" y="1" z="1"/>
-            </transform>
             <models>
                 <model file="cylinder_2_4_10_5.3d"> <!-- generator cylinder 2 4 10 5 cylinder_2_4_10_5.3d -->
                     <texture file="test_texture.jpg"/>

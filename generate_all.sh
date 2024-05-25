@@ -4,6 +4,7 @@
 ./build/Generator plane 2 3 plane_2_3.3d
 ./build/Generator box 2 3 box_2_3.3d
 ./build/Generator cone 1 2 4 3 cone_1_2_4_3.3d
+./build/Generator cone 3 8 4 3 cone_3_8_4_3.3d
 ./build/Generator cone 2 4 20 5 cone_2_4_20_5.3d
 ./build/Generator cone 2 4 20 10 cone_2_4_20_10.3d
 ./build/Generator cylinder 2 4 10 5 cylinder_2_4_10_5.3d

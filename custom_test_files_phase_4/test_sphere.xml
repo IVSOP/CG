@@ -13,10 +13,6 @@
     </lights>
     <group>
         <group>
-            <transform>
-                <translate x="0.5" y="0.2" z="0.5"/>
-                <scale x="1" y="1" z="1"/>
-            </transform>
             <models>
                 <model file="sphere_1_20_20.3d"> <!-- generator sphere 1 8 8 sphere_1_8_8.3d -->
                     <texture file="test_texture.jpg"/>

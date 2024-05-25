@@ -50,7 +50,7 @@ std::vector<Vertex> Box::createBoxPoints(float length, int divisions) {
     for (auto point: planeFacingDown) {
         currPoint = rotZMatrix * point.getCoords();
         currPoint -= shift;
-        point.tex_coord = glm::vec2(point.tex_coord.y, point.tex_coord.x);
+        point.tex_coord = glm::vec2(1 - point.tex_coord.y, point.tex_coord.x);
 
         res.emplace_back(currPoint.x + float(length), currPoint.y, currPoint.z,1.0f,0.0f,0.0f, point.tex_coord.x, point.tex_coord.y);
     }
@@ -61,7 +61,7 @@ std::vector<Vertex> Box::createBoxPoints(float length, int divisions) {
     for (auto point: planeFacingUp) {
         currPoint = rotXMatrix * point.getCoords();
         currPoint -= shift;
-        point.tex_coord = glm::vec2(1 - point.tex_coord.x, 1 - point.tex_coord.y);
+        point.tex_coord = glm::vec2(point.tex_coord.x, 1 - point.tex_coord.y);
 
         res.emplace_back(currPoint.x, currPoint.y, currPoint.z,0.0f,0.0f,-1.0f, point.tex_coord.x, point.tex_coord.y);
     }
@@ -79,7 +79,7 @@ std::vector<Vertex> Box::createBoxPoints(float length, int divisions) {
     for (auto point: planeFacingUp) {
         currPoint = point.getCoords();
         currPoint -= shift;
-
+        point.tex_coord = glm::vec2(1 - point.tex_coord.x, point.tex_coord.y);
         res.emplace_back(currPoint.x, currPoint.y + float(length), currPoint.z,0.0f,1.0f,0.0f, point.tex_coord.x, point.tex_coord.y);
     }
 
