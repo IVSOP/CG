@@ -19,7 +19,7 @@ std::vector<Vertex> Cone::createConePoints(float radius, float height, int slice
     Vertex prev;
     Vertex base;
 
-    glm::mat4 rotYMatrix = Consts::rotYMatrix(-angle);
+    glm::mat4 rotYMatrix = Consts::rotYMatrix(angle);
 
     for(int i = 0; i < stacks; i++) {
         basePoints.emplace_back(0.0f , static_cast<float>(i) * stackStep, 0.0f);
@@ -38,9 +38,9 @@ std::vector<Vertex> Cone::createConePoints(float radius, float height, int slice
             glm::vec3 cur_normal = glm::normalize(glm::vec3(cos(glm::radians(angle * static_cast<float>(j))), cone_face_prep_tang, sin(glm::radians(angle * static_cast<float>(j)))));
 
             if(i == 0){
-                ans.emplace_back(base.coords.x, base.coords.y, base.coords.z, 0.0f, -1.0f, 0.0f, 0.5f, 1.0f); // text.y == 0 -> topo da textura para dentro, text.y == 1 -> topo da textura para dentro
-                ans.emplace_back(prev.coords.x, prev.coords.y, prev.coords.z, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f); // text.y == 1 -> topo da textura para dentro, text.y == 0 -> topo da textura para dentro
                 ans.emplace_back(currCoords.x, currCoords.y, currCoords.z, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f); // text.y == 1 -> topo da textura para dentro, text.y == 0 -> topo da textura para dentro
+                ans.emplace_back(prev.coords.x, prev.coords.y, prev.coords.z, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f); // text.y == 1 -> topo da textura para dentro, text.y == 0 -> topo da textura para dentro
+                ans.emplace_back(base.coords.x, base.coords.y, base.coords.z, 0.0f, -1.0f, 0.0f, 0.5f, 1.0f); // text.y == 0 -> topo da textura para dentro, text.y == 1 -> topo da textura para dentro
             }
 
             if(i > 0) {
@@ -55,26 +55,26 @@ std::vector<Vertex> Cone::createConePoints(float radius, float height, int slice
                 // Triangle  |‾/
                 //           |/
 
-                ans.emplace_back(rightDown_v);
-                ans.emplace_back(right_v);
-
                 if(j != slices) {
                     ans.emplace_back(currCoords.x, currCoords.y, currCoords.z, cur_normal.x, cur_normal.y, cur_normal.z, j * angle / 360.0f, static_cast<float>(i) * stackStep / height);
                 }
                 else ans.emplace_back(radius - (static_cast<float>(i) * radiusStep) , static_cast<float>(i) * stackStep, 0.0f, base_normal.x, base_normal.y, base_normal.z, 1.0f, static_cast<float>(i) * stackStep / height);
+
+                ans.emplace_back(right_v);
+                ans.emplace_back(rightDown_v);
 
                 // Triangle  /|
                 //          /_|
 
+                ans.emplace_back(rightDown_v);
+                ans.emplace_back(down_v);
+
                 if(j != slices) {
                     ans.emplace_back(currCoords.x, currCoords.y, currCoords.z, cur_normal.x, cur_normal.y, cur_normal.z, j * angle / 360.0f, static_cast<float>(i) * stackStep / height);
                 }
 
                 else ans.emplace_back(radius - (static_cast<float>(i) * radiusStep) , static_cast<float>(i) * stackStep, 0.0f, base_normal.x, base_normal.y, base_normal.z, 1.0f, static_cast<float>(i) * stackStep / height);
 
-                ans.emplace_back(down_v);
-
-                ans.emplace_back(rightDown_v);
             }
 
             if(j != slices) basePoints.emplace_back(currCoords.x, currCoords.y, currCoords.z, cur_normal.x, cur_normal.y, cur_normal.z, j * angle / 360.0f, static_cast<float>(i) * stackStep / height);
@@ -93,9 +93,9 @@ std::vector<Vertex> Cone::createConePoints(float radius, float height, int slice
         Vertex leftCoords = prevBasePoints[i];
         Vertex rightCoords = prevBasePoints[i-1];
 
-        ans.emplace_back(rightCoords);
-        ans.emplace_back(0.0f, height, 0.0f, 0.0f, 1.0f, 0.0f, static_cast<float>(i - 2) / static_cast<float>(size - 3), 1.0f);
         ans.emplace_back(leftCoords);
+        ans.emplace_back(0.0f, height, 0.0f, 0.0f, 1.0f, 0.0f, static_cast<float>(i - 2) / static_cast<float>(size - 3), 1.0f);
+        ans.emplace_back(rightCoords);
     }
 
     return ans;

@@ -1,0 +1,34 @@
+<world>
+    <window width="512" height="512"/>
+    <camera>
+        <position x="2" y="1.5" z="-2"/>
+        <lookAt x="0" y="0" z="0"/>
+        <up x="0" y="1" z="0"/>
+        <projection fov="60" near="0.01" far="10"/>
+    </camera>
+
+    <lights>
+        <light type="Point" posx="2" posy="2" posz="-2"/>
+        <light type="Point" posx="-2" posy="2" posz="2"/>
+    </lights>
+    <group>
+        <group>
+            <transform>
+                <translate x="0.5" y="0.2" z="0.5"/>
+                <scale x="1" y="1" z="1"/>
+            </transform>
+            <models>
+                <model file="cylinder_2_4_10_5.3d"> <!-- generator cylinder 2 4 10 5 cylinder_2_4_10_5.3d -->
+                    <texture file="test_texture.jpg"/>
+                    <color>
+                        <diffuse R="00" G="87" B="184"/>
+                        <ambient R="0" G="8" B="18"/>
+                        <specular R="255" G="255" B="255"/>
+                        <emissive R="100" G="100" B="100"/>
+                        <shininess value="128"/>
+                    </color>
+                </model>
+            </models>
+        </group>
+    </group>
+</world>
