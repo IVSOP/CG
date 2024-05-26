@@ -15,7 +15,7 @@
         <group>
             <models>
                 <model file="cone_40_10_4_30.3d">
-                    <texture file="earth.jpg"/>
+                    <texture file="test_texture.jpg"/>
                     <color>
                         <diffuse R="00" G="87" B="184"/>
                         <ambient R="0" G="8" B="18"/>
