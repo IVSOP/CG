@@ -83,5 +83,5 @@ std::vector<Vertex> Box::createBoxPoints(float length, int divisions) {
         res.emplace_back(currPoint.x, currPoint.y + float(length), currPoint.z,0.0f,1.0f,0.0f, point.tex_coord.x, point.tex_coord.y);
     }
 
-    return Consts::calcNormalAvg(res);
+    return res;
 }

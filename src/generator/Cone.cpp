@@ -118,5 +118,5 @@ std::vector<Vertex> Cone::createConePoints(float radius, float height, int slice
         ans.emplace_back(rightCoords.coords, cur_normal, rightCoords.tex_coord);
     }
 
-    return Consts::calcNormalAvg(ans);
+    return ans;
 }
