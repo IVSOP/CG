@@ -20,9 +20,6 @@ std::vector<Vertex> Cone::createConePoints(float radius, float height, int slice
     
     float cos_heightV_heightRadiusV = glm::dot(heightV, heightRadiusV);
     float sin_heightV_heightRadiusV = sqrt(1 - powf(cos_heightV_heightRadiusV, 2));
-
-
-    float cone_face_prep_tang = radius / std::sqrt(radius * radius + height * height);
     
     glm::vec4 currCoords;
     Vertex prev;

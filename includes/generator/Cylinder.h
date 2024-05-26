@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "Vertex.h"
+#include "../common/Consts.h"
 
 class Cylinder {
 public:

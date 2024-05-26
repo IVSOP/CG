@@ -93,5 +93,5 @@ std::vector<Vertex> Cylinder::createCylinderPoints(float radius, float height, i
         basePoints.clear();
     }
 
-    return ans;
+    return Consts::calcNormalAvg(ans);
 }

@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "../common/Vertex.h"
+#include "../common/Consts.h"
 
 class Box {
 public:
