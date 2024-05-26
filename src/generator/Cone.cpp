@@ -15,11 +15,8 @@ std::vector<Vertex> Cone::createConePoints(float radius, float height, int slice
     float radiusStep = radius / static_cast<float>(stacks);
 
     // Tangent of 90 - cone_inclination is the normal of the lateral surface
-    float cone_face_prep_tang = height / radius;
 
-    float tang_angle = atan(cone_face_prep_tang);
-
-    float cone_face_tang = tan(M_PI_2 - tang_angle);
+    float cone_face_tang = radius / height;
     
     glm::vec4 currCoords;
     Vertex prev;
