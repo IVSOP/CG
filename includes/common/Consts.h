@@ -5,6 +5,10 @@
 #include <vector>
 #include <Vertex.h>
 class Consts {
+private:
+    struct myVec3 {
+        float x, y, z;
+    };
 
 public:
     static glm::mat4 rotYMatrix(float angle);
@@ -16,7 +20,7 @@ public:
     static glm::mat4 scaleMatrix(float x, float y, float z);
     static glm::mat4 idMatrix();
     static glm::mat4 bezierCoefficients();
-    std::vector<Vertex> calcNormalAvg(std::vector<Vertex>& points);
+    static std::vector<Vertex> calcNormalAvg(std::vector<Vertex>& points);
 };
 
 #endif //CG_CONSTS_H

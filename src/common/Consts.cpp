@@ -3,6 +3,8 @@
 // TODO talvez apenas importar em windows?????????
 #define _USE_MATH_DEFINES
 #include <math.h>
+#include <unordered_map>
+#include <sstream>
 
 glm::mat4 Consts::rotYMatrix(float angle) {
     float rad_angle = angle * (M_PI / 180);
@@ -135,10 +137,13 @@ glm::mat4 Consts::bezierCoefficients(){
 std::vector<Vertex> Consts::calcNormalAvg(std::vector<Vertex>& points){
 
     std::vector<Vertex> ans = std::vector<Vertex>(points.size());
-    std::unordered_map<std::pair<float, std::pair<float, float>>, std::pair<std::pair<float, std::pair<float, float>>, int>> normalMap;
+    std::unordered_map<std::string, std::pair<std::pair<float, std::pair<float, float>>, int>> normalMap;
 
     for(Vertex& v : points){
-        std::pair<float, std::pair<float, float>> key = std::make_pair(v.coords.x, std::make_pair(v.coords.y, v.coords.z));
+        std::stringstream keyStream;
+        keyStream << "(" << v.coords.x << ", " << v.coords.y << ", " << v.coords.z << ")";
+        std::string key = keyStream.str();
+
         auto it = normalMap.find(key);
 
         if (it != normalMap.end()) {
@@ -154,11 +159,14 @@ std::vector<Vertex> Consts::calcNormalAvg(std::vector<Vertex>& points){
     }
 
     for(Vertex& v : points){
-        std::pair<float, std::pair<float, float>> key = std::make_pair(v.coords.x, std::make_pair(v.coords.y, v.coords.z));
+        std::stringstream keyStream;
+        keyStream << "(" << v.coords.x << ", " << v.coords.y << ", " << v.coords.z << ")";
+        std::string key = keyStream.str();
+
         auto it = normalMap.find(key);
 
         if (it != normalMap.end()) {
-            ans.emplace_back(key, glm::vec3(it->second.first.first / (float) it->second.second,
+            ans.emplace_back(v.coords, glm::vec3(it->second.first.first / (float) it->second.second,
                 it->second.first.second.first / (float) it->second.second, 
                 it->second.first.second.second / (float) it->second.second), v.tex_coord);
         } 
