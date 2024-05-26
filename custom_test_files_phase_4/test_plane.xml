@@ -1,0 +1,30 @@
+<world>
+    <window width="512" height="512"/>
+    <camera>
+        <position x="1" y="1.5" z="0"/>
+        <lookAt x="0" y="0" z="0"/>
+        <up x="0" y="1" z="0"/>
+        <projection fov="60" near="0.01" far="10"/>
+    </camera>
+
+    <lights>
+        <light type="Point" posx="2" posy="2" posz="-2"/>
+        <light type="Point" posx="-2" posy="2" posz="2"/>
+    </lights>
+    <group>
+        <group>
+            <models>
+                <model file="plane_2_3.3d"> <!-- generator plane 2 3 3 plane_2_3.3dd -->
+                    <texture file="test_texture.jpg"/>
+                    <color>
+                        <diffuse R="00" G="87" B="184"/>
+                        <ambient R="0" G="8" B="18"/>
+                        <specular R="255" G="255" B="255"/>
+                        <emissive R="100" G="100" B="100"/>
+                        <shininess value="128"/>
+                    </color>
+                </model>
+            </models>
+        </group>
+    </group>
+</world>
