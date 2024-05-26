@@ -136,7 +136,7 @@ glm::mat4 Consts::bezierCoefficients(){
 
 std::vector<Vertex> Consts::calcNormalAvg(std::vector<Vertex>& points){
 
-    std::vector<Vertex> ans = std::vector<Vertex>(points.size());
+    std::vector<Vertex> ans = std::vector<Vertex>();
     std::unordered_map<std::string, std::pair<std::pair<float, std::pair<float, float>>, int>> normalMap;
 
     for(Vertex& v : points){
