@@ -14,7 +14,7 @@
     <group>
         <group>
             <models>
-                <model file="cone_3_8_4_3.3d"> <!-- generator cone 3 8 4 3 cone_3_8_4_3.3d -->
+                <model file="cone_40_10_4_30.3d">
                     <texture file="earth.jpg"/>
                     <color>
                         <diffuse R="00" G="87" B="184"/>

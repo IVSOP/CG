@@ -130,3 +130,45 @@ glm::mat4 Consts::bezierCoefficients(){
 
     return bezierMatrix;
 }
+
+
+std::vector<Vertex> Consts::calcNormalAvg(std::vector<Vertex>& points){
+
+    std::vector<Vertex> ans = std::vector<Vertex>(points.size());
+    std::unordered_map<std::pair<float, std::pair<float, float>>, std::pair<std::pair<float, std::pair<float, float>>, int>> normalMap;
+
+    for(Vertex& v : points){
+        std::pair<float, std::pair<float, float>> key = std::make_pair(v.coords.x, std::make_pair(v.coords.y, v.coords.z));
+        auto it = normalMap.find(key);
+
+        if (it != normalMap.end()) {
+            it->second.first.first += v.normal.x;
+            it->second.first.second.first += v.normal.y;
+            it->second.first.second.second += v.normal.z;
+            it->second.second++;
+        } 
+        
+        else {
+            normalMap.insert(std::make_pair(key, std::make_pair(std::make_pair(v.normal.x, std::make_pair(v.normal.y, v.normal.z)), 1)));
+        }
+    }
+
+    for(Vertex& v : points){
+        std::pair<float, std::pair<float, float>> key = std::make_pair(v.coords.x, std::make_pair(v.coords.y, v.coords.z));
+        auto it = normalMap.find(key);
+
+        if (it != normalMap.end()) {
+            ans.emplace_back(key, glm::vec3(it->second.first.first / (float) it->second.second,
+                it->second.first.second.first / (float) it->second.second, 
+                it->second.first.second.second / (float) it->second.second), v.tex_coord);
+        } 
+        
+        else {
+            std::cout << "Erro ao calcular a média das normais. Coordenadas não identificadas" << std::endl;
+            return {};
+        }
+
+    }
+
+    return ans;
+}

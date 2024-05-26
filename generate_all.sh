@@ -7,6 +7,7 @@
 ./build/Generator cone 3 8 4 3 cone_3_8_4_3.3d
 ./build/Generator cone 2 4 20 5 cone_2_4_20_5.3d
 ./build/Generator cone 2 4 20 10 cone_2_4_20_10.3d
+./build/Generator cone 40 10 4 30 cone_40_10_4_30.3d
 ./build/Generator cylinder 2 4 10 5 cylinder_2_4_10_5.3d
 ./build/Generator torus 2 4 30 30 torus_2_4_30_30.3d
 ./build/Generator torus 55 60 50 50 torus_55_60_50_50.3d

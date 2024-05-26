@@ -2,7 +2,8 @@
 #define CG_CONSTS_H
 
 #include <glm/matrix.hpp>
-
+#include <vector>
+#include <Vertex.h>
 class Consts {
 
 public:
@@ -15,6 +16,7 @@ public:
     static glm::mat4 scaleMatrix(float x, float y, float z);
     static glm::mat4 idMatrix();
     static glm::mat4 bezierCoefficients();
+    std::vector<Vertex> calcNormalAvg(std::vector<Vertex>& points);
 };
 
 #endif //CG_CONSTS_H

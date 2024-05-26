@@ -13,18 +13,27 @@ std::vector<Vertex> Cone::createConePoints(float radius, float height, int slice
     float angle = 360.0f / static_cast<float>(slices);
     float stackStep = height / static_cast<float>(stacks);
     float radiusStep = radius / static_cast<float>(stacks);
-    float cone_face_prep_tang = height / radius / 2.0f;
+    
 
+    glm::vec3 heightV = glm::normalize(glm::vec3(0.0f, -height, 0.0f));
+    glm::vec3 heightRadiusV = glm::normalize(glm::vec3(radius, -height, 0.0f));
+    
+    float cos_heightV_heightRadiusV = glm::dot(heightV, heightRadiusV);
+    float sin_heightV_heightRadiusV = sqrt(1 - powf(cos_heightV_heightRadiusV, 2));
+
+
+    float cone_face_prep_tang = radius / std::sqrt(radius * radius + height * height);
+    
     glm::vec4 currCoords;
     Vertex prev;
     Vertex base;
 
     glm::mat4 rotYMatrix = Consts::rotYMatrix(angle);
+    glm::vec4 base_normal = glm::normalize(glm::vec4(cos_heightV_heightRadiusV, sin_heightV_heightRadiusV, 0.0f, 0.0f));
+    glm::vec3 cur_normal;
 
     for(int i = 0; i < stacks; i++) {
         basePoints.emplace_back(0.0f , static_cast<float>(i) * stackStep, 0.0f);
-
-        glm::vec3 base_normal = glm::normalize(glm::vec3(1.0f, cone_face_prep_tang, 0.0f));
 
         basePoints.emplace_back(radius - (static_cast<float>(i) * radiusStep) , static_cast<float>(i) * stackStep, 0.0f, base_normal.x, base_normal.y, base_normal.z, 0.0f, static_cast<float>(i) * stackStep / height);
 
@@ -35,7 +44,7 @@ std::vector<Vertex> Cone::createConePoints(float radius, float height, int slice
             if(j != slices) currCoords = rotYMatrix * prev.coords;
             else currCoords = basePoints[1].getCoords();
 
-            glm::vec3 cur_normal = glm::normalize(glm::vec3(cos(glm::radians(angle * static_cast<float>(j))), cone_face_prep_tang, sin(glm::radians(angle * static_cast<float>(j)))));
+            cur_normal = glm::vec3(0.0f, -1.0f, 0.0f);
 
             if(i == 0){
                 ans.emplace_back(currCoords.x, currCoords.y, currCoords.z, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f); // text.y == 1 -> topo da textura para dentro, text.y == 0 -> topo da textura para dentro
@@ -52,33 +61,40 @@ std::vector<Vertex> Cone::createConePoints(float radius, float height, int slice
                 glm::vec4 rightDownCoords = rightDown_v.getCoords();
                 glm::vec4 downCoords = down_v.getCoords();
 
+                cur_normal = glm::normalize(
+                    glm::cross(
+                        glm::vec3(rightCoords.x - rightDownCoords.x, rightCoords.y - rightDownCoords.y, rightCoords.z - rightDownCoords.z),
+                        glm::vec3(rightDownCoords.x - downCoords.x, rightDownCoords.y - downCoords.y, rightDownCoords.z - downCoords.z)
+                    )
+                );
+
                 // Triangle  |‾/
                 //           |/
 
                 if(j != slices) {
                     ans.emplace_back(currCoords.x, currCoords.y, currCoords.z, cur_normal.x, cur_normal.y, cur_normal.z, j * angle / 360.0f, static_cast<float>(i) * stackStep / height);
                 }
-                else ans.emplace_back(radius - (static_cast<float>(i) * radiusStep) , static_cast<float>(i) * stackStep, 0.0f, base_normal.x, base_normal.y, base_normal.z, 1.0f, static_cast<float>(i) * stackStep / height);
+                else ans.emplace_back(radius - (static_cast<float>(i) * radiusStep) , static_cast<float>(i) * stackStep, 0.0f, cur_normal.x, cur_normal.y, cur_normal.z, 1.0f, static_cast<float>(i) * stackStep / height);
 
-                ans.emplace_back(right_v);
-                ans.emplace_back(rightDown_v);
+                ans.emplace_back(right_v.coords, cur_normal, right_v.tex_coord);
+                ans.emplace_back(rightDown_v.coords, cur_normal, rightDown_v.tex_coord);
 
                 // Triangle  /|
                 //          /_|
 
-                ans.emplace_back(rightDown_v);
-                ans.emplace_back(down_v);
+                ans.emplace_back(rightDown_v.coords, cur_normal, rightDown_v.tex_coord);
+                ans.emplace_back(down_v.coords, cur_normal, down_v.tex_coord);
 
                 if(j != slices) {
                     ans.emplace_back(currCoords.x, currCoords.y, currCoords.z, cur_normal.x, cur_normal.y, cur_normal.z, j * angle / 360.0f, static_cast<float>(i) * stackStep / height);
                 }
 
-                else ans.emplace_back(radius - (static_cast<float>(i) * radiusStep) , static_cast<float>(i) * stackStep, 0.0f, base_normal.x, base_normal.y, base_normal.z, 1.0f, static_cast<float>(i) * stackStep / height);
+                else ans.emplace_back(radius - (static_cast<float>(i) * radiusStep) , static_cast<float>(i) * stackStep, 0.0f, cur_normal.x, cur_normal.y, cur_normal.z, 1.0f, static_cast<float>(i) * stackStep / height);
 
             }
 
             if(j != slices) basePoints.emplace_back(currCoords.x, currCoords.y, currCoords.z, cur_normal.x, cur_normal.y, cur_normal.z, j * angle / 360.0f, static_cast<float>(i) * stackStep / height);
-            else basePoints.emplace_back(radius - (static_cast<float>(i) * radiusStep) , static_cast<float>(i) * stackStep, 0.0f, base_normal.x, base_normal.y, base_normal.z, 1.0f, static_cast<float>(i) * stackStep / height); // Equivalent to basePoints[1] but with different texture coordinates
+            else basePoints.emplace_back(radius - (static_cast<float>(i) * radiusStep) , static_cast<float>(i) * stackStep, 0.0f, cur_normal.x, cur_normal.y, cur_normal.z, 1.0f, static_cast<float>(i) * stackStep / height); // Equivalent to basePoints[1] but with different texture coordinates
         }
 
         prevBasePoints.clear();
@@ -93,10 +109,17 @@ std::vector<Vertex> Cone::createConePoints(float radius, float height, int slice
         Vertex leftCoords = prevBasePoints[i];
         Vertex rightCoords = prevBasePoints[i-1];
 
-        ans.emplace_back(leftCoords);
+        cur_normal = glm::normalize(
+                    glm::cross(
+                        glm::vec3(0.0f - rightCoords.coords.x, height - rightCoords.coords.y, 0.0f - rightCoords.coords.z),
+                        glm::vec3(rightCoords.coords.x - leftCoords.coords.x, rightCoords.coords.y - leftCoords.coords.y, rightCoords.coords.z - leftCoords.coords.z)
+                    )
+                );
+
+        ans.emplace_back(leftCoords.coords, cur_normal, leftCoords.tex_coord);
         ans.emplace_back(0.0f, height, 0.0f, 0.0f, 1.0f, 0.0f, static_cast<float>(i - 2) / static_cast<float>(size - 3), 1.0f);
-        ans.emplace_back(rightCoords);
+        ans.emplace_back(rightCoords.coords, cur_normal, rightCoords.tex_coord);
     }
 
-    return ans;
+    return calcNormalAvg(ans);
 }
