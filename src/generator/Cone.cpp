@@ -49,9 +49,6 @@ std::vector<Vertex> Cone::createConePoints(float radius, float height, int slice
                 Vertex rightDown_v = prevBasePoints[j];
                 Vertex down_v = prevBasePoints[j+1];
 
-                glm::vec4 rightCoords = right_v.getCoords();
-                glm::vec4 rightDownCoords = rightDown_v.getCoords();
-                glm::vec4 downCoords = down_v.getCoords();
 
                 // Triangle  |‾/
                 //           |/
